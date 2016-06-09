@@ -5,15 +5,17 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>StackExchange.py</StartupFile>
+    <StartupFile>Tests.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Minerva</Name>
     <RootNamespace>Minerva</RootNamespace>
-    <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
-    <InterpreterVersion>3.5</InterpreterVersion>
+    <InterpreterId>
+    </InterpreterId>
+    <InterpreterVersion>
+    </InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,6 +26,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Tests.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="core.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Minerva.py" />
     <Compile Include="StackExchange.py">
       <SubType>Code</SubType>
@@ -31,9 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AppInfo.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\3.5" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
