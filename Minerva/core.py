@@ -1,27 +1,57 @@
 #!/usr/bin/env python
 
-import StackExchange
 import sys
+
+
+class StackExchangeQuery(object):
+    BASE_URL = 'https://api.stackexchange.com'
+    VERSION = '2.2'
+    def __init__(self, params = None):
+        self.startURL = StackExchangeQuery.BASE_URL + "/" + StackExchangeQuery.VERSION
+        self.parameters = Parameters(params)
+    
+    def buildQueryString(self):
+        pass
+
 
 
 class Parameters(object):
     """A class for creating query parameters."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, params = None):
         """Accepts an arbitrary number of key-value pairs to be added to the parameters object being created."""
-        self._paramters = {}
-        for k, v in kwargs.items():
-            self._paramters[k] = v
-
-    def get(self):
+        self.parameters = {}
+        self._size = 0
+        for k, v in params.items():
+            self.addParameter(k, v)
+        
+    def getParameterString(self):
+        """Returns all parameters formatted as a single query string.  If there are no parameters, returns False"""
         s = ''
-        for k, v in self._paramters.items():
+        for k, v in self.parameters.items():
             s += '&' + str(k) + "=" + str(v) if s else str(k) + "=" + str(v)
-        return s
+        return s if s else False
+
+    def addParameter(self, key, value):
+        """Adds a single parameter to parameters.  Returns True if successful and False otherwise.  False indicates the key was already found within parameters."""
+        if not self.parameters.get(key, False):
+            self._size += 1
+            self.parameters[key] = value
+            return True
+        return False
+
+    def getSize(self):
+        return self._size
+
+    
 
 
-def runTests():
-    print("Testing class Parameters:")
-    params = Parameters(count=15, dance='hipHop')
-    assert(params.get() == "dance=hipHop&count=15")
-    print("Passed")
+
+st = {
+    "tagged": "ptvs",
+    "pagesize": "1"
+}
+
+query = StackExchangeQuery(st)
+print(query.parameters.getParameterString())
+print(query.parameters.getSize())

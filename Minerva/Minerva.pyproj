@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Tests.py</StartupFile>
+    <StartupFile>core.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -26,14 +26,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Tests.py">
+    <Compile Include="UnitTests.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="core.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Minerva.py" />
-    <Compile Include="StackExchange.py">
+    <Compile Include="SEWrapperTests.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

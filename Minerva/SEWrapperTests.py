@@ -18,21 +18,32 @@ TAGS = 'ptvs;'
 COUNT = 10
 
 
-def testAdvanced(site, simple=True):
+def testSearch(site, simple=True):
     """ Test the search method from py-stackexchange API. """
-    results = site.search(tagged=TAGS, count=COUNT) if simple else site.search_advanced(tagged=TAGS, count=COUNT)
-    printResults(results)
+    results = site.search(tagged=TAGS, pagesize=COUNT) if simple else site.search_advanced(tagged="ironpython", pagesize=COUNT)
+    return results
+
+def testFilter(site):
+    results = testSearch(site)
+    filterResults(results)
 
 def printResults(results):
     # Iterate over each question within the results object.
     for q in results:
-        print('%8d--%s' % (q.id, q.title))
+        print('%8d--%s' % (q.id, q.title.encode('utf-8')))
+
+def filterResults(results):
+    for q in results:
+        print(q.json)
+    
+    
 
 def main():
     so = stackexchange.Site(stackexchange.StackOverflow, API_KEY, IMPOSE_THROTTLING)
     me = so.user(MY_SO_ID)
-    #testAdvanced(so)
-    testSimple(so)
+    rs = testSearch(so)
+    printResults(rs)
+    #testFilter(so)
 
 
 if __name__ == "__main__":
