@@ -27,11 +27,11 @@ class Parameters(object):
                 self.addParameter(k, v)
         
     def getParameterString(self):
-        """Returns all parameters formatted as a single query string.  If there are no parameters, returns False"""
+        """Returns all parameters formatted as a single query string.  If there are no parameters, returns the empty string"""
         s = ''
         for k, v in self.parameters.items():
             s += '&' + str(k) + "=" + str(v) if s else str(k) + "=" + str(v)
-        return s if s else False
+        return s
 
     def addParameter(self, key, value):
         """Adds a single parameter to parameters.  Returns True if successful and False otherwise.  False indicates the key was already found within parameters."""
