@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import re
 
 # IDEAS - Incorporate all VS features into the bot.
 #       - Answers can have tags so the user can easily understand the contents of each piece of information.
@@ -20,7 +21,7 @@ class StackExchangeQuery(object):
         pass
 
 
-# NOTE:  This class should be standalone, outside of project Minerva (use it as a base class for StackExchange customized methods)
+# NOTE:  This class should be standalone, outside of project Minerva (use it as a base class for StackExchange customized parameter class.)
 class Parameters(object):
     """A class for creating query parameters."""
 
@@ -49,37 +50,65 @@ class Parameters(object):
 
     def addParameter(self, key, value):
         """Adds a single item to parameters.  Returns True if successful and False if the key was already found within parameters."""
-        if not self.parameters.get(key, False):
-            self._tagCount += 1 if key == 'tagged' else 0
+        if not key in self.parameters:
+            if key == 'tagged': [self.addTag(t) for t in value.split(';')]
             self._size += 1
             self.parameters[key] = value
             return True
         return False
 
+    def deleteParameter(self, key):
+        """Deletes the given key from parameters dict.  Returns True on success, otherwise False."""
+        if key in self.parameters:
+            self.parameters.pop(key)
+            self._size -= 1
+            return True
+        return False
+
     def getParameter(self, key):
-        # TODO:  There should be a try/catch here.
-        return self.parameters[key]
+        """Get's the passed in key's associated value.  Returns False if the key is not found."""
+        try:
+            return self.parameters[key]
+        except KeyError:
+            return False
 
     def setParameter(self, key, value):
         # QUESTION:  Is it better to have this function fail if the key does not exist, or add the key/value pair to parameters?
         """Updates the value of a parameter key.  Will add the key/value pair if the key does not exist."""
         self.parameters[key] = value
 
+    def getSize(self):
+        return self._size
+
     def addTag(self, tag):
-        """Tag's are within the same query string parameter, and require a unique method for being added.  Accepts a single string to add to the tagged key.  Returns True on success and False otherwise."""
-        if self._tagCount < MAX_TAGS:
+        """Tag's are within the same query string parameter, and require a unique method for being added.  
+        Accepts a single string to add to the tagged key.  Returns True on success and False otherwise."""
+        if 0 < self._tagCount < MAX_TAGS:
             self.parameters["tagged"] += ";" + tag
+            self._tagCount += 1
+            return True
+        elif 0 == self._tagCount:
+            self.parameters['tagged'] = tag
             self._tagCount += 1
             return True
         return False
 
     def removeTag(self, tag):
-        pass
+        """Removes the given tag from the 'tagged' key.  Will return True on success and False if there is no 'tagged' key or the given tag does not appear in its value string."""
+        try:
+            tags = self.getParameter('tagged').split(';')
+            tags.remove(tag)
+            self.setParameter('tagged', ';'.join(tags))
+            self._tagCount -= 1
+            if not self._tagCount: print("Delete Success:", self.deleteParameter('tagged'))   # Delete the 'tagged' key if there are no more tags.
+            return True
+        # ValueError for when tag is not in tags.  AttributeError for when 'tagged' key doesn't exist.
+        except (ValueError, AttributeError) as e:
+            return False
 
-    def getSize(self):
-        return self._size
 
 
-params = {"tagged":"ptvs"}
-instance = Parameters()
-print(bool(instance.getAsQueryString()))
+
+# Here for testing/debugging.
+params = {"tagged":"ptvs;python"}
+instance = Parameters(params)
