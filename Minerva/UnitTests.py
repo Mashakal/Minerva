@@ -15,7 +15,7 @@ class Test_Core(unittest.TestCase):
     # Class Parameters.
     def test_constructionWithoutParameters(self):
         instance = core.Parameters()
-        self.assertFalse(instance.getParameterString()), "instance.parameters should be empty, but it is not."
+        self.assertFalse(instance.getAsQueryString()), "instance.parameters should be empty, but it is not."
         self.assertEqual(instance.getSize(), 0), "instance.parameters should have 0 keys."
     
     def test_constructionWithParameters(self):
@@ -31,16 +31,23 @@ class Test_Core(unittest.TestCase):
         self.assertDictContainsSubset({"site": "stackoverflow"}, instance.get())
 
     def test_tagCount(self):
-        params = {"tagged":"ptvs"}
+        params = {"tagged":"ptvs;ironpython"}
         instance = core.Parameters(params)
-        self.assertEqual(instance._tagCount, 1)
-        instance.addTag("ironpython")
         self.assertEqual(instance._tagCount, 2)
+        instance.addTag("debug")
+        self.assertEqual(instance._tagCount, 3)
+        instance.removeTag('ptvs')
+        self.assertEqual(2, instance._tagCount)
+        instance.removeTag('debug')
+        instance.removeTag('ironpython')
+        self.assertEqual(0, instance._tagCount)
     
     def test_getParameter(self):
         params = {"tagged":"ptvs"}
         instance = core.Parameters(params)
         self.assertEquals("ptvs", instance.getParameter("tagged"))
+        self.assertFalse(instance.getParameter("site"))
+
 
     def test_addTag(self):
         params = {"tagged":"ptvs"}
@@ -56,7 +63,7 @@ class Test_Core(unittest.TestCase):
 
     def test_getAsQueryString(self):
         instance = core.Parameters()
-        self.assertFalse(bool(instance.getAsQueryString()))
+        self.assertFalse(bool(instance.getAsQueryString())) # Query string should be the empty string, ''.
         instance.addParameter("tagged", "ptvs")
         self.assertEqual("tagged=ptvs", instance.getAsQueryString())
         instance.addTag("python")
@@ -64,6 +71,18 @@ class Test_Core(unittest.TestCase):
         instance.addParameter("site", "stackoverflow")
         self.assertRegex(instance.getAsQueryString(), '(tagged=ptvs;python&site=stackoverflow)|(site=stackoverflow&tagged=ptvs;python)')
 
+    def test_removeTag(self):
+        params = {'tagged':'ptvs;python;debug'}
+        instance = core.Parameters(params)
+        instance.removeTag('ptvs')
+        self.assertEqual(instance.getParameter('tagged'), 'python;debug')
+        instance.removeTag('python')
+        instance.removeTag('debug')
+        self.assertFalse(instance.removeTag('noMoreTagsToRemove'))
+        self.assertFalse(instance.getParameter('tagged'))
+        self.assertEqual(instance._tagCount, 0)
+        print(instance.get())
+        self.assertEqual(instance.getSize(), 0)
         
 
 
