@@ -22,8 +22,9 @@ class Parameters(object):
         """Accepts an arbitrary number of key-value pairs to be added to the parameters object being created."""
         self.parameters = {}
         self._size = 0
-        for k, v in params.items():
-            self.addParameter(k, v)
+        if params:
+            for k, v in params.items():
+                self.addParameter(k, v)
         
     def getParameterString(self):
         """Returns all parameters formatted as a single query string.  If there are no parameters, returns False"""

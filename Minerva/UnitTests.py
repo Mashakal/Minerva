@@ -19,7 +19,6 @@ class Test_StackExchangeQuery(unittest.TestCase):
         params = {"tagged":"ptvs", "pagesize":"1"}
         instance = core.StackExchangeQuery(params)
         self.assertEqual(instance.parameters.getSize(), 2), "instance.parameters should have 2 keys."
-        self.assertEqual(instance.parameters.getParameterString(), 'pagesize=1&tagged=ptvs'), "Parameter string mismatch."
         instance.parameters.addParameter("site", "stackoverflow")
         self.assertEqual(instance.parameters.getSize(), 3), "instance.parameters should have 3 keys."
 
