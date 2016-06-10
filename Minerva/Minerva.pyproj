@@ -6,8 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>core.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <SearchPath>Crow\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Minerva</Name>
@@ -26,6 +25,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Crow\parameters.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Crow\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UnitTests.py">
       <SubType>Code</SubType>
     </Compile>
@@ -39,6 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AppInfo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Crow\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
