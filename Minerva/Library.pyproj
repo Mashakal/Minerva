@@ -39,6 +39,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Minerva.py" />
+    <Compile Include="spider\webrequest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="spider\__init__.py">
       <SubType>Code</SubType>
     </Compile>
