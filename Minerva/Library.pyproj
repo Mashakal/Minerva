@@ -7,7 +7,7 @@
     <ProjectHome>
     </ProjectHome>
     <StartupFile>owl\stackexchangequery.py</StartupFile>
-    <SearchPath>owl\;spider\</SearchPath>
+    <SearchPath>owl\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -38,11 +38,8 @@
     <Compile Include="owl\test_owl.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Minerva.py" />
-    <Compile Include="spider\webrequest.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="spider\__init__.py">
+    <Compile Include="Ideas.txt" />
+    <Compile Include="owl\webrequest.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SEWrapperTests.py">
@@ -53,8 +50,8 @@
     <Content Include="AppInfo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="NewFolder1\" />
     <Folder Include="owl\" />
-    <Folder Include="spider\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
