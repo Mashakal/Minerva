@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import stackexchangeparameters as separams
-
+import webrequest as web
 
 class Query(object):
     BASE_URL = 'https://api.stackexchange.com'
@@ -14,12 +14,12 @@ class Query(object):
         self.setQueryType('questions')
         self.setSite(site)
     
-    def buildQueryString(self, withParams = True):
+    def buildFullQuery(self):
         if withParams: 
             return self.startURL + '/' + self.getQueryType() + '?' + self.parameters.getAsQueryString()
-        else:
-            # Best for use with the requests module.
-            return self.startURL + "/" + self.getQueryType()
+
+    def buildUrl(self):
+        return self.startURL + '/' + self.getQueryType()
 
     def setQueryType(self, type):
         if not type in Query.VALID_QUERY_TYPES:
@@ -37,8 +37,13 @@ class Query(object):
     def getSite(self):
         return self._site
 
+    def go(self):
+        request = web.UrlRequester(self.buildUrl())
+        request.GET(self.parameters.parameters)
+
+
 
 # Here for testing/debugging.
 params = {"tagged":"ptvs;python"}
-instance = Query('stackoverflow', params)
-print(instance.buildQueryString())
+q = Query('stackoverflow', params)
+q.go()
