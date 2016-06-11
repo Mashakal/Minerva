@@ -6,7 +6,7 @@ class Parameters(object):
 
     def __init__(self, params = None):
         """Accepts an optional dictionary whose key/value pairs are to be added to this object's parameters variable."""
-        self.parameters = {}
+        self.parameters = {'site': 'stackoverflow'}
         self._size = 0
         self._tagCount = 0
         if params:
@@ -55,6 +55,7 @@ class Parameters(object):
     def setParameter(self, key, value):
         # QUESTION:  Is it better to have this function fail if the key does not exist, or add the key/value pair to parameters?
         """Updates the value of a parameter key.  Will add the key/value pair if the key does not exist."""
+        # FIX THIS:  So it increments when the key is new.  Might entail creating your own excpetion class and raising that exception in a call to addParameter.
         self.parameters[key] = value
 
     def getSize(self):
@@ -80,7 +81,7 @@ class Parameters(object):
             tags.remove(tag)
             self.setParameter('tagged', ';'.join(tags))
             self._tagCount -= 1
-            if not self._tagCount: print("Delete Success:", self.deleteParameter('tagged'))   # Delete the 'tagged' key if there are no more tags.
+            if not self._tagCount: print(self.deleteParameter('tagged'))   # Delete the 'tagged' key if there are no more tags.
             return True
         # ValueError for when tag is not in tags.  AttributeError for when 'tagged' key doesn't exist.
         except (ValueError, AttributeError):
