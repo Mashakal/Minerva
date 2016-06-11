@@ -6,20 +6,17 @@ class Parameters(object):
 
     def __init__(self, params = None):
         """Accepts an optional dictionary whose key/value pairs are to be added to this object's parameters variable."""
-        self.parameters = {'site': 'stackoverflow'}
+        self.parameters = {}
         self._size = 0
         self._tagCount = 0
+        # Default parameters.
+        self.addParameter('site', 'stackoverflow')
         if params:
             # Make sure all params are strings.
             # QUESTION:  Is this a requirement given python's coercion?
             for k, v in params.items():
                 self.addParameter(str(k), str(v))
-
-    def get(self):
-        # QUESTION:  Is there a way to do this with python?
-        # QUESTION:  Would it be better to return a copy of this dictionary?
-        return self.parameters
-        
+       
     def getAsQueryString(self):
         """Returns all parameters formatted as a single query string.  If there are no parameters, returns the empty string"""
         s = ''
@@ -35,6 +32,8 @@ class Parameters(object):
             self._size += 1
             self.parameters[key] = value
             return True
+        else:
+            self.setParameter(key, value)
         return False
 
     def deleteParameter(self, key):
@@ -53,10 +52,12 @@ class Parameters(object):
             return False
 
     def setParameter(self, key, value):
-        # QUESTION:  Is it better to have this function fail if the key does not exist, or add the key/value pair to parameters?
         """Updates the value of a parameter key.  Will add the key/value pair if the key does not exist."""
-        # FIX THIS:  So it increments when the key is new.  Might entail creating your own excpetion class and raising that exception in a call to addParameter.
-        self.parameters[key] = value
+        if key in self.parameters:
+            self.parameters[key] = value
+            return True
+        else:
+            self.addParameter(key, value)
 
     def getSize(self):
         return self._size
