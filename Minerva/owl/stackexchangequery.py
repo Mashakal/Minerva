@@ -14,8 +14,12 @@ class Query(object):
         self.setQueryType('questions')
         self.setSite(site)
     
-    def buildQueryString(self):
-        return self.startURL + '/' + self.getQueryType() + '?' + self.parameters.getAsQueryString()
+    def buildQueryString(self, withParams = True):
+        if withParams: 
+            return self.startURL + '/' + self.getQueryType() + '?' + self.parameters.getAsQueryString()
+        else:
+            # Best for use with the requests module.
+            return self.startURL + "/" + self.getQueryType()
 
     def setQueryType(self, type):
         if not type in Query.VALID_QUERY_TYPES:
