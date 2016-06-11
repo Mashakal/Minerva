@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from owl import stackexchangeparameters as separams
+import stackexchangeparameters as separams
 
 
 class Query(object):
