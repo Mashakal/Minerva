@@ -26,24 +26,29 @@ class Test_Owl(unittest.TestCase):
         self.assertEqual(instance.getSite(), 'stackoverflow')
         self.assertRaises(ValueError, sequery.Query, 'notAValidSite')
 
+    def test_buildUrl(self):
+        instance = sequery.Query('stackoverflow')
+        self.assertEqual('https://api.stackexchange.com/2.2/questions', instance.buildUrl())
+
     
     # Class Parameters.
+    # NOTE:  'site':'stackoverflow' is a default key/value in dict separams.Parameters.parameters
     def test_constructionWithoutParameters(self):
         instance = separams.Parameters()
-        self.assertFalse(instance.getAsQueryString()), "instance.parameters should be Falsy, but it is not."
-        self.assertEqual(instance.getSize(), 0), "instance.parameters should have 0 keys."
+        self.assertEqual(instance.getSize(), 1), "instance.parameters should have default 'site' key."
     
     def test_constructionWithParameters(self):
         params = {"tagged":"ptvs", "pagesize":"1"}
         instance = separams.Parameters(params)
-        self.assertEqual(instance.getSize(), 2), "instance.parameters should have 2 keys."
+        self.assertEqual(instance.getSize(), 3), "instance.parameters should have 3 keys."
 
     def test_addParameter(self):
         params = {"tagged":"ptvs", "pagesize":"1"}
         instance = separams.Parameters(params)
-        instance.addParameter("site", "stackoverflow")
-        self.assertEqual(instance.getSize(), 3), "instance.parameters should have 3 keys."
-        self.assertDictContainsSubset({"site": "stackoverflow"}, instance.get())
+        self.assertEqual(3, instance.getSize())
+        instance.addParameter("site", "meta")  # 'site' explicitly set here, parameter count is still 3...
+        self.assertEqual(instance.getSize(), 3), "instance.parameters should have 3 keys."  # ...as proven here.
+        self.assertDictContainsSubset({"site": "meta"}, instance.parameters)
 
     def test_tagCount(self):
         params = {"tagged":"ptvs;ironpython"}
@@ -61,7 +66,7 @@ class Test_Owl(unittest.TestCase):
         params = {"tagged":"ptvs"}
         instance = separams.Parameters(params)
         self.assertEquals("ptvs", instance.getParameter("tagged"))
-        self.assertFalse(instance.getParameter("site"))
+        self.assertEqual('stackoverflow', instance.getParameter("site"))
 
 
     def test_addTag(self):
@@ -78,12 +83,8 @@ class Test_Owl(unittest.TestCase):
 
     def test_getAsQueryString(self):
         instance = separams.Parameters()
-        self.assertFalse(bool(instance.getAsQueryString())) # Query string should be the empty string, ''.
         instance.addParameter("tagged", "ptvs")
-        self.assertEqual("tagged=ptvs", instance.getAsQueryString())
         instance.addTag("python")
-        self.assertEqual(instance.getAsQueryString(), 'tagged=ptvs;python')
-        instance.addParameter("site", "stackoverflow")
         self.assertRegex(instance.getAsQueryString(), '(tagged=ptvs;python&site=stackoverflow)|(site=stackoverflow&tagged=ptvs;python)')
 
     def test_removeTag(self):
@@ -96,8 +97,7 @@ class Test_Owl(unittest.TestCase):
         self.assertFalse(instance.removeTag('noMoreTagsToRemove'))
         self.assertFalse(instance.getParameter('tagged'))
         self.assertEqual(instance._tagCount, 0)
-        print(instance.get())
-        self.assertEqual(instance.getSize(), 0)
+        self.assertEqual(instance.getSize(), 1)
         
 
 
