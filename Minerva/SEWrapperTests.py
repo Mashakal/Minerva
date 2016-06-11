@@ -2,6 +2,7 @@
 
 import sys
 import stackexchange    # A wrapper around the actual StackExchange.com API.
+import owl              # Customized query items.
 
 # TODO - You can only have 5 tags per query.
 
@@ -15,11 +16,12 @@ IMPOSE_THROTTLING = True    # Tell the stackexchange API to throttle.
 
 # Query constants, mostly for testing.
 TAGS = 'ptvs;'  
-COUNT = 10
+COUNT = '2'
 
 
 def testSearch(site, simple=True):
     """ Test the search method from py-stackexchange API. """
+    # BUG:  pagesize=Count isn't working.
     results = site.search(tagged=TAGS, pagesize=COUNT) if simple else site.search_advanced(tagged="ironpython", pagesize=COUNT)
     return results
 
