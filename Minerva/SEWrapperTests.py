@@ -32,12 +32,7 @@ def testFilter(site):
 def printResults(results):
     # Iterate over each question within the results object.
     for q in results:
-        print('%8d--%s' % (q.id, q.title.encode('utf-8')))
-
-def filterResults(results):
-    for q in results:
-        print(q.json)
-    
+        print('%8d--%s' % (q.id, q.title.encode('utf-8')))    
     
 
 def main():

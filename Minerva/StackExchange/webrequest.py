@@ -6,13 +6,12 @@ import gzip
 import requests
 import sys
 
+from stackexchangeresponse import * # only holds the StackExchangeResponse class definition.
+
 
 class UrlRequester(object):
 
     def __init__(self, url):
-        self._url = url
-
-    def setUrl(self, url):
         self._url = url
 
     def send(self):
@@ -41,38 +40,19 @@ class UrlRequester(object):
         else:
             # Handle cases where proxy server has already decompressed.
             actual_data = req_data
-
         # Check for errors.
         #if code != 200:
-
-
         # Cache it.
             #self._cache(req_object)
 
-    def GET(self, params = None):
-        r = requests.get(self._url, params = params)
-        print(r.json())
-        print("Test.")
+    def GET(self):
+        """Uses the requests package to submit an HTTP request."""
+        content = requests.get(self._url)
+        if content.status_code != 200:
+            print("There was a problem with the get request.  Error code is: %s." % content.status_code)
+            return False
+        else:
+            print("The status code is %s." % content.status_code)
+        return content
 
-
-    def read(self):
-        pass
-
-    def __log(self):
-        """Log a number of items about this query."""
-        # tags, query - should we cache as well
-        raise NotImplementedError
-
-    def __cache(self):
-        raise NotImplementedError
-
-
-
-
-
-# Testing and Debugging.
-def main():
-    pass
-
-if __name__ == "__main__":
-    sys.exit(int(main() or 0))
+# EXAMPLE QUERY STRING:  https://api.stackexchange.com/2.2/questions?order=desc&sort=activity&site=stackoverflow

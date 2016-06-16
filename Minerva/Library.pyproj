@@ -6,8 +6,8 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>owl\stackexchangequery.py</StartupFile>
-    <SearchPath>owl\</SearchPath>
+    <StartupFile>Minerva.py</StartupFile>
+    <SearchPath>StackExchange\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -26,20 +26,26 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="owl\stackexchangeparameters.py">
+    <Compile Include="Minerva.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="owl\stackexchangequery.py">
+    <Compile Include="StackExchange\querystring.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="owl\__init__.py">
+    <Compile Include="StackExchange\stackexchangequery.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="owl\test_owl.py">
+    <Compile Include="StackExchange\stackexchangeresponse.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StackExchange\test_query.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StackExchange\test_querystring.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Ideas.txt" />
-    <Compile Include="owl\webrequest.py">
+    <Compile Include="StackExchange\webrequest.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SEWrapperTests.py">
@@ -50,8 +56,7 @@
     <Content Include="AppInfo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="NewFolder1\" />
-    <Folder Include="owl\" />
+    <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
