@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Minerva.py</StartupFile>
+    <StartupFile>AskLuis.py</StartupFile>
     <SearchPath>StackExchange\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -27,6 +27,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Minerva.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AskLuis.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StackExchange\querystring.py">

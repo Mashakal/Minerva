@@ -1,5 +1,6 @@
 # Constants.
 MAX_TAGS = 5    # Per the stack exchange API.
+MAX_PAGE_SIZE = 100
 
 class StackExchangeQueryString(object):
     """A class for creating a StackExchange API query string."""
@@ -42,6 +43,7 @@ class StackExchangeQueryString(object):
         if not key in self.parameters:
             # TODO:  Make this better, we are currently overriding the additions a few lines down and addTag in this context is simply counting the number of tags.
             if key == 'tagged': [self.addTag(t) for t in value.split(';')]
+            elif key == 'pagesize': self.__validatePageSize(int(value))
             self._size += 1
             self.parameters[key] = value
             return True
@@ -91,8 +93,11 @@ class StackExchangeQueryString(object):
 
     def addTags(self, tags):
         """Add a list of tags to the query string."""
-        for tag in tags:
-            self.addTag(tag)
+        if type(tags) is str:
+            self.addTag(tags)
+        else:
+            for tag in tags:
+                self.addTag(tag)
 
     def removeTag(self, tag):
         """Removes the given tag from the 'tagged' key.  Will return True on success and False if there 
@@ -107,3 +112,8 @@ class StackExchangeQueryString(object):
         # ValueError for when tag is not in tags.  AttributeError for when 'tagged' key doesn't exist.
         except (ValueError, AttributeError):
             return False
+
+
+    def __validatePageSize(self, num):
+        if not 0 < num <= MAX_PAGE_SIZE:
+            raise ValueError('Pagesize must be between 1 and 100.')

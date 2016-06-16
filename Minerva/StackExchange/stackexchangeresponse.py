@@ -33,14 +33,14 @@ class StackExchangeResponse(object):
 
 
 class StackExchangeResult(object):
-    """An base class for defining common response item methods and attributes."""
+    """A base class for defining common response item methods and attributes."""
 
     def __init__(self, dic):
         self._dic = dic   # Dictionary holding this item's contents.
     
     def get(self):
         return self._dic
-
+        
     def getValue(self, key):
         return self._dic[key]
 
