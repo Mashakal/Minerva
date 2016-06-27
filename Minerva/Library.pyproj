@@ -6,8 +6,8 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>AskLuis.py</StartupFile>
-    <SearchPath>StackExchange\</SearchPath>
+    <StartupFile>luis\LuisPlayground.py</StartupFile>
+    <SearchPath>StackExchange\;core\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -26,6 +26,18 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="core\Essentials.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="luis\LuisClient.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="luis\LuisInterpreter.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="luis\LuisPlayground.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Minerva.py">
       <SubType>Code</SubType>
     </Compile>
@@ -59,6 +71,8 @@
     <Content Include="AppInfo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="luis\" />
+    <Folder Include="core\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>

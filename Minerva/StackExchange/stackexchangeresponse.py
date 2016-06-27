@@ -1,14 +1,9 @@
-#!user/bin/env python
+#!usr/bin/env python
 from functools import wraps
 import sys
+from essentials import printSmart
 
-def enterAndExitLabels(func):
-    @wraps(func)
-    def wrap(*args):
-        print("Entering", func.__module__ +':'+ func.__name__)
-        func(*args)
-        print("Exiting", func.__module__ +':'+ func.__name__)
-    return wrap
+
 
 
 class StackExchangeResponse(object):
@@ -21,12 +16,11 @@ class StackExchangeResponse(object):
             self._results.append(StackExchangeResult(q))
         self.resultCount = len(self._results)
         
-
     def printResult(self, resultIndex):
         self._results[resultIndex].getAllValues()
 
     def printAll(self):
-        StackExchangeResult.printSmart(self._json)
+        printSmart(self._json)
 
     def getResult(self, resultIndex):
         return self._results[resultIndex]
@@ -47,21 +41,4 @@ class StackExchangeResult(object):
     def printAllPairs(self):
         for key in self._dic:
             print(key.upper()),
-            self.printSmart(self._dic[key], depth=1)
-
-    @classmethod
-    def printSmart(self, item, depth = 0):
-        if type(item) in [str, int, float, bool]:
-            print(' ' * (depth * 3) + str(item).upper())
-            return
-        newDepth = depth + 1
-        if isinstance(item, list):
-            for el in item:
-                self.printSmart(el, depth)
-        elif isinstance(item, dict):
-            for key in item:
-                print(' ' * (depth * 3) + str(key).upper())
-                self.printSmart(item[key], depth=newDepth)
-        else:
-            s = 'printSmart isn\'t sure what to do with the type: ' + str(type(item))
-            self.printSmart(s, depth=depth)
+            printSmart(self._dic[key], depth=1)
