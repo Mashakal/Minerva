@@ -7,7 +7,7 @@
     <ProjectHome>
     </ProjectHome>
     <StartupFile>luis\LuisPlayground.py</StartupFile>
-    <SearchPath>StackExchange\;core\</SearchPath>
+    <SearchPath>StackExchange\;Debugging\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -26,7 +26,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="core\Essentials.py">
+    <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="luis\LuisClient.py">
@@ -72,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="luis\" />
-    <Folder Include="core\" />
+    <Folder Include="Debugging\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>

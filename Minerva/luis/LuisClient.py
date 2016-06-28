@@ -1,6 +1,6 @@
 from projectoxford.luis import LuisClient
 
-class HelpBotLuisClient(LuisClient):
+class BotLuisClient(LuisClient):
     def __init__(self, url):
         return super().__init__(url)
 

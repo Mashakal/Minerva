@@ -10,8 +10,15 @@ class AbstractLuisInterpreter(object):
         pass
 
 
+class BaseLuisInterpreter(AbstractLuisInterpreter):
+    """A base class for all interpreters."""
+    def __init__(self, **kwargs):
+        return super().__init__(**kwargs)
 
-
+    def analyze(self):
+        """Analyzes the json returned from a call to the base LuisClient class's method, query_raw."""
+        # Code to analyze goes here.
+        raise NotImplementedError
 
 
 class PythonLuisInterpreter(AbstractLuisInterpreter):
