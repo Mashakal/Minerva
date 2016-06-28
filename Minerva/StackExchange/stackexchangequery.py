@@ -19,7 +19,7 @@ class StackExchangeQuery(object):
             'scheme': 'https',
             'netloc': StackExchangeQuery._netloc,
             'path': None,
-            'params': None,   # Do not confuse this with query paramters, which should be put with query as the key.  See urllib.parse module for more.
+            'params': None,   # Do not confuse this with query string parameters, which should be put with query as the key.  See urllib.parse module for more.
             'query': None,
             'fragment': None
         }
