@@ -64,11 +64,12 @@ LINKS = {
     "wfastcgi (on PyPI)": "https://pypi.python.org/pypi/wfastcgi"
 }
 
+# TODO:  Make updating this map with new synonyms/triggers automatic.
 KEY_MAP = {
     "Debugging": {
         'synonyms': ['debug', 'debugger', 'debugging', 'debuggor'],
         'keywords': {
-            'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal']
+            'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
         }
     }
 }
@@ -81,7 +82,7 @@ def literalToKey(literal):
     for k, v in KEY_MAP.items():
         if literal.lower() in v['synonyms']:
             return k
-    return 'WIKI'
+    return None
 
 def filterWithKeyword(feature, keyword):
     """Determine if a previously identified feature has more specific 
@@ -98,10 +99,10 @@ def getRefinedKeys(keyFeature, keywords):
     """Returns a list of refined key features, based on any keywords that were
     found in the original query.
     """
+    refinedKeys = []
     if 0 < len(keywords):
-        refinedKeys = []
         for word in keywords:
             filtered = filterWithKeyword(keyFeature, word)
             if filtered:
                 refinedKeys.append(filtered)
-    return refinedKeys if 0 < len(refinedKeys) else None
+    return refinedKeys
