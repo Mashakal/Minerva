@@ -71,7 +71,9 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
     def evaluateFeatureQuery(self, literals, types, keywords):
         """Handles the processing of a query that contains a Visual Studio Feature entity.
         """
+        # Get the text from the query that was labeled as a feature.
         feature = self.literalFromType("Visual Studio Feature", literals, types)
+        # Determine the key (from the PTVS.LINKS dict) for this feature.
         keyFeature = PTVS.literalToKey(feature)
         if keyFeature:
             print("I can definitely help you with {0}.\n".format(keyFeature.lower()))
@@ -82,9 +84,10 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
                 r = input("Are you asking about {0}? Y/N".format(value))
                 if 'Y' == r.upper():
                      refined = PTVS.LINKS[keyFeature][value]
+                     break
         if refined:
             if type(refined) is dict:
-                keys = refined.keys()
+                keys = list(refined.keys())
                 items = refined.values()
                 print("Okay, which is more pertinent to what you're looking for?")
                 for i in range(len(items)):

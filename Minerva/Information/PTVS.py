@@ -74,7 +74,7 @@ KEY_MAP = {
 }
 
 def literalToKey(literal):
-    """Returns the appropriate key value for links when given a literal.
+    """Returns the appropriate key for links when given a literal.
     For example, if the literal passed in is "debug" it will map this to
     "Debugging" for extraction of information out of LINKS.
     """
@@ -85,8 +85,8 @@ def literalToKey(literal):
 
 def filterWithKeyword(feature, keyword):
     """Determine if a previously identified feature has more specific 
-    context in relation to 'keyword'.  Will return a tuple of keys for
-    which to extract a link from LINKS.
+    context in relation to 'keyword'.  Will return a key for
+    which to extract a link corresponding feature's link from LINKS.
     """
     keywords = KEY_MAP[feature]['keywords']
     for k, v in keywords.items():
@@ -102,5 +102,6 @@ def getRefinedKeys(keyFeature, keywords):
         refinedKeys = []
         for word in keywords:
             filtered = filterWithKeyword(keyFeature, word)
-            if filtered: refinedKeys.append(filtered)
-    return refinedKeys if len(refinedKeys) > 0 else None
+            if filtered:
+                refinedKeys.append(filtered)
+    return refinedKeys if 0 < len(refinedKeys) else None
