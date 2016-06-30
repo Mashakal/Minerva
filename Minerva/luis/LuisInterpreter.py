@@ -77,12 +77,14 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             print("I suggest you visit this site: {0}".format(v))
 
     def findPathToLink(self, literals, types, keywords):
-        """Attempts to find the key feature and any subcategory of that feature
-        and returns the link for that feature/subfeature."""
+        """A meaty helper function for _getHelp.  Attempts to find the key 
+        feature and any subcategory of that feature and returns the link 
+        for that feature/subfeature.
+        """
 
         def determineKeyFeature(literals, types):
             """A helper function for findPathToLink.  Determines the key feature
-            for which the user is querying.  TODO: Will validate with the user when
+            for which the user is querying.  Will validate with the user when
             more than one feature is found.
             """
             features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
@@ -122,7 +124,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             return None
 
         keyFeature = subkey = None
-        pathToLink = [] # Holds the path to the link in terms of keys within PTVS.LINKS.
+        pathToLink = [] # Holds the path to the link in terms of keys within the PTVS.LINKS dict.
 
         # Determine the root key.
         keyFeature = determineKeyFeature(literals, types)
@@ -134,6 +136,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             if not subkey:
                 print("I can definitely help you with {0}.".format(keyFeature))
                 if type(PTVS.LINKS[keyFeature]) is not str:
+                    # TODO:  This is risky, let's make sure it doesn't fail.
                     pathToLink.append("BASE_URL")
                 return pathToLink
             else:
@@ -167,11 +170,6 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             print("There was a problem determining your feature.  I'll send you to the wiki.")
             # TODO: LOG
             return ['WIKI']
-
-
-    def literalFromType(self, type, literals, types):
-        """Returns the literal string for the first of 'type' found within types."""
-        return [literals[i] for t, i in enumerate(types) if t == type]
 
     def _undefined(self):
         return "I'm sorry, I don't know what you're asking."
