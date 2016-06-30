@@ -38,8 +38,8 @@ def getFileSize(filename):
     except FileNotFoundError:
         return 0
 
-# Not finished.
 def loadDebugJson(filename, fetchFunction, query=None):
+# Not finished.
     """Loads json from the file specified by 'filename'.  If the file doesn't exist, makes a call to 
     fetchFunction and expects a json object in response.  Will write the newly obtained json to 
     filename."""
