@@ -67,8 +67,8 @@ LINKS = {
 # TODO:  Make updating this map with new synonyms/triggers automatic.
 KEY_MAP = {
     "Debugging": {
-        'synonyms': ['debug', 'debugger', 'debugging', 'debuggor'],
-        'keywords': {
+        'Triggers': ['debug', 'debugger', 'debugging', 'debuggor'],
+        'Subkeys': {
             'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
         }
     }
@@ -80,7 +80,7 @@ def literalToKey(literal):
     "Debugging" for extraction of information out of LINKS.
     """
     for k, v in KEY_MAP.items():
-        if literal.lower() in v['synonyms']:
+        if literal.lower() in v['Triggers']:
             return k
     return None
 
@@ -89,15 +89,16 @@ def filterWithKeyword(feature, keyword):
     context in relation to 'keyword'.  Will return a key for
     which to extract a link corresponding feature's link from LINKS.
     """
-    keywords = KEY_MAP[feature]['keywords']
-    for k, v in keywords.items():
+    subkeys = KEY_MAP[feature]['Subkeys']
+    for k, v in subkeys.items():
         if keyword in v:
             return k
     return None
 
 def getRefinedKeys(keyFeature, keywords):
     """Returns a list of refined key features, based on any keywords that were
-    found in the original query.
+    found in the original query.  The empty list is returned when no subkeys
+    are found.
     """
     refinedKeys = []
     if 0 < len(keywords):

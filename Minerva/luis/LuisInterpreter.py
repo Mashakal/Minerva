@@ -2,8 +2,8 @@ from abc import ABCMeta, abstractmethod
 from Essentials import enterAndExitLabels
 import PTVS
 
-YES_WORDS = ['yes', 'yeah', 'okay', 'y', 'ya', 'right', 'correct', 'that\'s right', 'sure', 'for sure']
-NO_WORD = ['no', 'n', 'nah', 'nope', 'negative']
+YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', 'that\'s right', 'sure', 'for sure']
+NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
 
 class AbstractLuisInterpreter(object):
     """An interface for creating extension specific interpreters for Visual Studio."""
@@ -50,11 +50,9 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             'Get Help': self._getHelp,
             'undefined': self._undefined
         }
-        self.response = ""
 
     def analyze(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
-        self.response = ""
         intent = self.getTopScoringIntent(json)
         return self._STRATAGIES[intent](json)
 
@@ -78,8 +76,9 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
 
     def findPathToLink(self, literals, types, keywords):
         """A meaty helper function for _getHelp.  Attempts to find the key 
-        feature and any subcategory of that feature and returns the link 
-        for that feature/subfeature.
+        feature and any subcategory of that feature and returns a list of
+        keys that will lead to the link for the feature requested by the
+        user.
         """
 
         def determineKeyFeature(literals, types):

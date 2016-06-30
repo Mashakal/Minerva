@@ -5,14 +5,20 @@ import sys
 
 
 # Constants
-APP_ID = '3b58ccb7-4165-4af0-9759-b028c73ce4f9'     # For HelpBot.
 SUBSCRIPTION_KEY = '7814a9388ef14151981f2037000ea288'   # Alex Neuenkirk's subscription key.
-LUIS_URL = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
-            APP_ID + '&subscription-key=' + SUBSCRIPTION_KEY + '&q='
+APP_IDS = {
+    'HelpBot': '3b58ccb7-4165-4af0-9759-b028c73ce4f9', # Intents are:  Get Help - Entities are:  Visual Studio Feature, Language, Keyword, Auxiliary
+    'HelpBot2.0': 'somethinghere'   # Intents are: ...  - Entities are:  
+}
+
 # Debugging items.
 JSON_FILE = "sampleQueryResults.json"
 JSON_FILE = "errorwhiletryingtoattachdebuger.json"
 
+def buildLuisUrl(appName):
+    s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
+            APP_IDS[appName] + '&subscription-key=' + SUBSCRIPTION_KEY + '&q='
+    return s
 
 def sendQuery(client, result='standard'):
     #q = "Error while trying to attach debugger from PTVS"
@@ -34,7 +40,7 @@ def loadDebugJson(client, filename):
 
 def main():
     interp = PythonLuisInterpreter()    # Interprets a LUIS json query response.
-    lc = BotLuisClient(LUIS_URL)    # Handles queries to the LUIS client.
+    lc = BotLuisClient(buildLuisUrl('HelpBot'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
     j = sendQuery(lc, 'v')

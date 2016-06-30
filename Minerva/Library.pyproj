@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>luis\LuisPlayground.py</StartupFile>
+    <StartupFile>Luis\LuisPlayground.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -32,19 +32,19 @@
     <Compile Include="Information\PTVS.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="luis\LuisClient.py">
+    <Compile Include="Luis\LuisClient.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="luis\LuisInterpreter.py">
+    <Compile Include="Luis\LuisInterpreter.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="luis\LuisPlayground.py">
+    <Compile Include="Luis\LuisPlayground.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Minerva.py">
+    <Compile Include="AlmostTrash\Minerva.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AskLuis.py">
+    <Compile Include="AlmostTrash\AskLuis.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StackExchange\querystring.py">
@@ -66,7 +66,7 @@
     <Compile Include="StackExchange\webrequest.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SEWrapperTests.py">
+    <Compile Include="AlmostTrash\SEWrapperTests.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -74,9 +74,10 @@
     <Content Include="AppInfo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="luis\" />
+    <Folder Include="Luis\" />
     <Folder Include="Debugging\" />
     <Folder Include="Information\" />
+    <Folder Include="AlmostTrash\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>
