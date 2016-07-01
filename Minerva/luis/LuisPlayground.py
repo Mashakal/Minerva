@@ -7,8 +7,8 @@ import sys
 # Constants
 SUBSCRIPTION_KEY = '7814a9388ef14151981f2037000ea288'   # Alex Neuenkirk's subscription key.
 APP_IDS = {
-    'HelpBot': '3b58ccb7-4165-4af0-9759-b028c73ce4f9', # Intents are:  Get Help - Entities are:  Visual Studio Feature, Language, Keyword, Auxiliary
-    'HelpBot2.0': 'somethinghere'   # Intents are: ...  - Entities are:  
+    'HelpBot': '3b58ccb7-4165-4af0-9759-b028c73ce4f9',
+    'HelpBot2.0': 'somethinghere'
 }
 
 # Debugging items.
