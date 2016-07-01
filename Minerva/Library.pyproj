@@ -29,6 +29,9 @@
     <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Information\InfoManager.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Information\PTVS.py">
       <SubType>Code</SubType>
     </Compile>
@@ -72,6 +75,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AppInfo.txt" />
+    <Content Include="Information\Readme.txt" />
+    <Content Include="Luis\SchemaNotes.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Luis\" />
