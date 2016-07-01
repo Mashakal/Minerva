@@ -1,3 +1,4 @@
+from InfoManager import InfoManager
 from abc import ABCMeta, abstractmethod
 from Essentials import enterAndExitLabels
 import PTVS
@@ -38,14 +39,16 @@ class BaseLuisInterpreter(AbstractLuisInterpreter):
         return [e['type'] for e in json['entities']]
 
     @classmethod
-    def getAllLiteralsOfType(cls, type, json):
-        return [e['entity'] for e in json['entities'] if e['type'] == type]
+    def getAllLiteralsOfType(cls, t, json):
+        return [e['entity'] for e in json['entities'] if e['type'] == t]
 
-class PythonLuisInterpreter(BaseLuisInterpreter):
-    """Interprets quetions for the Python Tools for Visual Studio help bot."""
-
-    def __init__(self):
+class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
+    """Interprets questions for language specific project systems of Visual Studio
+    as a part of a help bot.
+    """
+    def __init__(self, system):
         # Map an intent to a function.
+        self.info = InfoManager(system)
         self._STRATAGIES = {
             'Get Help': self._getHelp,
             'undefined': self._undefined
@@ -69,7 +72,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
         print()
         if "Visual Studio Feature" in types:
             keyPath = self.findPathToLink(literals, types, keywords)
-            v = PTVS.LINKS[keyPath[0]]
+            v = self.info.links[keyPath[0]]
             for i in range(1, len(keyPath)):
                 v = v[keyPath[i]]
             print("I suggest you visit this site: {0}".format(v))
@@ -89,7 +92,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
             if len(features) > 1:
                 for feature in features:
-                    keyFeature = PTVS.literalToKey(feature)
+                    keyFeature = self.info.literalToKey(feature)
                     if keyFeature:
                         ans = input("Are you asking about {0}?\n>>> ".format(keyFeature.lower()))
                         if ans.lower() in YES_WORDS:
@@ -98,7 +101,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
                         print("I am having trouble mapping {0}.".format(feature))
                         # TODO: LOG
             elif len(features) == 1:
-                keyFeature = PTVS.literalToKey(features[0])
+                keyFeature = self.info.literalToKey(features[0])
                 if keyFeature:
                     return keyFeature
 
@@ -108,7 +111,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             return "WIKI"   # Default to the wiki's page when mapping to a feature fails.
 
         def determineSubKey(keyFeature, keywords):
-            refinedKeys = PTVS.getRefinedKeys(keyFeature, keywords)
+            refinedKeys = self.info.getRefinedKeys(keyFeature, keywords)
             if refinedKeys:
                 if 1 < len(refinedKeys):
                     for subkey in refinedKeys:
@@ -134,7 +137,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             subkey = determineSubKey(keyFeature, keywords)
             if not subkey:
                 print("I can definitely help you with {0}.".format(keyFeature))
-                if type(PTVS.LINKS[keyFeature]) is not str:
+                if type(self.info.links[keyFeature]) is not str:
                     # TODO:  This is risky, let's make sure it doesn't fail.
                     pathToLink.append("BASE_URL")
                 return pathToLink
@@ -142,7 +145,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
                 pathToLink.append(subkey)
                 print("I can definitely help you with {0}.".format(subkey))
                 # Determine if any more filtering needs done (do our current keys point to a url?)
-                v = PTVS.LINKS[pathToLink[0]]
+                v = self.info.links[pathToLink[0]]
                 # Find the last value we have a path to.
                 for i in range(1, len(pathToLink)):
                     v = v[pathToLink[i]]

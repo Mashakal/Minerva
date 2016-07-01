@@ -1,4 +1,4 @@
-from LuisInterpreter import PythonLuisInterpreter
+from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
 from Essentials import printSmart, getFileSize, jsonToFile, fileToJson
 import sys
@@ -39,7 +39,7 @@ def loadDebugJson(client, filename):
 
 
 def main():
-    interp = PythonLuisInterpreter()    # Interprets a LUIS json query response.
+    interp = ProjectSystemLuisInterpreter('ptvs')    # Interprets a LUIS json query response.
     lc = BotLuisClient(buildLuisUrl('HelpBot'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
