@@ -66,43 +66,25 @@ LINKS = {
 
 # TODO:  Make updating this map with new synonyms/triggers automatic.
 KEY_MAP = {
+    "Installation": {
+        "Triggers": ['install', 'installation', 'instalation', 'installs']
+    },
     "Debugging": {
-        'synonyms': ['debug', 'debugger', 'debugging', 'debuggor'],
-        'keywords': {
+        'Triggers': ['debug', 'debugger', 'debugging', 'debuggor'],
+        'Subkeys': {
             'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
         }
+    },
+    "Feature Matrix": {
+        'Triggers': ['feature matrix', 'features']
+    },
+    'Overview Videos': {
+        'Triggers': ['overview videos', 'video', 'videos', 'overview']
+    },
+    'Contributing': {
+        'Triggers': ['contributing', 'contribute', 'pull request']
+    },
+    'Build Instructions': {
+        'Triggers': ['build instructions', 'building', 'build']
     }
 }
-
-def literalToKey(literal):
-    """Returns the appropriate key for links when given a literal.
-    For example, if the literal passed in is "debug" it will map this to
-    "Debugging" for extraction of information out of LINKS.
-    """
-    for k, v in KEY_MAP.items():
-        if literal.lower() in v['synonyms']:
-            return k
-    return None
-
-def filterWithKeyword(feature, keyword):
-    """Determine if a previously identified feature has more specific 
-    context in relation to 'keyword'.  Will return a key for
-    which to extract a link corresponding feature's link from LINKS.
-    """
-    keywords = KEY_MAP[feature]['keywords']
-    for k, v in keywords.items():
-        if keyword in v:
-            return k
-    return None
-
-def getRefinedKeys(keyFeature, keywords):
-    """Returns a list of refined key features, based on any keywords that were
-    found in the original query.
-    """
-    refinedKeys = []
-    if 0 < len(keywords):
-        for word in keywords:
-            filtered = filterWithKeyword(keyFeature, word)
-            if filtered:
-                refinedKeys.append(filtered)
-    return refinedKeys

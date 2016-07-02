@@ -1,9 +1,10 @@
+from InfoManager import InfoManager
 from abc import ABCMeta, abstractmethod
 from Essentials import enterAndExitLabels
 import PTVS
 
-YES_WORDS = ['yes', 'yeah', 'okay', 'y', 'ya', 'right', 'correct', 'that\'s right', 'sure', 'for sure']
-NO_WORD = ['no', 'n', 'nah', 'nope', 'negative']
+YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', 'that\'s right', 'sure', 'for sure']
+NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
 
 class AbstractLuisInterpreter(object):
     """An interface for creating extension specific interpreters for Visual Studio."""
@@ -38,23 +39,23 @@ class BaseLuisInterpreter(AbstractLuisInterpreter):
         return [e['type'] for e in json['entities']]
 
     @classmethod
-    def getAllLiteralsOfType(cls, type, json):
-        return [e['entity'] for e in json['entities'] if e['type'] == type]
+    def getAllLiteralsOfType(cls, t, json):
+        return [e['entity'] for e in json['entities'] if e['type'] == t]
 
-class PythonLuisInterpreter(BaseLuisInterpreter):
-    """Interprets quetions for the Python Tools for Visual Studio help bot."""
-
-    def __init__(self):
+class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
+    """Interprets questions for language specific project systems of Visual Studio
+    as a part of a help bot.
+    """
+    def __init__(self, system):
         # Map an intent to a function.
+        self.info = InfoManager(system)
         self._STRATAGIES = {
             'Get Help': self._getHelp,
             'undefined': self._undefined
         }
-        self.response = ""
 
     def analyze(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
-        self.response = ""
         intent = self.getTopScoringIntent(json)
         return self._STRATAGIES[intent](json)
 
@@ -71,14 +72,17 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
         print()
         if "Visual Studio Feature" in types:
             keyPath = self.findPathToLink(literals, types, keywords)
-            v = PTVS.LINKS[keyPath[0]]
+            v = self.info.links[keyPath[0]]
             for i in range(1, len(keyPath)):
                 v = v[keyPath[i]]
             print("I suggest you visit this site: {0}".format(v))
 
     def findPathToLink(self, literals, types, keywords):
-        """Attempts to find the key feature and any subcategory of that feature
-        and returns the link for that feature/subfeature."""
+        """A meaty helper function for _getHelp.  Attempts to find the key 
+        feature and any subcategory of that feature and returns a list of
+        keys that will lead to the link for the feature requested by the
+        user.
+        """
 
         def determineKeyFeature(literals, types):
             """A helper function for findPathToLink.  Determines the key feature
@@ -88,7 +92,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
             if len(features) > 1:
                 for feature in features:
-                    keyFeature = PTVS.literalToKey(feature)
+                    keyFeature = self.info.literalToKey(feature)
                     if keyFeature:
                         ans = input("Are you asking about {0}?\n>>> ".format(keyFeature.lower()))
                         if ans.lower() in YES_WORDS:
@@ -97,7 +101,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
                         print("I am having trouble mapping {0}.".format(feature))
                         # TODO: LOG
             elif len(features) == 1:
-                keyFeature = PTVS.literalToKey(features[0])
+                keyFeature = self.info.literalToKey(features[0])
                 if keyFeature:
                     return keyFeature
 
@@ -107,7 +111,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             return "WIKI"   # Default to the wiki's page when mapping to a feature fails.
 
         def determineSubKey(keyFeature, keywords):
-            refinedKeys = PTVS.getRefinedKeys(keyFeature, keywords)
+            refinedKeys = self.info.getRefinedKeys(keyFeature, keywords)
             if refinedKeys:
                 if 1 < len(refinedKeys):
                     for subkey in refinedKeys:
@@ -122,7 +126,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             return None
 
         keyFeature = subkey = None
-        pathToLink = [] # Holds the path to the link in terms of keys within PTVS.LINKS.
+        pathToLink = [] # Holds the path to the link in terms of keys within the PTVS.LINKS dict.
 
         # Determine the root key.
         keyFeature = determineKeyFeature(literals, types)
@@ -133,14 +137,15 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             subkey = determineSubKey(keyFeature, keywords)
             if not subkey:
                 print("I can definitely help you with {0}.".format(keyFeature))
-                if type(PTVS.LINKS[keyFeature]) is not str:
+                if type(self.info.links[keyFeature]) is not str:
+                    # TODO:  This is risky, let's make sure it doesn't fail.
                     pathToLink.append("BASE_URL")
                 return pathToLink
             else:
                 pathToLink.append(subkey)
                 print("I can definitely help you with {0}.".format(subkey))
                 # Determine if any more filtering needs done (do our current keys point to a url?)
-                v = PTVS.LINKS[pathToLink[0]]
+                v = self.info.links[pathToLink[0]]
                 # Find the last value we have a path to.
                 for i in range(1, len(pathToLink)):
                     v = v[pathToLink[i]]
@@ -167,11 +172,6 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
             print("There was a problem determining your feature.  I'll send you to the wiki.")
             # TODO: LOG
             return ['WIKI']
-
-
-    def literalFromType(self, type, literals, types):
-        """Returns the literal string for the first of 'type' found within types."""
-        return [literals[i] for t, i in enumerate(types) if t == type]
 
     def _undefined(self):
         return "I'm sorry, I don't know what you're asking."

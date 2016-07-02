@@ -1,0 +1,12 @@
+PTVS, RTVS, NTVS, and the other Project Systems should probably have an entity of their own.
+This will help distinguish the project system from a module or package in queries such as:
+	- I need to know how to install PTVS.
+		Intent:  Get Help
+		Keyword:  install
+		Project System:  PTVS
+	...instead of...
+		Intent:  Get Help
+		Keyword:  install
+		Code::Module/Package:  PTVS
+
+	Discovered while seeding for:  'Installation'
