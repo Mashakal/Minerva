@@ -82,7 +82,7 @@ class PythonLuisInterpreter(BaseLuisInterpreter):
 
         def determineKeyFeature(literals, types):
             """A helper function for findPathToLink.  Determines the key feature
-            for which the user is querying.  TODO: Will validate with the user when
+            for which the user is querying.  Will validate with the user when
             more than one feature is found.
             """
             features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
