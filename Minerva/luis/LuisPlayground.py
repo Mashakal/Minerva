@@ -39,14 +39,14 @@ def loadDebugJson(client, filename):
 
 
 def main():
-    interp = ProjectSystemLuisInterpreter('ptvs')    # Interprets a LUIS json query response.
+    interp = ProjectSystemLuisInterpreter('ptvs')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(buildLuisUrl('HelpBot'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
-    j = sendQuery(lc, 'v')
+    j = sendQuery(lc, 'verbose')
     #j = loadDebugJson(lc, JSON_FILE)
     msg = interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
-    #print(msg)  
+    #print(msg)
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
