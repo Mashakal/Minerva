@@ -36,7 +36,7 @@ class InfoManager(object):
                 return k
         return None
 
-    def getNextSpecializationKey(self, feature, keywords):
+    def getNextSpecializationKey(self, feature, keyword):
         """Determine if a previously identified feature has any specialized
         context in relation to keywords found by querying LUIS.  Will return 
         a list of keys whose values are either an URL to the specialized feature's 
@@ -47,8 +47,10 @@ class InfoManager(object):
             # as key and a list of triggers (such as synonyms) for that specialized word.
             subkeys = self.keyMap[feature]['Subkeys']
         except LookupError:
-            # Not all specailized features are also 
+            # Not all keys have specializations.
             return None
+
+        # Search for the keyword in the current list of specializations.
         for k, v in subkeys.items():
             if keyword in v:
                 return k
@@ -66,4 +68,4 @@ class InfoManager(object):
                 k = self.getNextSpecializationKey(keyFeature, word)
                 if k:
                     specializedKeys.append(k)
-        return refinedKeys
+        return specializedKeys
