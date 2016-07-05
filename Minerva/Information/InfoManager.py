@@ -36,14 +36,18 @@ class InfoManager(object):
                 return k
         return None
 
-    def filterWithKeyword(self, feature, keyword):
-        """Determine if a previously identified feature has more specific 
-        context in relation to 'keyword'.  Will return a key for
-        which to extract a link corresponding feature's link from LINKS.
+    def getNextSpecializationKey(self, feature, keywords):
+        """Determine if a previously identified feature has any specialized
+        context in relation to keywords found by querying LUIS.  Will return 
+        a list of keys whose values are either an URL to the specialized feature's 
+        information or another dictionary of specializations.
         """
         try:
+            # Subkeys points to a dictionary of key value pairs that are a specialized feature
+            # as key and a list of triggers (such as synonyms) for that specialized word.
             subkeys = self.keyMap[feature]['Subkeys']
         except LookupError:
+            # Not all specailized features are also 
             return None
         for k, v in subkeys.items():
             if keyword in v:
@@ -51,14 +55,15 @@ class InfoManager(object):
         return None
 
     def getRefinedKeys(self, keyFeature, keywords):
-        """Returns a list of refined key features, based on any keywords that were
-        found in the original query.  An empty list is returned when no subkeys
-        are found.
+        """Takes keywords that are found by LUIS and searches keyword triggers
+        to see if a keyword can be used in context of the keyFeature.  If
+        no keywords are found within the current module's encylopedia an empty
+        list is returned.
         """
-        refinedKeys = []
-        if 0 < len(keywords):
+        specializedKeys = []
+        if 0 < len(keywords):   # Not all queries return a list of keywords.
             for word in keywords:
-                filtered = self.filterWithKeyword(keyFeature, word)
-                if filtered:
-                    refinedKeys.append(filtered)
+                k = self.getNextSpecializationKey(keyFeature, word)
+                if k:
+                    specializedKeys.append(k)
         return refinedKeys

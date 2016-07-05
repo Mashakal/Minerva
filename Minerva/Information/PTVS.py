@@ -67,10 +67,10 @@ LINKS = {
 # TODO:  Make updating this map with new synonyms/triggers automatic.
 KEY_MAP = {
     "Installation": {
-        "Triggers": ['install', 'installation', 'instalation', 'installs']
+        "Triggers": ['installation', 'install', 'instalation', 'installs']
     },
     "Debugging": {
-        'Triggers': ['debug', 'debugger', 'debugging', 'debuggor'],
+        'Triggers': ['debugging', 'debug', 'debugger', 'debuggor'],
         'Subkeys': {
             'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
         }
