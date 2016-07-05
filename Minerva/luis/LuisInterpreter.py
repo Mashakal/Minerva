@@ -1,7 +1,10 @@
 from InfoManager import InfoManager
 from abc import ABCMeta, abstractmethod
-from Essentials import enterAndExitLabels
 import PTVS
+
+# For development purposes only:
+from Essentials import enterAndExitLabels, printSmart
+
 
 YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', 'that\'s right', 'sure', 'for sure']
 NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
@@ -59,24 +62,36 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         intent = self.getTopScoringIntent(json)
         return self._STRATAGIES[intent](json)
 
+    def _formatData(self, json):
+        """Formats the raw json into a more easily managable dictionary."""
+        o = {
+            'literals': self.getLiterals(json),
+            'types': self.getTypes(json),
+            'keywords': self.getAllLiteralsOfType('Keyword', json),
+            'intent': self.getTopScoringIntent(json),
+        }
+        o['rootKeys'] = self.info.getAllRootKeys(o['keywords'])
+        return o
+
+    #def _findRootKey(self, 
+
     def _getHelp(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
         to be 'Get Help'.
         """
-        literals = self.getLiterals(json)
-        types = self.getTypes(json)
-        keywords = self.getAllLiteralsOfType('Keyword', json)
-
+        data = self._formatData(json)
+        
         # Print some debugging information.
+        print()
         print("Query: {0}".format(json['query']))
-        for i in range(len(literals)):
-            print("%s: %s" % (types[i].upper(), literals[i]))
+        for i in range(len(data['literals'])):
+            print("%s: %s" % (data['types'][i].upper(), data['literals'][i]))
         print()
 
         # Help with a VS feature.
-        if "Visual Studio Feature" in types:
+        if "Visual Studio Feature" in data['types']:
             # Get a list of keys in order of traversal to a suggested URL.
-            keyPath = self.findPathToLink(literals, types, keywords)
+            keyPath = self.findPathToLink(data)
             # Use each key to find the URL.
             v = self.info.links[keyPath[0]]
             for i in range(1, len(keyPath)):
@@ -84,14 +99,15 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             print("I suggest you visit this site: {0}".format(v))
 
         # Help with installation.
-        # Determine if we have an 'install' keyword.
-        # Determine the type of the thing that's needing to be installed.
-        # Do the work to get help for that.
+        elif "Installation" in data['rootKeys']:
+            print("I will be glad to help you with installation.")
+            print("This link has the best information about installing PTVS \nand some common packages: {0}.".format(self.info.links['Installation']))
+            # Determine the type of the thing that's needing to be installed.
+                # How to distinguish between installing PTVS/Project System rather than other item (MahApps, NumPy, 
+            # Do the work to get help for that.
 
-
-
-    def findPathToLink(self, literals, types, keywords):
-        """A meaty helper function for _getHelp.  Attempts to find the key 
+    def findPathToLink(self, data):
+        """A meaty helper function for _getHelp.  Attempts to find the key
         feature and any subcategory of that feature and returns a list of
         keys that will lead to the link for the feature requested by the
         user.
@@ -147,12 +163,12 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         pathToLink = [] # Holds the path to the link in terms of keys within the PTVS.LINKS dict.
 
         # Determine the root key.
-        keyFeature = determineKeyFeature(literals, types)
+        keyFeature = determineKeyFeature(data['literals'], data['types'])
         # Determine the subkey, if there is one.
         if keyFeature:
             pathToLink.append(keyFeature)
             # Use any keywords found by LUIS to determine if there are likely subkeys.
-            subkey = determineSubKey(keyFeature, keywords)
+            subkey = determineSubKey(keyFeature, data['keywords'])
             if not subkey:
                 print("I can definitely help you with {0}.".format(keyFeature))
                 if type(self.info.links[keyFeature]) is not str:
