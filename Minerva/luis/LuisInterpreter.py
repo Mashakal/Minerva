@@ -66,16 +66,29 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         literals = self.getLiterals(json)
         types = self.getTypes(json)
         keywords = self.getAllLiteralsOfType('Keyword', json)
+
+        # Print some debugging information.
         print("Query: {0}".format(json['query']))
         for i in range(len(literals)):
             print("%s: %s" % (types[i].upper(), literals[i]))
         print()
+
+        # Help with a VS feature.
         if "Visual Studio Feature" in types:
+            # Get a list of keys in order of traversal to a suggested URL.
             keyPath = self.findPathToLink(literals, types, keywords)
+            # Use each key to find the URL.
             v = self.info.links[keyPath[0]]
             for i in range(1, len(keyPath)):
                 v = v[keyPath[i]]
             print("I suggest you visit this site: {0}".format(v))
+
+        # Help with installation.
+        # Determine if we have an 'install' keyword.
+        # Determine the type of the thing that's needing to be installed.
+        # Do the work to get help for that.
+
+
 
     def findPathToLink(self, literals, types, keywords):
         """A meaty helper function for _getHelp.  Attempts to find the key 
@@ -83,16 +96,18 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         keys that will lead to the link for the feature requested by the
         user.
         """
-
         def determineKeyFeature(literals, types):
             """A helper function for findPathToLink.  Determines the key feature
             for which the user is querying.  Will validate with the user when
             more than one feature is found.
             """
+            # Extract all the Visual Studio Features found in the query.
             features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
             if len(features) > 1:
+                # Clarify a feature when there is more than one found.
                 for feature in features:
-                    keyFeature = self.info.literalToKey(feature)
+                    # Translate it to match the corresponding key within KEY_MAP.
+                    keyFeature = self.info.literalToKey(feature)    # None, if unsuccesful.
                     if keyFeature:
                         ans = input("Are you asking about {0}?\n>>> ".format(keyFeature.lower()))
                         if ans.lower() in YES_WORDS:
@@ -105,12 +120,15 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 if keyFeature:
                     return keyFeature
 
+            # If no features have been returned (either none were found or none were accepted by the user).
             print("I can't seem to figure out which feature you're asking about.")
             print("I'll get you a link to the wiki page.")
             # TODO: LOG
             return "WIKI"   # Default to the wiki's page when mapping to a feature fails.
 
         def determineSubKey(keyFeature, keywords):
+            """Determines the appropriate sub key given a key feature and a list of keywords.
+            """
             refinedKeys = self.info.getRefinedKeys(keyFeature, keywords)
             if refinedKeys:
                 if 1 < len(refinedKeys):
