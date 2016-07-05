@@ -22,7 +22,7 @@ class InfoManager(object):
             raise ValueError("Cannot find module {0}".format(self._mod))
 
     def updateMod(self, mod):
-        self._mod = mod.lower()
+        self._mod = mod
         self._updateLinks()
         self._updateKeyMap()
 
@@ -31,6 +31,7 @@ class InfoManager(object):
         For example, if the literal passed in is "debug" it will map this to
         "Debugging" for extraction of information out of LINKS.
         """
+        # TODO:  Make this more reusable by adding an optional dict parameter to search instead of keymap.
         for k, v in self.keyMap.items():
             if literal.lower() in v['Triggers']:
                 return k
@@ -69,3 +70,14 @@ class InfoManager(object):
                 if k:
                     specializedKeys.append(k)
         return specializedKeys
+
+    def getAllRootKeys(self, keywords):
+        """Returns a list of all the root keys matched by words in 'keywords'
+        within the current module.
+        """
+        rootKeys = []
+        for word in keywords:
+            k = self.literalToKey(word)
+            if k:
+                rootKeys.append(k)
+        return rootKeys
