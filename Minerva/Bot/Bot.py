@@ -17,10 +17,17 @@ CLARIFYING = [
     "Which one of these best describes what you need?"
 ]
 
+START = [
+    "What can I help you with?",
+    "How can I help you?",
+    "What can I do for you?"
+]
+
 ALL_STRINGS = {
     'positive_acks': POSITIVE_ACKS,
     'suggest_url': SUGGEST_URL,
-    'clarify': CLARIFYING
+    'clarify': CLARIFYING,
+    'start': START
 }
 
 
@@ -39,10 +46,13 @@ class Bot(object):
             r = random.randint(0, len(strings) - 1)
             return strings[r]
 
-    def __prompt(self):
+    def _prompt(self):
         """Outputs a prompt and returns the user's input.
         """
-        return input(">>> ")
+        print()
+        r = input(">>> ")
+        print()
+        return r
 
     def say(self, s):
         """Print a message from the bot to the standard output.
@@ -54,7 +64,7 @@ class Bot(object):
         prints a prompt and gets input from the user.
         """
         print(s)
-        return self.__prompt()
+        return self._prompt()
 
     def acknowledge(self, s, positive = True):
         """Output a positive or negative acknowledgement, formatted
@@ -89,7 +99,7 @@ class VSBot(Bot):
             if not input.isnumeric():
                 return False
             index = int(input)
-            if 0 > index or len(opts) - 1 < index:
+            if 0 >= index or len(opts) < index:
                 return False
             return True
 
@@ -97,8 +107,11 @@ class VSBot(Bot):
         self.say(m)
         for i, v in enumerate(opts):
             print(" " * indent + "{0}: {1}".format(i + 1, v))
-        i = self.__prompt()
+        i = self._prompt()
         while not _validate_input(i, opts):
-            self.say("{0} is not a valid choice.".format(i))
-            self.ask("Enter a valid choice.")
-        return opts[int(i)]
+            i = self.ask("{0} is not valid.  Enter a valid choice.".format(i))
+        return opts[int(i) - 1]
+
+    def start_query(self, msg=None):
+        m = msg if msg else self.get_random_string_constant('start')
+        return self.ask(m)
