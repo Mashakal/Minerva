@@ -1,12 +1,14 @@
 from InfoManager import InfoManager
+from Bot import VSBot
 from abc import ABCMeta, abstractmethod
 import PTVS
 
 # For development purposes only:
 from Essentials import enterAndExitLabels, printSmart
 
-
-YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', 'that\'s right', 'sure', 'for sure']
+# Constants
+# These may be better off in the Bot module.
+YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', "that's right", 'sure', 'for sure']
 NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
 
 class AbstractLuisInterpreter(object):
@@ -49,9 +51,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio
     as a part of a help bot.
     """
-    def __init__(self, system):
-        # Map an intent to a function.
-        self.info = InfoManager(system)
+    def __init__(self, project_system):
+        self.info = InfoManager(project_system)
+        self.bot = VSBot()
+        
+        # Maps an intent to a function.
         self._STRATAGIES = {
             'Get Help': self._getHelp,
             'undefined': self._undefined
@@ -73,8 +77,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         o['rootKeys'] = self.info.getAllRootKeys(o['keywords'])
         return o
 
-    #def _findRootKey(self, 
-
     def _getHelp(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
         to be 'Get Help'.
@@ -90,21 +92,49 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         # Help with a VS feature.
         if "Visual Studio Feature" in data['types']:
-            # Get a list of keys in order of traversal to a suggested URL.
-            keyPath = self.findPathToLink(data)
-            # Use each key to find the URL.
-            v = self.info.links[keyPath[0]]
-            for i in range(1, len(keyPath)):
-                v = v[keyPath[i]]
-            print("I suggest you visit this site: {0}".format(v))
+            self.process_visual_studio_feature(data)
 
         # Help with installation.
         elif "Installation" in data['rootKeys']:
-            print("I will be glad to help you with installation.")
-            print("This link has the best information about installing PTVS \nand some common packages: {0}.".format(self.info.links['Installation']))
-            # Determine the type of the thing that's needing to be installed.
-                # How to distinguish between installing PTVS/Project System rather than other item (MahApps, NumPy, 
-            # Do the work to get help for that.
+            self.bot.acknowledge('installation')
+            self.bot.say("This link has the best information about installing PTVS \nand some common packages: {0}.".format(self.info.links['Installation']))
+            # TODO:  What if they want help with a different type of installation.
+
+        # Help with feature matrix.
+        elif "Feature Matrix" in data['rootKeys']:
+            if "Project System" in data['types']:
+                self.bot.say("You can learn about {0}'s features here: {1}".format(self.info.name, self.info.get_url('Feature Matrix')))
+            else:
+                ans = self.bot.ask("Are you asking about features of {0}?".format(self.info.name))
+                if ans in YES_WORDS:
+                    self.bot.say("You can learn about {0}'s features here: {1}".format(self.info.name, self.info.links['Feature Matrix']))
+                else:
+                    # TODO:  Make this better.
+                    feature = input("What feature are you asking about?\n>>> ")
+                    data['literals'].append(feature)
+                    data['types'].append("Visual Studio Feature")
+                    rootKey = self.info.literalToKey(feature)
+                    if rootKey:
+                        data['rootKeys'].append(rootKey)
+                    data['rootKeys'] = self.info.getAllRootKeys(data['keywords'])
+                    self.process_visual_studio_feature(data)
+
+        # General help.
+            # Feature matrix, installation, overview videos, contributing, build instructions, tutorials.
+            # Can we make this a catch-all else statement, at the end?  We will see...
+
+        # Help with editing:
+        elif "Editing" in data['rootKeys']:
+            self.bot.acknowledge('Editing')
+            url = self.info.get_url('Editing')
+            self.bot.suggest_url(url)
+            
+                    
+    def process_visual_studio_feature(self, data):
+        # Get a list of keys in order of traversal to a suggested URL.
+        keyPath = self.findPathToLink(data)
+        url = self.info.get_url(keyPath)
+        self.bot.suggest_url(url)
 
     def findPathToLink(self, data):
         """A meaty helper function for _getHelp.  Attempts to find the key
@@ -117,7 +147,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             for which the user is querying.  Will validate with the user when
             more than one feature is found.
             """
-            # Extract all the Visual Studio Features found in the query.
+            # Extract all the literals of type Visual Studio Feature found in the query.
             features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
             if len(features) > 1:
                 # Clarify a feature when there is more than one found.
@@ -125,11 +155,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                     # Translate it to match the corresponding key within KEY_MAP.
                     keyFeature = self.info.literalToKey(feature)    # None, if unsuccesful.
                     if keyFeature:
-                        ans = input("Are you asking about {0}?\n>>> ".format(keyFeature.lower()))
+                        ans = self.bot.ask("Are you asking about {0}?".format(keyFeature.lower()))
                         if ans.lower() in YES_WORDS:
                             return keyFeature
                     else:
-                        print("I am having trouble mapping {0}.".format(feature))
+                        self.bot.say("I am having trouble mapping {0}.".format(feature))
                         # TODO: LOG
             elif len(features) == 1:
                 keyFeature = self.info.literalToKey(features[0])
@@ -137,8 +167,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                     return keyFeature
 
             # If no features have been returned (either none were found or none were accepted by the user).
-            print("I can't seem to figure out which feature you're asking about.")
-            print("I'll get you a link to the wiki page.")
+            self.bot.say("I can't seem to figure out which feature you're asking about.")
+            self.bot.say("I'll get you a link to the wiki page.")
             # TODO: LOG
             return "WIKI"   # Default to the wiki's page when mapping to a feature fails.
 
@@ -149,7 +179,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             if refinedKeys:
                 if 1 < len(refinedKeys):
                     for subkey in refinedKeys:
-                        ans = input("Is this about {0}?\n>>> ".format(subkey))
+                        ans = self.bot.ask("Is this about {0}?".format(subkey))
                         if ans.lower() in YES_WORDS:
                             return subkey
                         else:
@@ -170,23 +200,19 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             # Use any keywords found by LUIS to determine if there are likely subkeys.
             subkey = determineSubKey(keyFeature, data['keywords'])
             if not subkey:
-                print("I can definitely help you with {0}.".format(keyFeature))
-                if type(self.info.links[keyFeature]) is not str:
+                self.bot.acknowledge(keyFeature)
+                if not isinstance(self.info.links[keyFeature], str):
                     # TODO:  This is risky, let's make sure it doesn't fail.
                     pathToLink.append("BASE_URL")
                 return pathToLink
             else:
                 pathToLink.append(subkey)
-                print("I can definitely help you with {0}.".format(subkey))
+                self.bot.acknowledge(subkey)
                 # Determine if any more filtering needs done (do our current keys point to a url?)
-                v = self.info.links[pathToLink[0]]
-                # Find the last value we have a path to.
-                for i in range(1, len(pathToLink)):
-                    v = v[pathToLink[i]]
-                # If the value is not a string (a url), filter some more.
-                if type(v) is not str:
+                v = self.info.traverse_keys(pathToLink)
+                if not isinstance(v, str):
                     # Should probably always be a dictionary, but check just in case...
-                    if type(v) is dict:
+                    if isinstance(v, dict):
                         keys = list(v.keys())
                         print("Which of these is more pertinent in your case?")
                         for i in range(len(keys)):
@@ -194,7 +220,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                         index = input(">>> ")
                         try:
                             index = int(index)
-                            #print("Great! I suggest you visit this site:\n\t{0}".format(v[keys[index - 1]]))
                             pathToLink.append(keys[index - 1])
                         except (ValueError, IndexError):
                             print("I'm sorry, that wasn't a valid selection.")
