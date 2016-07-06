@@ -26,13 +26,13 @@ class InfoManager(object):
         self._updateLinks()
         self._updateKeyMap()
 
-    def literalToKey(self, literal):
+    def literalToKey(self, literal, d = None):
         """Returns the appropriate key for links when given a literal.
         For example, if the literal passed in is "debug" it will map this to
         "Debugging" for extraction of information out of LINKS.
         """
-        # TODO:  Make this more reusable by adding an optional dict parameter to search instead of keymap.
-        for k, v in self.keyMap.items():
+        d = d if d else self.keyMap
+        for k, v in d.items():
             if literal.lower() in v['Triggers']:
                 return k
         return None
