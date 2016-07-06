@@ -4,6 +4,14 @@ MODULE_MAP = {
     'ptvs': PTVS
 }
 
+class IncompleteKeyListError(Exception):
+    """Raised when a url is being extracted but the key list does not point
+    to a url.
+    """
+    def __init__(self, msg, **kwargs):
+        self.message = self.msg = msg
+        return super().__init__(**kwargs)
+
 class InfoManager(object):
     """Handles accessing of information data for LuisInterpreters."""
     def __init__(self, moduleName):
@@ -25,6 +33,7 @@ class InfoManager(object):
         self._mod = mod
         self._updateLinks()
         self._updateKeyMap()
+        self.name = MODULE_MAP[self._mod].NAME
 
     def literalToKey(self, literal, d = None):
         """Returns the appropriate key for links when given a literal.
@@ -81,3 +90,26 @@ class InfoManager(object):
             if k:
                 rootKeys.append(k)
         return rootKeys
+
+    def traverse_keys(self, keys):
+        """Traverses the links dictionary of the current module by way of keys.
+        Returns the value of the deepest key in keys.
+        """
+        v = self.links  # Start at the root of the links dict.
+        # Find the final value pointed to by keys.
+        if isinstance(keys, list):
+            for key in keys:
+                v = v[key]
+        elif isinstance(keys, str):
+            v = v[keys]
+        return v
+
+    def get_url(self, keys):
+        """Returns the url pointed to by keys.
+        """
+        v = self.traverse_keys(keys)
+        # Validate we at least have a string, assuming it is an url.
+        if not isinstance(v, str):
+            raise IncompleteKeyListError("{0} is not a string.".format(v))
+        else:
+            return v
