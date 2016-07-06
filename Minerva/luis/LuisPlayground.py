@@ -4,7 +4,6 @@ from Bot import VSBot
 from Essentials import printSmart, getFileSize, jsonToFile, fileToJson
 import sys
 
-
 # Constants
 SUBSCRIPTION_KEY = '7814a9388ef14151981f2037000ea288'   # Alex Neuenkirk's subscription key.
 APP_IDS = {
