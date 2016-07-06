@@ -1,3 +1,7 @@
+# There should be some way to validate that there are no triggers are the same for two separate keys.
+
+NAME = "PTVS"
+
 LINKS = {
     "WIKI": "https://github.com/Microsoft/PTVS/wiki",
     "Installation": "https://github.com/Microsoft/PTVS/wiki/PTVS-Installation",
@@ -86,5 +90,8 @@ KEY_MAP = {
     },
     'Build Instructions': {
         'Triggers': ['build instructions', 'building', 'build']
+    },
+    'Editing': {
+        'Triggers': ['editing', 'code editing']
     }
 }
