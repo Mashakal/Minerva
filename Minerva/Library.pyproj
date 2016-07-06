@@ -7,7 +7,7 @@
     <ProjectHome>
     </ProjectHome>
     <StartupFile>Luis\LuisPlayground.py</StartupFile>
-    <SearchPath>StackExchange\;Debugging\;Information\</SearchPath>
+    <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -26,6 +26,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Bot\Bot.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>
@@ -84,6 +87,7 @@
     <Folder Include="Debugging\" />
     <Folder Include="Information\" />
     <Folder Include="AlmostTrash\" />
+    <Folder Include="Bot\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>
