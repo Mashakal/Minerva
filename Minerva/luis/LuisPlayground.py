@@ -1,5 +1,6 @@
 from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
+from Bot import VSBot
 from Essentials import printSmart, getFileSize, jsonToFile, fileToJson
 import sys
 
@@ -13,7 +14,7 @@ APP_IDS = {
 
 # Debugging items.
 JSON_FILE = "sampleQueryResults.json"
-JSON_FILE = "errorwhiletryingtoattachdebuger.json"
+#JSON_FILE = "errorwhiletryingtoattachdebuger.json"
 
 def buildLuisUrl(appName):
     s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
@@ -21,9 +22,6 @@ def buildLuisUrl(appName):
     return s
 
 def sendQuery(client, result='standard'):
-    #q = "Error while trying to attach debugger from PTVS"
-    q = input("What can I help you with?\n>>> ")
-    #r = lc.query(q) # Response is 3 tuple from LuisClient.
     return client.query(q, result) # Response is json from Luis.
 
 def loadDebugJson(client, filename):
@@ -39,11 +37,12 @@ def loadDebugJson(client, filename):
 
 
 def main():
-    interp = ProjectSystemLuisInterpreter('ptvs')    # Interpreter for a LUIS json query response.
+    bot = VSBot()
+    interp = ProjectSystemLuisInterpreter(bot, 'ptvs')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(buildLuisUrl('HelpBot'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
-    j = sendQuery(lc, 'verbose')
+    j = lc.query(bot.start_query(), 'verbose')
     #j = loadDebugJson(lc, JSON_FILE)
     msg = interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
     #print(msg)
