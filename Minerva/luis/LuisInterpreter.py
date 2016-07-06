@@ -51,9 +51,9 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio
     as a part of a help bot.
     """
-    def __init__(self, project_system):
+    def __init__(self, bot, project_system):
         self.info = InfoManager(project_system)
-        self.bot = VSBot()
+        self.bot = bot
         
         # Maps an intent to a function.
         self._STRATAGIES = {
@@ -84,7 +84,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         data = self._formatData(json)
         
         # Print some debugging information.
-        print()
         print("Query: {0}".format(json['query']))
         for i in range(len(data['literals'])):
             print("%s: %s" % (data['types'][i].upper(), data['literals'][i]))
@@ -189,7 +188,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                     return refinedKeys[0]
             return None
 
-        keyFeature = subkey = None
+        keyFeature = None
+        subkey = None
         pathToLink = [] # Holds the path to the link in terms of keys within the PTVS.LINKS dict.
 
         # Determine the root key.
@@ -210,19 +210,12 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 self.bot.acknowledge(subkey)
                 # Determine if any more filtering needs done (do our current keys point to a url?)
                 v = self.info.traverse_keys(pathToLink)
-                if not isinstance(v, str):
+                if not isinstance(v, str):  # TODO:  Is this safe as an if statement -> will you ever need to find more than one additional key?
                     # Should probably always be a dictionary, but check just in case...
                     if isinstance(v, dict):
                         keys = list(v.keys())
-                        print("Which of these is more pertinent in your case?")
-                        for i in range(len(keys)):
-                            print(" {0}: {1}".format(i + 1, keys[i]))
-                        index = input(">>> ")
-                        try:
-                            index = int(index)
-                            pathToLink.append(keys[index - 1])
-                        except (ValueError, IndexError):
-                            print("I'm sorry, that wasn't a valid selection.")
+                        next_key = self.bot.clarify(keys)
+                        pathToLink.append(next_key)
                     else:
                         # TODO: LOG
                         print("Expected a dictionary but got type: {0}".format(type(v)))
@@ -234,7 +227,3 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def _undefined(self):
         return "I'm sorry, I don't know what you're asking."
-
-
-
-    
