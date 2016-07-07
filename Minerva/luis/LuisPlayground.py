@@ -1,8 +1,10 @@
+import sys
 from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
 from Bot import VSBot
-from Essentials import printSmart, getFileSize, jsonToFile, fileToJson
-import sys
+
+# For development purposes only.
+from Essentials import print_smart, get_file_size, json_to_file, file_to_json
 
 # Constants
 SUBSCRIPTION_KEY = '7814a9388ef14151981f2037000ea288'   # Alex Neuenkirk's subscription key.
@@ -15,22 +17,19 @@ APP_IDS = {
 JSON_FILE = "sampleQueryResults.json"
 #JSON_FILE = "errorwhiletryingtoattachdebuger.json"
 
-def buildLuisUrl(appName):
+def build_luis_url(app_name):
     s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
-            APP_IDS[appName] + '&subscription-key=' + SUBSCRIPTION_KEY + '&q='
+            APP_IDS[app_name] + '&subscription-key=' + SUBSCRIPTION_KEY + '&q='
     return s
 
-def sendQuery(client, result='standard'):
-    return client.query(q, result) # Response is json from Luis.
-
-def loadDebugJson(client, filename):
+def load_debug_json(client, filename):
     """Loads json from the file specified by 'filename'.  Makes a call to sendQuery when
     the file doesn't exist.  Will write the newly obtained json to filename."""
-    if 0 == getFileSize(filename):
-        j = sendQuery(client, result='verbose')
-        jsonToFile(j, filename)
+    if 0 == get_file_size(filename):
+        j = client.query(VSBot().start_query(), 'v')
+        json_to_file(j, filename)
     else:
-        j = fileToJson(filename)
+        j = file_to_json(filename)
     return j
 
 
@@ -38,7 +37,7 @@ def loadDebugJson(client, filename):
 def main():
     bot = VSBot()
     interp = ProjectSystemLuisInterpreter(bot, 'ptvs')    # Interpreter for a LUIS json query response.
-    lc = BotLuisClient(buildLuisUrl('HelpBot'))    # Handles queries to the LUIS client.
+    lc = BotLuisClient(build_luis_url('HelpBot'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
     j = lc.query(bot.start_query(), 'verbose')
