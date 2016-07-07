@@ -29,6 +29,9 @@
     <Compile Include="Bot\Bot.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Bot\DialogueStrings.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>
