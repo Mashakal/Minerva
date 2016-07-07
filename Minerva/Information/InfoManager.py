@@ -54,24 +54,46 @@ class InfoManager(object):
                         return is_literal_trigger(literal, v)
                 except KeyError:
                     pass
+
+    def _get_key_from_trigger(self, literal, dic=None):
+        """Returns the corresponding key when that key is triggered by
+        a literal keyword.  Only searches the outermost layer of dic.
+        Returns False when no key in the outermost layer is triggered.
+        """
+        d = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
+
+        for k, v in dic.items():
+            if isinstance(v, dict):
+                try:
+                    if literal.lower() in v['Triggers']:
+                        return k
+                except KeyError:
+                    pass
+        return False
+
     
-    def test_is_literal_trigger(self, literal, path=None, d=None):
+    def test_is_literal_trigger(self, literal, path=None, dic=None):
         """When literal is found to be a trigger, a list of keys that will lead to
         the item the literal matches is returned.  Otherwise, False is returned.
         """
-        d = d if d else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
+        dic = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
         p = path if path else []
-        for k, v in d.items():
+
+        for k, v in dic.items():
             if isinstance(v, dict):
                 try:
-                    if literal in v['Triggers']:
+                    if literal.lower() in v['Triggers']:
                         p.append(k)
                         return p
                     else:
                         p.append(k)
-                        return self.test_is_literal_trigger(literal, p, v)
+                        p = self.test_is_literal_trigger(literal, p, v)
                 except KeyError:
                     pass
+                if not p:
+                    p = []
+                else:
+                    return p
         return False
 
     def get_next_key(self, feature, keyword):
@@ -153,7 +175,7 @@ class InfoManager(object):
 
 def main():
     im = InfoManager('ptvs')
-    path = im.test_is_literal_trigger('attach')
+    path = im.test_is_literal_trigger('code editing')
     print(path)
 
 if __name__ == "__main__":
