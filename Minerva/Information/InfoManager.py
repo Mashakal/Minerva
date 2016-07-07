@@ -17,23 +17,14 @@ class InfoManager(object):
     def __init__(self, moduleName):
         self.update_mod(moduleName)
 
-    def _update_links(self):
-        try:
-            self.links = __MODULE_MAP[self._mod].LINKS
-        except LookupError:
-            raise ValueError("Cannot find module {0}".format(self._mod))
-
-    def _update_key_map(self):
-        try:
-            self.key_map = __MODULE_MAP[self._mod].KEY_MAP
-        except LookupError:
-            raise ValueError("Cannot find module {0}".format(self._mod))
-
     def update_mod(self, mod):
-        self._mod = mod
-        self._update_links()
-        self._update_key_map()
-        self.name = __MODULE_MAP[self._mod].NAME
+        try:
+            self.links = __MODULE_MAP[mod].LINKS
+            self.key_map = __MODULE_MAP[mod].KEY_MAP
+            self.name = __MODULE_MAP[mod].NAME
+            self._mod = mod
+        except KeyError:
+            raise ValueError("Cannot find module {0}".format(mod))
 
     def literal_to_key(self, literal, d = None):
         """Returns the appropriate key for links when given a literal.
