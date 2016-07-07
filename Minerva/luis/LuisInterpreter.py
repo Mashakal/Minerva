@@ -1,7 +1,4 @@
 from InfoManager import InfoManager
-from Bot import VSBot
-from abc import ABCMeta, abstractmethod
-import PTVS
 
 # For development purposes only:
 from Essentials import enterAndExitLabels, printSmart
@@ -11,15 +8,7 @@ from Essentials import enterAndExitLabels, printSmart
 _YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', "that's right", 'sure', 'for sure']
 _NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
 
-class AbstractLuisInterpreter(object):
-    """An interface for creating extension specific interpreters for Visual Studio."""
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def analyze(self, json):
-        pass
-
-class BaseLuisInterpreter(AbstractLuisInterpreter):
+class BaseLuisInterpreter(object):
     """A base class for all interpreters."""
     def __init__(self, **kwargs):
         return super().__init__(**kwargs)
