@@ -61,11 +61,47 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'literals': self._get_literals(json),
             'types': self._get_types(json),
             'keywords': self._get_all_literals_of_type('Keyword', json),
+            'vs_features': self._get_all_literals_of_type('Visual Studio Feature', json),
             'intent': self._get_top_scoring_intent(json),
         }
-
         o['root_keys'] = self._info.get_all_root_keys(o['keywords'])
+        o['paths'] = self.__get_paths(set(o['keywords'] + o['vs_features']))
         return o
+
+    def __get_paths(self, word_set):
+        # I die a little inside everytime I look at this function.
+        """Get's paths to all words in the set, if a path for it exists.
+        Filters the paths found such that only the deepest path will be
+        returned, which is helpful when a Luis picks up a trigger to a key
+        and also a trigger to a more specialized version of that key in the
+        same query.
+        """
+        def filter(paths):
+            to_remove = []
+            for i, v in enumerate(paths):
+                if paths.count(v) > 1:
+                    if paths.count(v) - 1 > to_remove.count(v):
+                        to_remove.append(v)
+            for el in to_remove:
+                paths.remove(el)
+            return paths
+
+        def get_paths(word_set):
+            """A helper function for __get_paths.  Returns an unfiltered list
+            of all the paths pointed to by words in the word set.
+            """
+            map = {}
+            for word in word_set:
+                path = self._info.find_key_path(word)
+                if path:
+                    for key in path:
+                        # Override paths when the same key is found.
+                        map[key] = path # does this work?  I am unconvinced.
+            return filter(list(map.values()))
+            
+        p = get_paths(word_set)
+        return p
+
 
     def _get_help(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
