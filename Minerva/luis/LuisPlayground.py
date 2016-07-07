@@ -43,7 +43,6 @@ def main():
     j = lc.query(bot.start_query(), 'verbose')
     #j = loadDebugJson(lc, JSON_FILE)
     interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
-    #print(msg)
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
