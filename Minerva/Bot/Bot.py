@@ -5,7 +5,7 @@ class Bot(object):
     """Communicates with the user.
     """
     def _get_random_string_constant(self, genre):
-        """Grabs an array of strings from the ALL_STRINGS dictionary.
+        """Extracts an array of strings from the ALL_STRINGS dictionary.
         Returns a random string from the extracted array.
         """
         try:
