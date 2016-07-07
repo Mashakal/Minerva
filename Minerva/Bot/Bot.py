@@ -10,7 +10,7 @@ class Bot(object):
         """
         try:
             strings = ALL_STRINGS[genre]
-        except LookupError:
+        except KeyError:
             raise ValueError("Cannot find strings of type: {0}.".format(genre))
         else:
             r = random.randint(0, len(strings) - 1)
@@ -71,7 +71,7 @@ class Bot(object):
         m = msg if msg else self._get_random_string_constant('clarify')
         self.say(m)
         for i, v in enumerate(opts):
-            print(" " * indent + "{0}: {1}".format(n + 1, v))
+            print(" " * indent + "{0}: {1}".format(i + 1, v))
         n = self._prompt()
         while not validate_input(n, opts):
             n = self.ask("{0} is not valid.  Enter a valid choice.".format(n))
