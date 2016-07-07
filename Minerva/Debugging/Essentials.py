@@ -1,36 +1,36 @@
 
 # FUNCTIONS
-def printSmart(item, depth = 0):
-    """Prints a container object and its contents in a highly readable way."""
-    if type(item) in [str, int, float, bool]:
+def print_smart(item, depth=0):
+    """Prints a container object and its contents in a readable way."""
+    if isinstance(item, str, int, float, bool):
         print(' ' * (depth * 3) + str(item))
         return
-    newDepth = depth + 1
+    new_depth = depth + 1
     if isinstance(item, list):
         for el in item:
-            printSmart(el, depth)
+            print_smart(el, depth)
     elif isinstance(item, dict):
         for key in item:
             print(' ' * (depth * 3) + str(key))
-            printSmart(item[key], depth=newDepth)
+            print_smart(item[key], depth=new_depth)
     else:
-        s = 'printSmart isn\'t sure what to do with the type: ' + str(type(item))
-        printSmart(s, depth=depth)
+        s = "Function print_smart isn't sure what to do with the type: {0}".format(item)
+        print_smart(s, depth=depth)
 
-def jsonToFile(js, filename):
+def json_to_file(j, filename):
     """Appends data to the given file.  If the file does not exist it is created."""
     import json
     with open(filename, 'w') as fdesc:
-        json.dump(js, fdesc)
+        json.dump(j, fdesc)
 
-def fileToJson(filename):
+def file_to_json(filename):
     """Loads a json object from a file."""
     import json
     with open(filename, 'r') as fdesc:
-        js = json.load(fdesc)
-    return js
+        j = json.load(fdesc)
+    return j
 
-def getFileSize(filename):
+def get_file_size(filename):
     try:
         from os import stat
         st = stat(filename)
@@ -38,20 +38,20 @@ def getFileSize(filename):
     except FileNotFoundError:
         return 0
 
-def loadDebugJson(filename, fetchFunction, query=None):
-# Not finished.
+def load_debug_json(filename, fetch_function, query=None):
+# Not finished. Do not use.
     """Loads json from the file specified by 'filename'.  If the file doesn't exist, makes a call to 
     fetchFunction and expects a json object in response.  Will write the newly obtained json to 
     filename."""
-    if 0 == getFileSize(f):
-        j = fetchFunction(query) if query else fetchFunction()
-        jsonToFile(j, filename)
+    if 0 == get_file_size(f):
+        j = fetch_function(query) if query else fetch_function()
+        json_to_file(j, filename)
     else:
-        j = fileToJson(filename)
+        j = file_to_json(filename)
     return j
 
 # DECORATORS
-def enterAndExitLabels(func):
+def enter_and_exit_labels(func):
     from functools import wraps
     @wraps(func)
     def wrap(*args):
