@@ -64,6 +64,9 @@ class Bot(object):
             if 0 >= n or len(opts) < n:
                 return False
             return True
+        
+        if not opts:
+            raise ValueError("opts cannot be empty.")
 
         m = msg if msg else self._get_random_string_constant('clarify')
         self.say(m)
