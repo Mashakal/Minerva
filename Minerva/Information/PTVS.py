@@ -95,3 +95,30 @@ KEY_MAP = {
         'Triggers': ['editing', 'code editing']
     }
 }
+
+KEY_MAP_TESTER = {
+    "Installation": {
+        "Triggers": ['installation', 'install', 'instalation', 'installs']
+    },
+    "Debugging": {
+        'Triggers': ['debugging', 'debug', 'debugger', 'debuggor'],
+        'Remote Debugging': {
+            'Triggers': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
+        }
+    },
+    "Feature Matrix": {
+        'Triggers': ['feature matrix', 'features']
+    },
+    'Overview Videos': {
+        'Triggers': ['overview videos', 'video', 'videos', 'overview']
+    },
+    'Contributing': {
+        'Triggers': ['contributing', 'contribute', 'pull request']
+    },
+    'Build Instructions': {
+        'Triggers': ['build instructions', 'building', 'build']
+    },
+    'Editing': {
+        'Triggers': ['editing', 'code editing']
+    }
+}
