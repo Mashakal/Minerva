@@ -1,6 +1,7 @@
 import PTVS
+import sys
 
-__MODULE_MAP = {
+_MODULE_MAP = {
     'ptvs': PTVS
 }
 
@@ -19,14 +20,14 @@ class InfoManager(object):
 
     def update_mod(self, mod):
         try:
-            self.links = __MODULE_MAP[mod].LINKS
-            self.key_map = __MODULE_MAP[mod].KEY_MAP
-            self.name = __MODULE_MAP[mod].NAME
+            self.links = _MODULE_MAP[mod].LINKS
+            self.key_map = _MODULE_MAP[mod].KEY_MAP
+            self.name = _MODULE_MAP[mod].NAME
             self._mod = mod
         except KeyError:
-            raise ValueError("Cannot find module {0}".format(mod))
+            raise ValueError("Cannot find module named: {0}".format(mod))
 
-    def literal_to_key(self, literal, d = None):
+    def literal_to_key(self, literal, d=None):
         """Returns the appropriate key for links when given a literal.
         For example, if the literal passed in is "debug" it will map this to
         "Debugging" for extraction of information out of LINKS.
@@ -36,6 +37,42 @@ class InfoManager(object):
             if literal.lower() in v['Triggers']:
                 return k
         return None
+
+    def is_literal_trigger(self, literal, d=None):
+        """When literal is found to be a trigger, a list of keys that will lead to
+        the item the literal matches is returned.  Otherwise, False is returned.
+        """
+        raise NotImplementedError("is_literal_trigger's implementation is not complete.")
+
+        d = d if d else self.key_map
+        for k, v in d.items():
+            if isinstance(v, dict):
+                try:
+                    if literal in v['Triggers']:
+                        return k
+                    else:
+                        return is_literal_trigger(literal, v)
+                except KeyError:
+                    pass
+    
+    def test_is_literal_trigger(self, literal, path=None, d=None):
+        """When literal is found to be a trigger, a list of keys that will lead to
+        the item the literal matches is returned.  Otherwise, False is returned.
+        """
+        d = d if d else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
+        p = path if path else []
+        for k, v in d.items():
+            if isinstance(v, dict):
+                try:
+                    if literal in v['Triggers']:
+                        p.append(k)
+                        return p
+                    else:
+                        p.append(k)
+                        return self.test_is_literal_trigger(literal, p, v)
+                except KeyError:
+                    pass
+        return False
 
     def get_next_key(self, feature, keyword):
         """Determine if a previously identified feature has any specialized
@@ -56,6 +93,14 @@ class InfoManager(object):
             if keyword in v:
                 return k
         return None
+
+    #def test_get_next_key(self, keyword, d):
+        
+    #    for k, v in d.items():
+    #        if isinstance(v, dict):
+    #            try:
+    #                if keyword in v['Triggers']:
+    #                    return True
 
     def get_refined_keys(self, key_feature, keywords):
         """Takes keywords that are found by LUIS and searches keyword triggers
@@ -104,3 +149,12 @@ class InfoManager(object):
             raise IncompleteKeyListError("{0} is not a string.".format(v))
         else:
             return v
+
+
+def main():
+    im = InfoManager('ptvs')
+    path = im.test_is_literal_trigger('attach')
+    print(path)
+
+if __name__ == "__main__":
+    sys.exit(int(main() or 0))
