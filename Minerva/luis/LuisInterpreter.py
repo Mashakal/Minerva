@@ -75,7 +75,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         data = self._format_data(json)
         
         # Print some debugging information.
-        print("Query: {0}".format(json['query']))
+        print("QUERY: {0}".format(json['query']))
         for i in range(len(data['literals'])):
             print("%s: %s" % (data['types'][i].upper(), data['literals'][i]))
         print()
