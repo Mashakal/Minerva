@@ -1,7 +1,7 @@
 from InfoManager import InfoManager
 
 # For development purposes only:
-from Essentials import enterAndExitLabels, printSmart
+from Essentials import enter_and_exit_labels, print_smart
 
 # Constants
 # These may be better off in the Bot module.
@@ -65,7 +65,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
 
         o['root_keys'] = self._info.getAllRootKeys(o['keywords'])
-
         return o
 
     def _get_help(self, json):
@@ -216,4 +215,4 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return ['WIKI']
 
     def _undefined(self):
-        return "I'm sorry, I don't know what you're asking."
+        self._bot.say("I'm sorry, I don't know what you're asking.")
