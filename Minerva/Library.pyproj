@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Information\InfoManager.py</StartupFile>
+    <StartupFile>Luis\LuisPlayground.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -82,6 +82,7 @@
   <ItemGroup>
     <Content Include="AppInfo.txt" />
     <Content Include="BlogNotes.txt" />
+    <Content Include="Data\Notes.txt" />
     <Content Include="Information\Readme.txt" />
     <Content Include="Luis\SchemaNotes.txt" />
   </ItemGroup>
@@ -91,6 +92,7 @@
     <Folder Include="Information\" />
     <Folder Include="AlmostTrash\" />
     <Folder Include="Bot\" />
+    <Folder Include="Data\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>
