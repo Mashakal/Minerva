@@ -1,0 +1,4 @@
+DATA THAT WILL BE HELPFUL:
+	- How often does more than root key appear in paths?
+		- Knowing this will help:
+			> Identify where improvements to suggestions can be made.
