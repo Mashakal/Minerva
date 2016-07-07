@@ -1,6 +1,6 @@
 import PTVS
 
-MODULE_MAP = {
+__MODULE_MAP = {
     'ptvs': PTVS
 }
 
@@ -15,38 +15,38 @@ class IncompleteKeyListError(Exception):
 class InfoManager(object):
     """Handles accessing of information data for LuisInterpreters."""
     def __init__(self, moduleName):
-        self.updateMod(moduleName)
+        self.update_mod(moduleName)
 
-    def _updateLinks(self):
+    def _update_links(self):
         try:
-            self.links = MODULE_MAP[self._mod].LINKS
+            self.links = __MODULE_MAP[self._mod].LINKS
         except LookupError:
             raise ValueError("Cannot find module {0}".format(self._mod))
 
-    def _updateKeyMap(self):
+    def _update_key_map(self):
         try:
-            self.keyMap = MODULE_MAP[self._mod].KEY_MAP
+            self.key_map = __MODULE_MAP[self._mod].KEY_MAP
         except LookupError:
             raise ValueError("Cannot find module {0}".format(self._mod))
 
-    def updateMod(self, mod):
+    def update_mod(self, mod):
         self._mod = mod
-        self._updateLinks()
-        self._updateKeyMap()
-        self.name = MODULE_MAP[self._mod].NAME
+        self._update_links()
+        self._update_key_map()
+        self.name = __MODULE_MAP[self._mod].NAME
 
-    def literalToKey(self, literal, d = None):
+    def literal_to_key(self, literal, d = None):
         """Returns the appropriate key for links when given a literal.
         For example, if the literal passed in is "debug" it will map this to
         "Debugging" for extraction of information out of LINKS.
         """
-        d = d if d else self.keyMap
+        d = d if d else self.key_map
         for k, v in d.items():
             if literal.lower() in v['Triggers']:
                 return k
         return None
 
-    def getNextSpecializationKey(self, feature, keyword):
+    def get_next_key(self, feature, keyword):
         """Determine if a previously identified feature has any specialized
         context in relation to keywords found by querying LUIS.  Will return 
         a list of keys whose values are either an URL to the specialized feature's 
@@ -55,7 +55,7 @@ class InfoManager(object):
         try:
             # Subkeys points to a dictionary of key value pairs that are a specialized feature
             # as key and a list of triggers (such as synonyms) for that specialized word.
-            subkeys = self.keyMap[feature]['Subkeys']
+            subkeys = self.key_map[feature]['Subkeys']
         except LookupError:
             # Not all keys have specializations.
             return None
@@ -66,30 +66,30 @@ class InfoManager(object):
                 return k
         return None
 
-    def getRefinedKeys(self, keyFeature, keywords):
+    def get_refined_keys(self, key_feature, keywords):
         """Takes keywords that are found by LUIS and searches keyword triggers
         to see if a keyword can be used in context of the keyFeature.  If
         no keywords are found within the current module's encylopedia an empty
         list is returned.
         """
-        specializedKeys = []
+        specialized_keys = []
         if 0 < len(keywords):   # Not all queries return a list of keywords.
             for word in keywords:
-                k = self.getNextSpecializationKey(keyFeature, word)
+                k = self.get_next_key(key_feature, word)
                 if k:
-                    specializedKeys.append(k)
-        return specializedKeys
+                    specialized_keys.append(k)
+        return specialized_keys
 
-    def getAllRootKeys(self, keywords):
+    def get_all_root_keys(self, keywords):
         """Returns a list of all the root keys matched by words in 'keywords'
         within the current module.
         """
-        rootKeys = []
+        root_keys = []
         for word in keywords:
-            k = self.literalToKey(word)
+            k = self.literal_to_key(word)
             if k:
-                rootKeys.append(k)
-        return rootKeys
+                root_keys.append(k)
+        return root_keys
 
     def traverse_keys(self, keys):
         """Traverses the links dictionary of the current module by way of keys.
@@ -108,7 +108,7 @@ class InfoManager(object):
         """Returns the url pointed to by keys.
         """
         v = self.traverse_keys(keys)
-        # Validate we at least have a string, assuming it is an url.
+        # We assume a string object is going to be a url.
         if not isinstance(v, str):
             raise IncompleteKeyListError("{0} is not a string.".format(v))
         else:

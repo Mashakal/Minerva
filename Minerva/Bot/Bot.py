@@ -31,7 +31,7 @@ class Bot(object):
 
     def ask(self, s):
         """Print a message/question to the standard output and then
-        prints a prompt and gets input from the user.
+        prints a prompt, then returns the input from the user.
         """
         print(s)
         return self._prompt()

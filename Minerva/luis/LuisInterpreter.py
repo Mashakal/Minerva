@@ -64,7 +64,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'intent': self._get_top_scoring_intent(json),
         }
 
-        o['root_keys'] = self._info.getAllRootKeys(o['keywords'])
+        o['root_keys'] = self._info.get_all_root_keys(o['keywords'])
         return o
 
     def _get_help(self, json):
@@ -103,10 +103,10 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                     feature = input("What feature are you asking about?\n>>> ")
                     data['literals'].append(feature)
                     data['types'].append("Visual Studio Feature")
-                    rootKey = self._info.literalToKey(feature)
+                    rootKey = self._info.literal_to_key(feature)
                     if rootKey:
                         data['root_keys'].append(rootKey)
-                    data['root_keys'] = self._info.getAllRootKeys(data['keywords'])
+                    data['root_keys'] = self._info.get_all_root_keys(data['keywords'])
                     self._process_visual_studio_feature(data)
 
         # General help.
@@ -142,7 +142,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 # Clarify a feature when there is more than one found.
                 for feature in features:
                     # Translate it to match the corresponding key within KEY_MAP.
-                    key_feature = self._info.literalToKey(feature)    # None, if unsuccesful.
+                    key_feature = self._info.literal_to_key(feature)    # None, if unsuccesful.
                     if key_feature:
                         ans = self._bot.ask("Are you asking about {0}?".format(key_feature.lower()))
                         if ans.lower() in _YES_WORDS:
@@ -151,7 +151,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                         self._bot.say("I am having trouble mapping {0}.".format(feature))
                         # TODO: LOG
             elif len(features) == 1:
-                key_feature = self._info.literalToKey(features[0])
+                key_feature = self._info.literal_to_key(features[0])
                 if key_feature:
                     return key_feature
 
@@ -165,7 +165,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             """A Helper function for _find_path_to_link.  Determines the appropriate sub key 
             given a key feature and a list of keywords.
             """
-            refined_keys = self._info.getRefinedKeys(key_feature, keywords)
+            refined_keys = self._info.get_refined_keys(key_feature, keywords)
             if refined_keys:
                 if 1 < len(refined_keys):
                     for subkey in refined_keys:
