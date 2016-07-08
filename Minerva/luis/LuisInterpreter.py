@@ -76,24 +76,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         and also a trigger to a more specialized version of that key in the
         same query.
         """
-        #def test_filter(paths):
-        #    # We do not anticipate these list ever having more than 2 or 3 items.
-        #    flat = [e for path in paths for e in path]
-        #    for i, key_one in enumerate(flat):
-        #        for j, key_two in enumerate(flat):
-        #            if i != j:
-        #                pass
-        #    counts = {}
-        #    for key in flat:
-        #        if key in counts.keys():
-        #            counts[key] += 1
-        #        else:
-        #            counts[key] = 1
-
-        #    for k, v in counts.items():
-        #        if v > 1:   # If key was found more than once.
-        #            pass
-
         def get_paths(word_set):
             """A helper function for __get_paths.  Returns an unfiltered list
             of all the paths pointed to by words in the word set.
@@ -137,23 +119,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         print(paths)
         return paths
     
-
-        #def filter(paths):
-        #    to_remove = []
-        #    for i, v in enumerate(paths):
-        #        if paths.count(v) > 1:
-        #            if paths.count(v) - 1 > to_remove.count(v):
-        #                to_remove.append(v)
-        #    for el in to_remove:
-        #        paths.remove(el)
-        #    return paths
-
-
-            
-        #p = get_paths(word_set)
-        #return p
-
-
     def _get_help(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
         to be 'Get Help'.
