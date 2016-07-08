@@ -84,31 +84,25 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             paths = []
             for word in word_set:
                 path = self._info.find_key_path(word)
-                print("DEBUG: The path returned is: {0}".format(path))
                 if path:
                     paths.append(path)
             return paths
         
         def remove_duplicates(paths, key):
             """Remove all but the longest path from paths."""
-            with_key = []   # The paths that have the same key.
             list_max = None     # The list with the longest length.
-            for path in paths:
-                if key in path:
-                    with_key.append(path)
+            # Get the paths that contain key.
+            with_key = [path for path in paths if key in path]
             for path in with_key:
                 if not list_max or len(path) > len(list_max):
                     list_max = path
-            for path in with_key:
-                if path is not list_max:
-                    paths.remove(path)
+            # Remove all lists of paths that are not the one with the longest length.
+            [paths.remove(p) for p in with_key if p is not list_max]
             return paths
         
         paths = get_paths(word_set)
-        print("Paths before removing subsets: {0}.".format(paths))
         flattened_paths = [p for path in paths for p in path]
         counts = {}
-
         for key in flattened_paths:
             if key in counts.keys():
                 counts[key] += 1
@@ -117,7 +111,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for key, count in counts.items():
             if count > 1:
                 paths = remove_duplicates(paths, key)
-        print("Paths after removing subsets: {0}".format(paths))
         # TODO:  Log how many paths were returned, and which ones (if needed).
         return paths
     
