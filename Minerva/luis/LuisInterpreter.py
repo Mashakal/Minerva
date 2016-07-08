@@ -76,31 +76,82 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         and also a trigger to a more specialized version of that key in the
         same query.
         """
-        def filter(paths):
-            to_remove = []
-            for i, v in enumerate(paths):
-                if paths.count(v) > 1:
-                    if paths.count(v) - 1 > to_remove.count(v):
-                        to_remove.append(v)
-            for el in to_remove:
-                paths.remove(el)
-            return paths
+        #def test_filter(paths):
+        #    # We do not anticipate these list ever having more than 2 or 3 items.
+        #    flat = [e for path in paths for e in path]
+        #    for i, key_one in enumerate(flat):
+        #        for j, key_two in enumerate(flat):
+        #            if i != j:
+        #                pass
+        #    counts = {}
+        #    for key in flat:
+        #        if key in counts.keys():
+        #            counts[key] += 1
+        #        else:
+        #            counts[key] = 1
+
+        #    for k, v in counts.items():
+        #        if v > 1:   # If key was found more than once.
+        #            pass
 
         def get_paths(word_set):
             """A helper function for __get_paths.  Returns an unfiltered list
             of all the paths pointed to by words in the word set.
             """
-            map = {}
+            paths = []
             for word in word_set:
                 path = self._info.find_key_path(word)
                 if path:
-                    for key in path:
-                        # Override paths when the same key is found.
-                        map[key] = path # does this work?  I am unconvinced.
-            return filter(list(map.values()))
+                    paths.append(path)
+            return paths
+        
+        def remove_duplicates(paths, key):
+            """Remove all but the longest path from paths."""
+            with_key = []   # The paths that have the same key.
+            list_max = None     # The list with the longest length.
+            for path in paths:
+                if key in path:
+                    with_key.append(path);
+            for path in with_key:
+                if not list_max or len(path) > len(list_max):
+                    list_max = path
+            for path in with_key:
+                if path is not list_max:
+                    paths.remove(path)
+            return paths
+        
+        paths = get_paths(word_set)
+        flattened_paths = [p for path in paths for p in path]
+        counts = {}
+
+        for key in flattened_paths:
+            if key in counts.keys():
+                counts[key] += 1
+            else:
+                counts[key] = 1
+
+        for key, count in counts.items():
+            if count > 1:
+                paths = remove_duplicates(paths, key)
+
+        print(paths)
+        return paths
+    
+
+        #def filter(paths):
+        #    to_remove = []
+        #    for i, v in enumerate(paths):
+        #        if paths.count(v) > 1:
+        #            if paths.count(v) - 1 > to_remove.count(v):
+        #                to_remove.append(v)
+        #    for el in to_remove:
+        #        paths.remove(el)
+        #    return paths
+
+
             
-        p = get_paths(word_set)
-        return p
+        #p = get_paths(word_set)
+        #return p
 
 
     def _get_help(self, json):

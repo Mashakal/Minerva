@@ -100,6 +100,24 @@ KEY_MAP_TESTER = {
     "Installation": {
         "Triggers": ['installation', 'install', 'instalation', 'installs']
     },
+    'Projects': {
+        'Triggers': ['projects', 'project'],
+        "Django": {
+            'Triggers': ['django']
+        },
+        'Web Projects': {
+            'Triggers': ['web projects', 'web']
+        },
+        'Project Types': {
+            'Triggers': ['project types', 'types', 'type']
+        },
+        'Cloud Service Project': {
+            'Triggers': ['cloud service project', 'cloud project', 'cloud']
+        },
+        'Working Without Projects': {
+            'Triggers': ['working without projects', 'without projects', 'lightweight', 'lightweight-usage', 'project-free', 'project free']
+        }
+    },
     "Debugging": {
         'Triggers': ['debugging', 'debug', 'debugger', 'debuggor'],
         'Remote Debugging': {

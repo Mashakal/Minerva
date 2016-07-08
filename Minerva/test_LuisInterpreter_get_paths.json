@@ -1,16 +1,23 @@
 {
   "entities": [
     {
-      "entity": "attached",
+      "entity": "project",
       "endIndex": 63,
       "type": "Keyword",
       "startIndex": 56,
       "score": 0.87806
     },
     {
-      "entity": "debugger",
+      "entity": "cloud",
       "endIndex": 51,
-      "type": "Visual Studio Feature",
+      "type": "Keyword",
+      "startIndex": 44,
+      "score": 0.9259783
+    },
+    {
+      "entity": "cloud service project",
+      "endIndex": 51,
+      "type": "Keyword",
       "startIndex": 44,
       "score": 0.9259783
     },
