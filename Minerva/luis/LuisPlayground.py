@@ -14,7 +14,8 @@ APP_IDS = {
 }
 
 # Debugging items.
-JSON_FILE = "sampleQueryResultsTEST.json"
+JSON_FILE = "sampleQueryResults.json"
+JSON_FILE = "test_LuisInterpreter_get_paths.json"
 #JSON_FILE = "errorwhiletryingtoattachdebuger.json"
 
 def build_luis_url(app_name):
