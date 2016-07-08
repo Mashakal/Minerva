@@ -1,7 +1,7 @@
 import random
 from DialogueStrings import ALL_STRINGS
 
-class Bot(object):
+class Agent(object):
     """Communicates with the user.
     """
     def _get_random_string_constant(self, genre):
@@ -77,7 +77,7 @@ class Bot(object):
             n = self.ask("{0} is not valid.  Enter a valid choice.".format(n))
         return opts[int(n) - 1]
 
-class VSBot(Bot):
+class VSAgent(Agent):
     """A Visual Studio bot.
     """
     def suggest_url(self, url):
