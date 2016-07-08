@@ -44,8 +44,8 @@ class Agent(object):
         s = self._get_random_string_constant(t)
         self.say(s.format(entity))
 
-    def clarify(self, opts, msg=None, indent=2):
-        """Outputs a clarifying message to standard output followed by an 
+    def give_options(self, opts, msg=None, indent=2):
+        """Outputs a message to standard output followed by an 
         ordered list of options defined by opts.  Ordering starts at 1 and 
         each element of opts is output on a new line.  Returns the opt chosen 
         by the user.  The message can be set explicitly via msg.  Indent can 

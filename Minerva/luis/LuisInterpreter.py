@@ -255,7 +255,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                     # Should probably always be a dictionary, but check just in case...
                     if isinstance(v, dict):
                         keys = list(v.keys())
-                        next_key = self._bot.clarify(keys)
+                        next_key = self._bot.give_options(keys)
                         path_to_link.append(next_key)
                     else:
                         # TODO: LOG
