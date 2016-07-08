@@ -1,7 +1,7 @@
 import sys
 from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
-from Bot import VSBot
+from Agent import VSAgent
 
 # For development purposes only.
 from Essentials import print_smart, get_file_size, json_to_file, file_to_json
@@ -14,7 +14,7 @@ APP_IDS = {
 }
 
 # Debugging items.
-JSON_FILE = "sampleQueryResults.json"
+JSON_FILE = "sampleQueryResultsTEST.json"
 #JSON_FILE = "errorwhiletryingtoattachdebuger.json"
 
 def build_luis_url(app_name):
@@ -26,7 +26,7 @@ def load_debug_json(client, filename):
     """Loads json from the file specified by 'filename'.  Makes a call to sendQuery when
     the file doesn't exist.  Will write the newly obtained json to filename."""
     if 0 == get_file_size(filename):
-        j = client.query(VSBot().start_query(), 'verbose')
+        j = client.query(VSAgent().start_query(), 'verbose')
         json_to_file(j, filename)
     else:
         j = file_to_json(filename)
@@ -35,13 +35,13 @@ def load_debug_json(client, filename):
 
 
 def main():
-    bot = VSBot()   # Interacts with the user.
+    bot = VSAgent()   # Interacts with the user.
     interp = ProjectSystemLuisInterpreter(bot, 'ptvs')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(build_luis_url('HelpBot'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
-    j = lc.query(bot.start_query(), 'verbose')
-    #j = loadDebugJson(lc, JSON_FILE)
+    #j = lc.query(bot.start_query(), 'verbose')
+    j = load_debug_json(lc, JSON_FILE)
     interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
 
 if __name__ == "__main__":
