@@ -26,9 +26,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Bot\Bot.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Bot\Agent.py" />
     <Compile Include="Bot\DialogueStrings.py">
       <SubType>Code</SubType>
     </Compile>
