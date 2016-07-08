@@ -28,12 +28,12 @@ class InfoManager(object):
         except KeyError:
             raise ValueError("Cannot find module named: {0}".format(mod))
 
-    def literal_to_key(self, literal, d=None):
+    def literal_to_key(self, literal, dic=None):
         """Returns the appropriate key for links when given a literal.
         For example, if the literal passed in is "debug" it will map this to
         "Debugging" for extraction of information out of LINKS.
         """
-        d = d if d else self.key_map
+        d = dic if dic else self.key_map
         for k, v in d.items():
             if literal.lower() in v['Triggers']:
                 return k
@@ -61,28 +61,30 @@ class InfoManager(object):
         """
         d = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
         p = path if path else []
-        print("DEBUG: path is: {0}".format(p))
         for k, v in d.items():
-            if isinstance(v, dict):
+            # See if our literal is in any of this key's triggers.
+            if isinstance(v, dict):     # A key's triggers are always in its value's dictionary.
                 try:
                     if literal.lower() in v['Triggers']:
                         p.append(k)
                         return p
-                    else:     # Assumes 'Triggers' is the only final key in a dict.
+                    else:
+                        # Recursively search for the literal in deeper dicts.
                         p.append(k)
                         p = self.find_key_path(literal, p, v)
                 except KeyError:
-                    # If the item is a dictionary and it does not have a 'Triggers' property
-                    # it is safe to assume we haven't found a key.
-                    return False
-                if not p:
-                    print(p)
+                    pass
+                # Look to see if we have a new key added to path.
+                if p == path or not p:
+                    # If not, path stays the same or is reset, depending on the 
+                    # depth of the dictionary (v) we are searching.
                     p = path if path else []
                 else:
-                    print(p)
-                    print("\n\tTHIS IS A HUMOUNGOUS TEST\n")
                     return p
-        return False
+        if p:
+            # This last key does not point to our literal, so remove it from the path.
+            p.pop()
+        return p or False
 
     def get_next_key(self, feature, keyword):
         """Determine if a previously identified feature has any specialized
