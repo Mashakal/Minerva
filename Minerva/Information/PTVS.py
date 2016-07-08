@@ -3,6 +3,7 @@
 NAME = "PTVS"
 
 LINKS = {
+    # All key MUST lead to either a url or a dictionary of keys that lead to a url.
     "WIKI": "https://github.com/Microsoft/PTVS/wiki",
     "Installation": "https://github.com/Microsoft/PTVS/wiki/PTVS-Installation",
     "Feature Matrix": "https://github.com/Microsoft/PTVS/wiki/Features-Matrix",
@@ -42,7 +43,7 @@ LINKS = {
         "The Debug Interactive Window": "https://github.com/Microsoft/PTVS/wiki/Debugging#the-debug-interactive-window",
         "Remote Debugging": {
             "Windows, Linux, and OS X": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
-            "Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging"
+            "Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging",
         },
         "Mixed-Mode Debugging": "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging"
     },
@@ -69,34 +70,34 @@ LINKS = {
 }
 
 # TODO:  Make updating this map with new synonyms/triggers automatic.
-KEY_MAP = {
-    "Installation": {
-        "Triggers": ['installation', 'install', 'instalation', 'installs']
-    },
-    "Debugging": {
-        'Triggers': ['debugging', 'debug', 'debugger', 'debuggor'],
-        'Subkeys': {
-            'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
-        }
-    },
-    "Feature Matrix": {
-        'Triggers': ['feature matrix', 'features']
-    },
-    'Overview Videos': {
-        'Triggers': ['overview videos', 'video', 'videos', 'overview']
-    },
-    'Contributing': {
-        'Triggers': ['contributing', 'contribute', 'pull request']
-    },
-    'Build Instructions': {
-        'Triggers': ['build instructions', 'building', 'build']
-    },
-    'Editing': {
-        'Triggers': ['editing', 'code editing']
-    }
-}
+#KEY_MAP = {
+#    "Installation": {
+#        "Triggers": ['installation', 'install', 'instalation', 'installs']
+#    },
+#    "Debugging": {
+#        'Triggers': ['debugging', 'debug', 'debugger', 'debuggor'],
+#        'Subkeys': {
+#            'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
+#        }
+#    },
+#    "Feature Matrix": {
+#        'Triggers': ['feature matrix', 'features']
+#    },
+#    'Overview Videos': {
+#        'Triggers': ['overview videos', 'video', 'videos', 'overview']
+#    },
+#    'Contributing': {
+#        'Triggers': ['contributing', 'contribute', 'pull request']
+#    },
+#    'Build Instructions': {
+#        'Triggers': ['build instructions', 'building', 'build']
+#    },
+#    'Editing': {
+#        'Triggers': ['editing', 'code editing']
+#    }
+#}
 
-KEY_MAP_TESTER = {
+KEY_MAP = {
     "Installation": {
         "Triggers": ['installation', 'install', 'instalation', 'installs']
     },
