@@ -1,5 +1,6 @@
 import PTVS
 import sys
+from Essentials import enter_and_exit_labels
 
 _MODULE_MAP = {
     'ptvs': PTVS
@@ -53,28 +54,33 @@ class InfoManager(object):
     #            except KeyError:
     #                pass
     #    return False
-    
+
     def find_key_path(self, literal, path=None, dic=None):
         """When literal is found to be a trigger, a list of keys that will lead to
         the item the literal matches is returned.  Otherwise, False is returned.
         """
         d = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
         p = path if path else []
-
+        print("DEBUG: path is: {0}".format(p))
         for k, v in d.items():
             if isinstance(v, dict):
                 try:
                     if literal.lower() in v['Triggers']:
                         p.append(k)
                         return p
-                    else:
+                    else:     # Assumes 'Triggers' is the only final key in a dict.
                         p.append(k)
                         p = self.find_key_path(literal, p, v)
                 except KeyError:
-                    pass
+                    # If the item is a dictionary and it does not have a 'Triggers' property
+                    # it is safe to assume we haven't found a key.
+                    return False
                 if not p:
-                    p = []
+                    print(p)
+                    p = path if path else []
                 else:
+                    print(p)
+                    print("\n\tTHIS IS A HUMOUNGOUS TEST\n")
                     return p
         return False
 
