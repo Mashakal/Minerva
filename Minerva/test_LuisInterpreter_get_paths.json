@@ -8,7 +8,7 @@
       "score": 0.87806
     },
     {
-      "entity": "cloud",
+      "entity": "remote",
       "endIndex": 51,
       "type": "Keyword",
       "startIndex": 44,
@@ -22,9 +22,16 @@
       "score": 0.9259783
     },
     {
-      "entity": "python",
+      "entity": "debug",
       "endIndex": 42,
-      "type": "Language",
+      "type": "Keyword",
+      "startIndex": 37,
+      "score": 0.9581067
+    },
+    {
+      "entity": "building",
+      "endIndex": 42,
+      "type": "Keyword",
       "startIndex": 37,
       "score": 0.9581067
     }
