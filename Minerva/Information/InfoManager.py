@@ -39,27 +39,12 @@ class InfoManager(object):
                 return k
         return None
 
-    #def _get_key_from_trigger(self, literal, dic=None):
-    #    """Returns the corresponding key when that key is triggered by
-    #    a literal keyword.  Only searches the outermost layer of dic.
-    #    Returns False when no key in the outermost layer is triggered.
-    #    """
-    #    d = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
-
-    #    for k, v in d.items():
-    #        if isinstance(v, dict):
-    #            try:
-    #                if literal.lower() in v['Triggers']:
-    #                    return k
-    #            except KeyError:
-    #                pass
-    #    return False
-
     def find_key_path(self, literal, path=None, dic=None):
         """When literal is found to be a trigger, a list of keys that will lead to
         the item the literal matches is returned.  Otherwise, False is returned.
         """
-        d = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
+        #d = dic if dic else _MODULE_MAP['ptvs'].KEY_MAP_TESTER
+        d = dic if dic else self.key_map
         p = path if path else []
         for k, v in d.items():
             # See if our literal is in any of this key's triggers.
@@ -106,14 +91,6 @@ class InfoManager(object):
                 return k
         return None
 
-    #def test_get_next_key(self, keyword, d):
-        
-    #    for k, v in d.items():
-    #        if isinstance(v, dict):
-    #            try:
-    #                if keyword in v['Triggers']:
-    #                    return True
-
     def get_refined_keys(self, key_feature, keywords):
         """Takes keywords that are found by LUIS and searches keyword triggers
         to see if a keyword can be used in context of the keyFeature.  If
@@ -156,12 +133,12 @@ class InfoManager(object):
         """Returns the url pointed to by keys.
         """
         v = self.traverse_keys(keys)
-        # We assume a string object is going to be a url.
-        if not isinstance(v, str):
-            raise IncompleteKeyListError("{0} is not a string.".format(v))
-        else:
-            return v
-
+        ## We assume a string object is going to be a url.
+        #if not isinstance(v, str):
+        #    raise IncompleteKeyListError("{0} is not a string.".format(v))
+        #else:
+        #    return v
+        return v
 
 def main():
     im = InfoManager('ptvs')
