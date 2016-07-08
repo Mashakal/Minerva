@@ -58,6 +58,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
         o = {
+            'query': json['query'],
             'literals': self._get_literals(json),
             'types': self._get_types(json),
             'keywords': self._get_all_literals_of_type('Keyword', json),
@@ -104,7 +105,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return paths
         
         paths = get_paths(word_set)
-        print(paths)
+        print("Paths before removing subsets: {0}.".format(paths))
         flattened_paths = [p for path in paths for p in path]
         counts = {}
 
@@ -116,7 +117,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for key, count in counts.items():
             if count > 1:
                 paths = remove_duplicates(paths, key)
-        print(paths)
+        print("Paths after removing subsets: {0}".format(paths))
         # TODO:  Log how many paths were returned, and which ones (if needed).
         return paths
     
@@ -127,16 +128,53 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         data = self._format_data(json)
         
         # Print some debugging information.
-        print("QUERY: {0}".format(json['query']))
+        print("\nQUERY: {0}".format(data['query']))
         for i in range(len(data['literals'])):
-            print("%s: %s" % (data['types'][i].upper(), data['literals'][i]))
+            print("{0}: {1}".format(data['types'][i].upper(), data['literals'][i]))
         print()
 
         # Help with a VS feature.
-        if "Visual Studio Feature" in data['types']:
-            self._process_visual_studio_feature(data)
+        #if "Visual Studio Feature" in data['types']:
+        #    self._process_visual_studio_feature(data)
 
-            
+        # Check if the user triggered any links to the wiki page.
+        paths = data['paths']
+
+        # PROBLEMS WITH THE BELOW APPROACH:
+        #  1)  It does not provide an acknowledgement, which gives the user context to the give_options query.
+        #  2)  It might be decided later that a different topic is being asked, can this be figured out first? (when there is more than one path)
+        urls = []
+        for path in paths:
+            url = self._info.get_url(path)
+            while not isinstance(url, str):    # All url are string.
+                # We assume url will be a dict if not str.
+                keys = list(url.keys())
+                if 1 < len(keys):
+                    next = self._bot.give_options(list(url.keys()))
+                    path.append(next)
+                else:
+                    path.append(keys[0])
+                url = self._info.get_url(path)
+            urls.append(url)
+
+        for url in urls:
+            self._bot.suggest_url(url)
+
+
+        #if 0 < len(data['paths']):
+        #    if 1 < len(data['paths']):
+        #        # Get a list of the deepest key in each path.
+        #        options = [k for path in data['paths'] for i, k in enumerate(path) if i + 1 == len(path)]
+        #        choice = self._bot.give_options(options)
+        #        print("You chose: {0}".format(choice))
+        #    else:
+        #        print("data['paths'] is: {0}".format(data['paths']))
+        #        url = self._info.get_url(data['paths'][0])
+        #        while not isinstance(url, str): # DANGER! 
+        #            data['paths'][0].append(self._bot.give_options(list(url.keys())))
+        #            url = self._info.get_url(data['paths'][0])
+        #        print("url is: {0}".format(url))
+        #        self._bot.suggest_url(url)
                     
     def _process_visual_studio_feature(self, data):
         # Get a list of keys in order of traversal to a suggested URL.
