@@ -83,6 +83,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             paths = []
             for word in word_set:
                 path = self._info.find_key_path(word)
+                print("DEBUG: The path returned is: {0}".format(path))
                 if path:
                     paths.append(path)
             return paths
@@ -93,7 +94,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             list_max = None     # The list with the longest length.
             for path in paths:
                 if key in path:
-                    with_key.append(path);
+                    with_key.append(path)
             for path in with_key:
                 if not list_max or len(path) > len(list_max):
                     list_max = path
@@ -103,6 +104,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return paths
         
         paths = get_paths(word_set)
+        print(paths)
         flattened_paths = [p for path in paths for p in path]
         counts = {}
 
@@ -111,12 +113,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 counts[key] += 1
             else:
                 counts[key] = 1
-
         for key, count in counts.items():
             if count > 1:
                 paths = remove_duplicates(paths, key)
-
         print(paths)
+        # TODO:  Log how many paths were returned, and which ones (if needed).
         return paths
     
     def _get_help(self, json):
@@ -135,41 +136,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         if "Visual Studio Feature" in data['types']:
             self._process_visual_studio_feature(data)
 
-        # Help with installation.
-        elif "Installation" in data['root_keys']:
-            self._bot.acknowledge('installation')
-            self._bot.say("This link has the best information about installing PTVS \nand some common packages: {0}.".format(self._info.links['Installation']))
-            # TODO:  What if they want help with a different type of installation.
-
-        # Help with feature matrix.
-        elif "Feature Matrix" in data['root_keys']:
-            # This assumes the Project System in the query is the same as the current module.
-            if "Project System" in data['types']:
-                self._bot.say("You can learn about {0}'s features here: {1}".format(self._info.name, self._info.get_url('Feature Matrix')))
-            else:
-                ans = self._bot.ask("Are you asking about features of {0}?".format(self._info.name))
-                if ans in _YES_WORDS:
-                    self._bot.say("You can learn about {0}'s features here: {1}".format(self._info.name, self._info.links['Feature Matrix']))
-                else:
-                    # TODO:  Make this better.
-                    feature = input("What feature are you asking about?\n>>> ")
-                    data['literals'].append(feature)
-                    data['types'].append("Visual Studio Feature")
-                    rootKey = self._info.literal_to_key(feature)
-                    if rootKey:
-                        data['root_keys'].append(rootKey)
-                    data['root_keys'] = self._info.get_all_root_keys(data['keywords'])
-                    self._process_visual_studio_feature(data)
-
-        # General help.
-            # Feature matrix, installation, overview videos, contributing, build instructions, tutorials.
-            # Can we make this a catch-all else statement, at the end?  We will see...
-
-        # Help with editing:
-        elif "Editing" in data['root_keys']:
-            self._bot.acknowledge('Editing')
-            url = self._info.get_url('Editing')
-            self._bot.suggest_url(url)
             
                     
     def _process_visual_studio_feature(self, data):
