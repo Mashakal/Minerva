@@ -86,18 +86,21 @@ class Agent(object):
         something like 'Are you asking about Debugging?'.
         """
         def validate_input(ans, opts):
-            """A helper function for clarify.  Validates that the
-            user's input matches one of opts.  Returns each word
-            of input
+            """Validates that the user's input matches one of opts.  
+            Returns a set of opts where any word in ans is found 
+            in any word of that opt.
             """
             # Use each word in the user's input.
             user_words = {w.lower() for w in ans.split(" ")}
             opts_words = [w.lower().split(" ") for w in opts]
-            flat_opts_words = set(([w for l in opts_words for w in l]))
+            flat_opts_words = set(([w for li in opts_words for w in li]))
             # Find any matching opts.
             print("user_words: {0}\nflat_opts_words: {1}".format(user_words, flat_opts_words))
             valid_input = user_words & flat_opts_words
-            return valid_input if valid_input else False
+            # Take the valid input and match it to its corresponding opts.
+            chosen = set(([o for o in opts for valid in valid_input if valid in o.lower()]))
+            # TODO: Log how many valid input are being returned.
+            return chosen if chosen else False
 
         def build_conj_string(opts, conj):
             """Builds the conjunction part of the string, using
@@ -112,16 +115,21 @@ class Agent(object):
                 s = "%s?"
             return s
 
+        if not opts:
+            raise ValueError("opts cannot be empty.")
+
         msg = self._get_random_string_constant('clarify')
         # Allow an arbitrary number of opts to be printed.
         msg += "%s" % ','.join([' %s'] * (len(opts) - 1))
         # Conjunction string depends on size of opts.
         msg += build_conj_string(opts, conj)
-        ans = self.ask(msg % tuple(opts))
-        while not validate_input(ans, opts):
-            self.say("I'm sorry, which of the {0}?".format(len(opts)))
-            ans = self.ask(msg % tuple(opts))
-        return ans
+        # Require a match to at least one of opts.
+        opt = validate_input(self.ask(msg % tuple(opts)), opts) # False on failure.
+        while not opt:
+            # Negative acknowledgement and ask the message again.
+            self.say("I don't understand, {0}".format((msg % tuple(opts)).lower()))
+            opt = validate_input(self._prompt(), opts)
+        return opt
 
 
 class VSAgent(Agent):
