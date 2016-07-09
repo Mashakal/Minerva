@@ -2,3 +2,19 @@ DATA THAT WILL BE HELPFUL:
 	- How often does more than root key appear in paths?
 		- Knowing this will help:
 			> Identify where improvements to suggestions can be made.
+
+
+DOCUMENTATION:
+
+Bot.Agent.Agent.clarify.validate_input
+	- What: 
+		The number of valid options being returned.
+	- Message:  
+		  We want this number to be low.  Why? The purpose
+		of the function clarify is to narrow down selections so that
+		the user can get a better suggestion from the bot.
+		  When there are more than one option being returned as valid
+		as valid input it is usually an indication of less than
+		desirable interpretation of the user's query prior to clarify
+		being called, which is logic that is decoupled from the method 
+		clarify entirely.
