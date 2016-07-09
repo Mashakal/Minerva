@@ -129,17 +129,6 @@ class InfoManager(object):
             v = v[keys]
         return v
 
-    def get_url(self, keys):
-        """Returns the url pointed to by keys.
-        """
-        v = self.traverse_keys(keys)
-        ## We assume a string object is going to be a url.
-        #if not isinstance(v, str):
-        #    raise IncompleteKeyListError("{0} is not a string.".format(v))
-        #else:
-        #    return v
-        return v
-
 def main():
     im = InfoManager('ptvs')
     path = im.find_key_path('code editing')
