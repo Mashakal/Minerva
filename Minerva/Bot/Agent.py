@@ -90,7 +90,7 @@ class Agent(object):
             Returns a set of opts where any word in ans is found 
             in any word of that opt.
             """
-            # Use each word in the user's input.
+            # Search for each word in the user's input.
             user_words = {w.lower() for w in ans.split(" ")}
             opts_words = [w.lower().split(" ") for w in opts]
             flat_opts_words = set(([w for li in opts_words for w in li]))
