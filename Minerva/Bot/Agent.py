@@ -1,6 +1,6 @@
 import random
-from DialogueStrings import ALL_STRINGS
 import sys
+import DialogueStrings
 
 class Agent(object):
     """Communicates with the user.
@@ -10,7 +10,7 @@ class Agent(object):
         Returns a random string from the extracted array.
         """
         try:
-            strings = ALL_STRINGS[genre]
+            strings = DialogueStrings.ALL_STRINGS[genre]
         except KeyError:
             raise ValueError("Cannot find strings of type: {0}.".format(genre))
         else:
@@ -37,12 +37,11 @@ class Agent(object):
         print(s)
         return self._prompt()
 
-    def acknowledge(self, entity, positive=True):
+    def acknowledge(self, entity, genre='positive_acks'):
         """Output a positive or negative acknowledgement, formatted
         with s.
         """
-        t = 'positive_acks' if positive else 'negative_acks'
-        s = self._get_random_string_constant(t)
+        s = self._get_random_string_constant(genre)
         self.say(s.format(entity))
 
     def give_options(self, opts, msg=None, indent=2, genre='options'):
