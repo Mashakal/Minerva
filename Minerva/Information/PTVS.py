@@ -1,3 +1,9 @@
+############################################################################################
+# TO NOTE:
+#  - All keys in LINKS should be unique.
+#  - All triggers in KEY_MAP should be unique.
+#  - 
+############################################################################################
 # There should be some way to validate that there are no triggers are the same for two separate keys.
 
 NAME = "PTVS"
