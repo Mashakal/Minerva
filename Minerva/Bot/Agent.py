@@ -51,7 +51,8 @@ class Agent(object):
             # Get a unified string that has the items listed in order.
             f = f % tuple(items)
             self.say(s.format(f))
-        else:   # Assumes items is a string.
+        else:
+            # Assumes items is a string.
             self.say(s.format(items))
 
     def give_options(self, opts, msg=None, indent=2, genre='options'):
@@ -154,11 +155,22 @@ class Agent(object):
 class VSAgent(Agent):
     """A Visual Studio bot.
     """
-    def suggest_url(self, url):
-        """Output a message suggesting the user visit url.
+    def suggest_url(self, url, topic, genre='suggest_url'):
+        """Output a message suggesting the user learn more about topic at url.
         """
-        s = self._get_random_string_constant('suggest_url')
-        self.say(s.format(url))
+        s = self._get_random_string_constant(genre)
+        if genre == 'suggest_url':
+            self.say(s.format(url))
+        else:
+            self.say(s.format(topic, url))
+
+    def suggest_multiple_urls(self, urls, topics):
+        """Suggests all url.
+        """
+        # Print the suggested url with it's corresponding key/topic.
+        genre = 'suggest_mult_url' if 1 < len(urls) else 'suggest_url'
+        for i, url in enumerate(urls):
+            self.suggest_url(url, topics[i], genre)
 
     def start_query(self, msg=None):
         """Initiates an interaction with the help bot.
