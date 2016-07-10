@@ -1,0 +1,43 @@
+{
+  "entities": [
+    {
+      "entity": "remote",
+      "type": "Keyword",
+      "score": 0.9607906,
+      "endIndex": 23,
+      "startIndex": 18
+    },
+    {
+      "entity": "project",
+      "type": "Keyword",
+      "score": 0.6730929,
+      "endIndex": 63,
+      "startIndex": 57
+    },
+    {
+      "entity": "debugging",
+      "type": "Visual Studio Feature",
+      "score": 0.9436972,
+      "endIndex": 33,
+      "startIndex": 25
+    },
+    {
+      "entity": "intellisense",
+      "type": "Visual Studio Feature",
+      "score": 0.9436972,
+      "endIndex": 33,
+      "startIndex": 25
+    }
+  ],
+  "intents": [
+    {
+      "intent": "Get Help",
+      "score": 0.9972282
+    },
+    {
+      "intent": "None",
+      "score": 0.003542487
+    }
+  ],
+  "query": "I need help using remote debugging with my cloud service project."
+}
