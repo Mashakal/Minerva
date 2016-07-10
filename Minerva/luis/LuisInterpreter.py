@@ -1,4 +1,5 @@
-from InfoManager import InfoManager
+import InfoManager
+import collections
 
 # For development purposes only:
 from Essentials import enter_and_exit_labels, print_smart
@@ -41,7 +42,9 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     as a part of a help bot.
     """
     def __init__(self, bot, project_system):
-        self._info = InfoManager(project_system)
+        # _info is the main point of access for anything specific to a project (e.g. urls, triggers, keywords).
+        self._info = InfoManager.ProjectSystemInfoManager(project_system)
+        # Use _bot to interact with the user (e.g. ask a question, clarify between options, acknowledge keywords).
         self._bot = bot
         
         # Maps an intent to a function.
@@ -58,14 +61,12 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
         o = {
-            #'query': json['query'],
-            #'literals': self._get_literals(json),
-            #'types': self._get_types(json),
             'keywords': self._get_all_literals_of_type('Keyword', json),
             'vs_features': self._get_all_literals_of_type('Visual Studio Feature', json),
             'intent': self._get_top_scoring_intent(json)
         }
-        #o['root_keys'] = self._info.get_all_root_keys(o['keywords'])
+        # Add to the set any entities that you have urls for in the info.links dict.
+        # Just make sure to call _get_all_literals_of_type(entity, json) as above.
         o['paths'] = self.__get_paths(set(o['keywords'] + o['vs_features']))
         return o
 
@@ -104,12 +105,10 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         paths = get_paths(word_set)
         flattened_paths = [p for path in paths for p in path]
         counts = {}
+        counter = collections.Counter()
         for key in flattened_paths:
-            if key in counts.keys():
-                counts[key] += 1
-            else:
-                counts[key] = 1
-        for key, count in counts.items():
+            counter[key] += 1
+        for key, count in counter.most_common(): # Get ALL elements in counter.
             if count > 1:
                 paths = remove_duplicates(paths, key) 
         # TODO:  Log how many paths were returned, and which ones.
@@ -136,6 +135,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 return False
 
         def get_ending_url(path):
+            """Given a single path, get to an url.
+            """
             u = self._info.traverse_keys(path)
             while not isinstance(u, str):   # Path might not lead to url yet.
                 if 'Home' in u.keys():
@@ -164,14 +165,18 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # Check if the user triggered any links to the wiki page.
         paths = clarify_paths(data['paths'])
         if paths:
-            self._bot.acknowledge([p[len(p) - 1] for p in paths])
             urls = [get_ending_url(path) for path in paths]
-            for url in urls:
-                self._bot.suggest_url(url)
+            print(urls)
+            topics = [self._info.get_url_description(u) for u in urls]
+            print(urls)
+            self._bot.acknowledge(topics)
+            self._bot.suggest_multiple_urls(urls, topics)
         else:
             # Try StackExchange
-            self._bot.say("Hmmm, I'm sorry.  Let me see what I can find through stackoverflow.")
-            pass
+            self._bot.say("Hmmm, I'm not sure the wiki can help.\nLet me see what I can find through stackoverflow.")
+            raise NotImplementedError("Querying stackoverflow is not yet implemented.")
 
     def _undefined(self):
         self._bot.say("I'm sorry, I don't know what you're asking.")
+        # "Help me understand what I can do for you?"
+        # Give options on different intents, call that function with the original query or a new one, whichever makes more sense.
