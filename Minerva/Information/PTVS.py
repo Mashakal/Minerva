@@ -29,20 +29,20 @@ LINKS = {
     "Navigation": "https://github.com/Microsoft/PTVS/wiki/Editor-Features#navigation",
     "Code Formatting": "https://github.com/Microsoft/PTVS/wiki/Code-Formatting",
     "Refactoring": {
-        "BASE_URL": "https://github.com/Microsoft/PTVS/wiki/Refactoring",
+        "Home": "https://github.com/Microsoft/PTVS/wiki/Refactoring",
         "Rename": "https://github.com/Microsoft/PTVS/wiki/Refactoring#rename-variable",
         "Extract Method": "https://github.com/Microsoft/PTVS/wiki/Refactoring#extract-method",
         "Add Import": "https://github.com/Microsoft/PTVS/wiki/Refactoring#add-import",
         "Remove Imports": "https://github.com/Microsoft/PTVS/wiki/Refactoring#remove-imports"
     },
     "Interactive REPL": {
-        "BASE_URL": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL",
+        "Home": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL",
         "Switching Scopes": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL#switching-scopes",
         "Send Code to Interactive": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL#sending-code-to-interactive",
         "Using IPython with PTVS": "https://github.com/Microsoft/PTVS/wiki/Using-IPython-with-PTVS"
     },
     "Debugging": {
-        "BASE_URL": "https://github.com/Microsoft/PTVS/wiki/Debugging",
+        "Home": "https://github.com/Microsoft/PTVS/wiki/Debugging",
         "Basic Debugging": "https://github.com/Microsoft/PTVS/wiki/Debugging#basic-debugging",
         "Debugging with a Project": "https://github.com/Microsoft/PTVS/wiki/Debugging#debugging-with-a-project",
         "Debugging without a Project": "https://github.com/Microsoft/PTVS/wiki/Debugging#debugging-without-a-project",
@@ -55,7 +55,7 @@ LINKS = {
     },
     "Profiling": "https://github.com/Microsoft/PTVS/wiki/Profiling",
     "Projects": {
-        "BASE_URL": "https://github.com/Microsoft/PTVS/wiki/Projects",
+        "Home": "https://github.com/Microsoft/PTVS/wiki/Projects",
         "Project Types": "https://github.com/Microsoft/PTVS/wiki/Projects#project-types",
         "Django": "https://github.com/Microsoft/PTVS/wiki/Django",
         "Web Projects": "https://github.com/Microsoft/PTVS/wiki/Web-Project",
@@ -74,34 +74,6 @@ LINKS = {
     "Kinect for Python": "https://github.com/Microsoft/PTVS/wiki/PyKinect",
     "wfastcgi (on PyPI)": "https://pypi.python.org/pypi/wfastcgi"
 }
-
-# TODO:  Make updating this map with new synonyms/triggers automatic.
-#KEY_MAP = {
-#    "Installation": {
-#        "Triggers": ['installation', 'install', 'instalation', 'installs']
-#    },
-#    "Debugging": {
-#        'Triggers': ['debugging', 'debug', 'debugger', 'debuggor'],
-#        'Subkeys': {
-#            'Remote Debugging': ['remote', 'attach', 'attached', 'nonlocal', 'ptvsd']
-#        }
-#    },
-#    "Feature Matrix": {
-#        'Triggers': ['feature matrix', 'features']
-#    },
-#    'Overview Videos': {
-#        'Triggers': ['overview videos', 'video', 'videos', 'overview']
-#    },
-#    'Contributing': {
-#        'Triggers': ['contributing', 'contribute', 'pull request']
-#    },
-#    'Build Instructions': {
-#        'Triggers': ['build instructions', 'building', 'build']
-#    },
-#    'Editing': {
-#        'Triggers': ['editing', 'code editing']
-#    }
-#}
 
 KEY_MAP = {
     "Installation": {
@@ -145,5 +117,8 @@ KEY_MAP = {
     },
     'Editing': {
         'Triggers': ['editing', 'code editing']
+    },
+    'Intellisense': {
+        'Triggers': ['intellisense', 'autocomplete']
     }
 }
