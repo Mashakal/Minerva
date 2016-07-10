@@ -51,24 +51,27 @@ class InfoManager(object):
             if isinstance(v, dict):     # A key's triggers are always in its value's dictionary.
                 try:
                     if literal.lower() in v['Triggers']:
+                        # We found a key in this dict.
                         p.append(k)
                         return p
                     else:
-                        # Recursively search for the literal in deeper dicts.
-                        p.append(k)
-                        p = self.find_key_path(literal, p, v)
+                        # This key wasn't triggered, but maybe...
+                        p.append(k) # ...one of k's children might lead us to a trigger...
+                        p = self.find_key_path(literal, p, v) # ... let's check.
                 except KeyError:
                     pass    # A dictionary might not have 'Triggers' as a key.
-                # Look to see if path wasn't added to or is False.
+                # p will now be different than path if we found a subkey in this dict's children.
+                # Or it will be False, no subkey was triggered.
                 if p == path or not p:
                     # Path stays the same or is reset, depending on the 
                     # depth of the dictionary (v) we are searching.
                     p = path if path else []
                 else:
+                    # We found a key in a child dict.
                     return p
         if p:
-            # This last key does not point to our literal, so remove it from the path.
-            p.pop()
+            # None of v's subkeys were triggered, nor any of its heir's subkeys.
+            p.pop() # Ditch v's key.
         return p or False
 
     #def get_next_key(self, feature, keyword):
