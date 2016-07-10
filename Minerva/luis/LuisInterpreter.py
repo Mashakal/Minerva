@@ -126,7 +126,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             """
             # One path is good, as long Luis picked up the right keywords.
             if 1 == len(paths):
-                return paths[0]
+                return paths
             elif 1 < len(paths):
                 ending_keys = [p[len(p) - 1] for p in paths]
                 ans = self._bot.clarify(ending_keys)
@@ -162,12 +162,9 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         #print("*" * 79)
 
         # Check if the user triggered any links to the wiki page.
-        print("Post clarify paths are: {0}".format(data['paths']))
         paths = clarify_paths(data['paths'])
-        print("Paths is: {0}".format(paths))
         if paths:
-            li = [p[len(p) - 1] for p in paths] if 1 < len(paths) else paths[len(paths - 1)]
-            self._bot.acknowledge(li)
+            self._bot.acknowledge([p[len(p) - 1] for p in paths])
             urls = [get_ending_url(path) for path in paths]
             for url in urls:
                 self._bot.suggest_url(url)
