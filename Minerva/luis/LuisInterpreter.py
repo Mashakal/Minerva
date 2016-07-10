@@ -58,14 +58,14 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
         o = {
-            'query': json['query'],
-            'literals': self._get_literals(json),
-            'types': self._get_types(json),
+            #'query': json['query'],
+            #'literals': self._get_literals(json),
+            #'types': self._get_types(json),
             'keywords': self._get_all_literals_of_type('Keyword', json),
             'vs_features': self._get_all_literals_of_type('Visual Studio Feature', json),
-            'intent': self._get_top_scoring_intent(json),
+            'intent': self._get_top_scoring_intent(json)
         }
-        o['root_keys'] = self._info.get_all_root_keys(o['keywords'])
+        #o['root_keys'] = self._info.get_all_root_keys(o['keywords'])
         o['paths'] = self.__get_paths(set(o['keywords'] + o['vs_features']))
         return o
 
@@ -93,6 +93,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             list_max = None     # The list with the longest length.
             # Get the paths that contain key.
             with_key = [path for path in paths if key in path]
+            # Find the longest one.
             for path in with_key:
                 if not list_max or len(path) > len(list_max):
                     list_max = path
@@ -110,158 +111,70 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 counts[key] = 1
         for key, count in counts.items():
             if count > 1:
-                paths = remove_duplicates(paths, key)
-        # TODO:  Log how many paths were returned, and which ones (if needed).
+                paths = remove_duplicates(paths, key) 
+        # TODO:  Log how many paths were returned, and which ones.
         return paths
     
     def _get_help(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
         to be 'Get Help'.
         """
+        def clarify_paths(paths):
+            """Determine which topic is most pertinent to the user
+            when more than one unique path is found given the
+            user's query.
+            """
+            # One path is good, as long Luis picked up the right keywords.
+            if 1 == len(paths):
+                return paths[0]
+            elif 1 < len(paths):
+                ending_keys = [p[len(p) - 1] for p in paths]
+                ans = self._bot.clarify(ending_keys)
+                return [p for p in paths for a in ans if p[len(p) - 1] == a]
+            else:
+                # No paths found.
+                return False
+
+        def get_ending_url(path):
+            u = self._info.traverse_keys(path)
+            while not isinstance(u, str):   # Path might not lead to url yet.
+                if 'Home' in u.keys():
+                    path.append('Home') # Some keys have sub keys and an url.
+                else:
+                    # If our path doesn't point to a key with its own url,
+                    # ask the user where to go from here.
+                    keys = list(u.keys())
+                    # We only need to ask when there is more than one potential key.
+                    if 1 < len(keys):
+                        next = self._bot.give_options([k for k in u.keys()])
+                        path.append(next)
+                    else:
+                        path.append(keys[0])
+                u = self._info.traverse_keys(path)
+            return u
+
         data = self._format_data(json)
         
         # Print some debugging information.
-        print("\nQUERY: {0}".format(data['query']))
-        for i in range(len(data['literals'])):
-            print("{0}: {1}".format(data['types'][i].upper(), data['literals'][i]))
-        print()
-
-        # Help with a VS feature.
-        #if "Visual Studio Feature" in data['types']:
-        #    self._process_visual_studio_feature(data)
+        #print("QUERY: {0}".format(data['query']))
+        #for i in range(len(data['literals'])):
+        #    print("{0}: {1}".format(data['types'][i].upper(), data['literals'][i]))
+        #print("*" * 79)
 
         # Check if the user triggered any links to the wiki page.
-        paths = data['paths']
-
-        # PROBLEMS WITH THE BELOW APPROACH:
-        #  1)  It does not provide an acknowledgement, which gives the user context to the give_options query.
-        #  2)  It might be decided later that a different topic is being asked, can this be figured out first? (when there is more than one path)
-        urls = []
-        for path in paths:
-            url = self._info.get_url(path)
-            while not isinstance(url, str):    # All url are string.
-                # We assume url will be a dict if not str.
-                keys = list(url.keys())
-                if 1 < len(keys):
-                    next = self._bot.give_options(list(url.keys()))
-                    path.append(next)
-                else:
-                    path.append(keys[0])
-                url = self._info.get_url(path)
-            urls.append(url)
-
-        for url in urls:
-            self._bot.suggest_url(url)
-
-
-        #if 0 < len(data['paths']):
-        #    if 1 < len(data['paths']):
-        #        # Get a list of the deepest key in each path.
-        #        options = [k for path in data['paths'] for i, k in enumerate(path) if i + 1 == len(path)]
-        #        choice = self._bot.give_options(options)
-        #        print("You chose: {0}".format(choice))
-        #    else:
-        #        print("data['paths'] is: {0}".format(data['paths']))
-        #        url = self._info.get_url(data['paths'][0])
-        #        while not isinstance(url, str): # DANGER! 
-        #            data['paths'][0].append(self._bot.give_options(list(url.keys())))
-        #            url = self._info.get_url(data['paths'][0])
-        #        print("url is: {0}".format(url))
-        #        self._bot.suggest_url(url)
-                    
-    def _process_visual_studio_feature(self, data):
-        # Get a list of keys in order of traversal to a suggested URL.
-        key_path = self._find_path_to_link(data)
-        url = self._info.get_url(key_path)
-        self._bot.suggest_url(url)
-
-    def _find_path_to_link(self, data):
-        """Obtain a list of keys that will allow traversal through
-        a dictionary.  The keys will point to an url.
-        """
-        def determine_key_feature(literals, types):
-            """A helper function for _find_path_to_link.  Determines the key feature
-            for which the user is querying.  Will validate with the user when
-            more than one feature is found.  A key freature is defined as a root level
-            feature.
-            """
-            # Extract all the literals of type Visual Studio Feature found in the query.
-            features = [literals[i] for i, t in enumerate(types) if t == "Visual Studio Feature"]
-            if len(features) > 1:
-                # Clarify a feature when there is more than one found.
-                for feature in features:
-                    # Translate it to match the corresponding key within KEY_MAP.
-                    key_feature = self._info.literal_to_key(feature)    # None, if unsuccesful.
-                    if key_feature:
-                        ans = self._bot.ask("Are you asking about {0}?".format(key_feature.lower()))
-                        if ans.lower() in _YES_WORDS:
-                            return key_feature
-                    else:
-                        self._bot.say("I am having trouble mapping {0}.".format(feature))
-                        # TODO: LOG
-            elif len(features) == 1:
-                key_feature = self._info.literal_to_key(features[0])
-                if key_feature:
-                    return key_feature
-
-            # If no features have been returned (either none were found or none were accepted by the user).
-            self._bot.say("I can't seem to figure out which feature you're asking about.")
-            self._bot.say("I'll get you a link to the wiki page.")
-            # TODO: LOG
-            return "WIKI"   # Default to the wiki's page when mapping to a feature fails.
-
-        def determine_subkey(key_feature, keywords):
-            """A Helper function for _find_path_to_link.  Determines the appropriate sub key 
-            given a key feature and a list of keywords.
-            """
-            refined_keys = self._info.get_refined_keys(key_feature, keywords)
-            if refined_keys:
-                if 1 < len(refined_keys):
-                    for subkey in refined_keys:
-                        ans = self._bot.ask("Is this about {0}?".format(subkey))
-                        if ans.lower() in _YES_WORDS:
-                            return subkey
-                        else:
-                            # TODO: LOG
-                            pass
-                else:
-                    return refined_keys[0]
-            return None
-
-        path_to_link = []
-
-        # Determine the root key.
-        key_feature = determine_key_feature(data['literals'], data['types'])
-
-        # Determine the subkey, if there is one.
-        if key_feature:
-            path_to_link.append(key_feature)
-            # Use any keywords found by LUIS to determine if there are likely subkeys.
-            subkey = determine_subkey(key_feature, data['keywords'])
-            if not subkey:
-                self._bot.acknowledge(key_feature)
-                if not isinstance(self._info.links[key_feature], str):
-                    path_to_link.append("BASE_URL") # TODO:  This is risky, let's make sure it doesn't fail.
-                return path_to_link
-            else:
-                path_to_link.append(subkey)
-                self._bot.acknowledge(subkey)
-                # Determine if any more filtering needs done (do our current keys point to a url?)
-                v = self._info.traverse_keys(path_to_link)
-                if not isinstance(v, str):  # TODO:  Is this safe as an if statement -> will you ever need to find more than one additional key?
-                    # Should probably always be a dictionary, but check just in case...
-                    if isinstance(v, dict):
-                        keys = list(v.keys())
-                        next_key = self._bot.give_options(keys)
-                        path_to_link.append(next_key)
-                    else:
-                        # TODO: LOG
-                        print("Expected a dictionary but got type: {0}".format(type(v)))
-                    return path_to_link
+        print("Post clarify paths are: {0}".format(data['paths']))
+        paths = clarify_paths(data['paths'])
+        print("Paths is: {0}".format(paths))
+        if paths:
+            li = [p[len(p) - 1] for p in paths] if 1 < len(paths) else paths[len(paths - 1)]
+            self._bot.acknowledge(li)
+            urls = [get_ending_url(path) for path in paths]
+            for url in urls:
+                self._bot.suggest_url(url)
         else:
-            print("There was a problem determining your feature.  I'll send you to the wiki.")
-            # TODO: LOG
-            return ['WIKI']
+            # Try StackExchange
+            self._bot.say("Hmmm, I'm sorry.  Let me see what I can find through stackoverflow.")
+            pass
 
     def _undefined(self):
         self._bot.say("I'm sorry, I don't know what you're asking.")
