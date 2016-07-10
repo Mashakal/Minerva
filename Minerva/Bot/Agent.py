@@ -1,3 +1,4 @@
+import string
 import random
 import sys
 import DialogueStrings
@@ -37,12 +38,21 @@ class Agent(object):
         print(s)
         return self._prompt()
 
-    def acknowledge(self, entity, genre='positive_acks'):
-        """Output a positive or negative acknowledgement, formatted
-        with s.
+    def acknowledge(self, items, genre='positive_acks', conj='and'):
+        """Output a positive acknowledgement, formatted
+        with s.  Formats the number of items being acknowledged
+        with and uses conj as the conjunction.
         """
         s = self._get_random_string_constant(genre)
-        self.say(s.format(entity))
+        if isinstance(items, list):
+            # Get a string that's formatted to fit the number of items.
+            f = self._build_list_string(len(items), True)
+            f += self._build_conj_string(len(items), conj)
+            # Get a unified string that has the items listed in order.
+            f = f % tuple(items)
+            self.say(s.format(f))
+        else:   # Assumes items is a string.
+            self.say(s.format(items))
 
     def give_options(self, opts, msg=None, indent=2, genre='options'):
         """Outputs a message to standard output followed by an 
@@ -89,39 +99,26 @@ class Agent(object):
             Returns a set of opts where any word in ans is found 
             in any word of that opt.
             """
-            # Search for each word in the user's input.
-            user_words = {w.lower() for w in ans.split(" ")}
+            # Search for each word in the user's input, ignoring punctuation.
+            user_words = {w.lower().strip(string.punctuation) for w in ans.split(" ")}
             opts_words = [w.lower().split(" ") for w in opts]
             flat_opts_words = set(([w for li in opts_words for w in li]))
             # Find any matching opts.
-            print("user_words: {0}\nflat_opts_words: {1}".format(user_words, flat_opts_words))
             valid_input = user_words & flat_opts_words
             # Take the valid input and match it to its corresponding opts.
             chosen = set(([o for o in opts for valid in valid_input if valid in o.lower()]))
             # TODO: Log how many valid input are being returned.
             return chosen if chosen else False
 
-        def build_conj_string(opts, conj):
-            """Builds the conjunction part of the string, using
-            the number of items in opts to determine how the string
-            should be formatted.
-            """
-            if 2 < len(opts):
-                s = ", " + conj + " %s?"
-            elif 2 == len(opts):
-                s = " " + conj + " %s?"
-            elif 1 == len(opts):
-                s = "%s?"
-            return s
-
         if not opts:
             raise ValueError("opts cannot be empty.")
 
         msg = self._get_random_string_constant('clarify')
         # Allow an arbitrary number of opts to be printed.
-        msg += "%s" % ','.join([' %s'] * (len(opts) - 1))
+        msg += " " + self._build_list_string(len(opts), True if 1 < len(opts) else False)
         # Conjunction string depends on size of opts.
-        msg += build_conj_string(opts, conj)
+        msg += self._build_conj_string(len(opts), conj)
+        msg += "?"
         # Require a match to at least one of opts.
         opt = validate_input(self.ask(msg % tuple(opts)), opts) # False on failure.
         while not opt:
@@ -129,6 +126,29 @@ class Agent(object):
             self.say("I don't understand, {0}".format((msg % tuple(opts)).lower()))
             opt = validate_input(self._prompt(), opts)
         return opt
+
+    def _build_conj_string(self, length, conj):
+        """Builds the conjunction part of the string, using
+        the number of items in opts to determine how the string
+        should be formatted.
+        """
+        if 2 < length:
+            s = ", " + conj + " %s"
+        elif 2 == length:
+            s = " " + conj + " %s"
+        elif 1 == length:
+            s = "%s"
+        return s
+
+    def _build_list_string(self, length, with_conj=False):
+        """Generates a single string that can be formatted using String.format
+        given an array-like object.  The array-like object must be converted into
+        a tuple and passed as the parameter to the call to String.format.
+        """
+        # A '%s' is added when the conjunction string is built.
+        mul = length - 1 if with_conj else length
+        return "%s" % ", ".join(['%s'] * mul)
+
 
 
 class VSAgent(Agent):
