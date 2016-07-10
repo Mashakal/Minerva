@@ -1,6 +1,5 @@
 import PTVS
 import sys
-from Essentials import enter_and_exit_labels
 
 _MODULE_MAP = {
     'ptvs': PTVS
@@ -21,6 +20,9 @@ class InfoManager(object):
         self.update_mod(moduleName)
 
     def update_mod(self, mod):
+        """Sets the InfoManager's module, which is the object's access
+        to information.
+        """
         try:
             self.links = _MODULE_MAP[mod].LINKS
             self.key_map = _MODULE_MAP[mod].KEY_MAP
@@ -28,17 +30,6 @@ class InfoManager(object):
             self._mod = mod
         except KeyError:
             raise ValueError("Cannot find module named: {0}".format(mod))
-
-    #def literal_to_key(self, literal, dic=None):
-    #    """Returns the appropriate key for links when given a literal.
-    #    For example, if the literal passed in is "debug" it will map this to
-    #    "Debugging" for extraction of information out of LINKS.
-    #    """
-    #    d = dic if dic else self.key_map
-    #    for k, v in d.items():
-    #        if literal.lower() in v['Triggers']:
-    #            return k
-    #    return None
 
     def find_key_path(self, literal, path=None, dic=None):
         """When literal is found to be a trigger, a list of keys that will lead to
@@ -74,51 +65,6 @@ class InfoManager(object):
             p.pop() # Ditch v's key.
         return p or False
 
-    #def get_next_key(self, feature, keyword):
-    #    """Determine if a previously identified feature has any specialized
-    #    context in relation to keywords found by querying LUIS.  Will return 
-    #    a list of keys whose values are either an URL to the specialized feature's 
-    #    information or another dictionary of specializations.
-    #    """
-    #    try:
-    #        # Subkeys points to a dictionary of key value pairs that are a specialized feature
-    #        # as key and a list of triggers (such as synonyms) for that specialized word.
-    #        subkeys = self.key_map[feature]['Subkeys']
-    #    except LookupError:
-    #        # Not all keys have specializations.
-    #        return None
-
-    #    # Search for the keyword in the current list of specializations.
-    #    for k, v in subkeys.items():
-    #        if keyword in v:
-    #            return k
-    #    return None
-
-    #def get_refined_keys(self, key_feature, keywords):
-    #    """Takes keywords that are found by LUIS and searches keyword triggers
-    #    to see if a keyword can be used in context of the keyFeature.  If
-    #    no keywords are found within the current module's encylopedia an empty
-    #    list is returned.
-    #    """
-    #    specialized_keys = []
-    #    if 0 < len(keywords):   # Not all queries return a list of keywords.
-    #        for word in keywords:
-    #            k = self.get_next_key(key_feature, word)
-    #            if k:
-    #                specialized_keys.append(k)
-    #    return specialized_keys
-
-    #def get_all_root_keys(self, keywords):
-    #    """Returns a list of all the root keys matched by words in 'keywords'
-    #    within the current module.
-    #    """
-    #    root_keys = []
-    #    for word in keywords:
-    #        k = self.literal_to_key(word)
-    #        if k:
-    #            root_keys.append(k)
-    #    return root_keys
-
     def traverse_keys(self, keys):
         """Traverses the links dictionary of the current module by way of keys.
         Returns the value of the deepest key in keys.
@@ -132,10 +78,30 @@ class InfoManager(object):
             v = v[keys]
         return v
 
+class ProjectSystemInfoManager(InfoManager):
+    """ A derived class from InfoManager.  Has some logic that is coupled with
+    project systems as a whole.
+    """
+
+    def get_url_description(self, url):
+        """Grabs the last filename, which is usually the most descriptive of
+        a link, from url.  If url matches the expected format, it will extract
+        and reformat the name for printing.  If url does not match, False is 
+        returned.  The following is an example of the expected format for
+        url:  "https://github.com/Microsoft/PTVS/wiki".  In this case 'wiki'
+        is returned.
+        """
+        last = url.rfind('/')
+        if 0 <= last:
+            s = url[last + 1:]
+            s = s.replace('-', ' ')
+            s = s.replace('#', ': ')
+        return s or False
+
+
 def main():
-    im = InfoManager('ptvs')
-    path = im.find_key_path('code editing')
-    print(path)
+    im = ProjectSystemInfoManager('ptvs')
+    return    
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
