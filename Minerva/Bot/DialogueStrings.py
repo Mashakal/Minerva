@@ -5,13 +5,23 @@ POSITIVE_ACKS = [
 ]
 
 NEGATIVE_ACKS = [
-    "Hmm, I don't think that has antyhing to do with visual studio.  Let me see what I can find on StackOverflow."
+
+]
+
+END = [
+    "Thanks for giving me a chance.  Let me know if I can help with anything else."
+]
+
+SUGGEST_MULT_URL = [
+    "The following is a good resource for {0}:\n\t{1}.\n",
+    "For {0}, I suggest you visit:\n\t{1}.\n",
+    "You'll find information on {0} here:\n\t{1}.\n"
 ]
 
 SUGGEST_URL = [
-    "The following is a good resource: {0}.",
-    "I suggest you visit: {0}.",
-    "You'll find information on that here: {0}."
+    "You'll find information on that here:\n\t{0}.\n",
+    "For that, I suggest you visit:\n\t{0}.\n",
+    "The following is a good resource for that:\n\t{0}.\n"
 ]
 
 OPTIONS = [
@@ -26,8 +36,8 @@ START = [
 ]
 
 CLARIFY = [
-    "Are you asking about"
-    #"Which is your main point of interest "
+    "Are you asking about",
+    "Which is your main point of interest"
 ]
 
 ALL_STRINGS = {
@@ -36,5 +46,7 @@ ALL_STRINGS = {
     'clarify': CLARIFY,
     'start': START,
     'options': OPTIONS,
-    'negative_acks': NEGATIVE_ACKS
+    'negative_acks': NEGATIVE_ACKS,
+    'end': END,
+    'suggest_mult_url': SUGGEST_MULT_URL
 }
