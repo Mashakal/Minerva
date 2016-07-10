@@ -4,7 +4,7 @@ DATA THAT WILL BE HELPFUL:
 			> Identify where improvements to suggestions can be made.
 
 
-DOCUMENTATION:
+DOCUMENTATION, WHY LOG IT?:
 
 Bot.Agent.Agent.clarify.validate_input
 	- What: 
