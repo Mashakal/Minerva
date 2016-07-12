@@ -57,10 +57,10 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
         intent = self._get_top_scoring_intent(json)
         try:
-            rv = self._STRATAGIES[intent](json)
+            success = self._STRATAGIES[intent](json)
         except KeyError:
-            rv = self._STRATAGIES['undefined']()
-        return rv
+            success = self._STRATAGIES['undefined']()
+        return success
 
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
