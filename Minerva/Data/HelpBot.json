@@ -1,0 +1,4694 @@
+{
+  "luis_schema_version": "1.3.0",
+  "name": "HelpBot",
+  "desc": "A help bot for Python Tools for Visual Studio.",
+  "culture": "en-us",
+  "intents": [
+    {
+      "name": "None"
+    },
+    {
+      "name": "Get Help"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Language"
+    },
+    {
+      "name": "Project System"
+    },
+    {
+      "name": "Code",
+      "children": [
+        "Module/Package",
+        "Error/Exception"
+      ]
+    },
+    {
+      "name": "Keyword"
+    },
+    {
+      "name": "Auxiliary"
+    },
+    {
+      "name": "Sentiment",
+      "children": [
+        "Positive",
+        "Negative"
+      ]
+    }
+  ],
+  "composites": [],
+  "bing_entities": [],
+  "actions": [],
+  "model_features": [
+    {
+      "name": "Industry Jargon",
+      "mode": true,
+      "words": "member classes,member class,mixed mode,mixed - mode,project,without a project,with a project,installs,type,bottle table storage,link a file,feature matrix,environments,lightweight - usage,cloud service project,help with environments,flask table storage,instalation,django with sql,autocomplete,django project,debuggor,cloud,overview videos,project types,project - free,django web project,bottle and azure table storage,django,flask and mongodb,video,show me,debug,web projects,django with mysql,create new project,signature help,flask and azure table storage,bottle and mongodb,contribute,user defined modules,mongodb and flask,django and sql,wiki,building,overview,existing code,working without projects,search paths,django and mysql,requirements,mongodb and bottle,debugger,django and sql database,quick info,pull request,create a linked file,ptvsd,contributing,cloud project,lightweight,tutorials,attach,attached,videos,how to use requirements,install,completions,tutorial,managing requirements,bottle and azure,without projects,intellisense,project free,editing,references,debugging,installation,flask and azure,web,what are references,features,build,new project,linked,user defined packages,projects,nonlocal,remote,types,code editing,linked file,create project,linked files,build instructions,python environments,django database",
+      "activated": true
+    }
+  ],
+  "regex_features": [
+    {
+      "name": "Project System",
+      "pattern": "^.(tvs)",
+      "activated": true
+    }
+  ],
+  "utterances": [
+    {
+      "text": "mixed-mode debugging is really hard to use.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Sentiment::Negative",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how to install numpy",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "which web project type should i use?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "where do i get symbols for c++ debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 6,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is the answer to the ultimate question of the life, the universe, and everything?",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "what is the zen of python?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "type hints",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "you suck.",
+      "intent": "None",
+      "entities": [
+        {
+          "entity": "Sentiment::Negative",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "thank you!",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "this is nothing worthwhile.",
+      "intent": "None",
+      "entities": [
+        {
+          "entity": "Sentiment::Negative",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "debugger",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "using os.system fails",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code",
+          "startPos": 1,
+          "endPos": 3
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to use the ptvs debugger",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "ptvs doesn't detect ironpython installation",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "why is ptvs so slow?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "django database migration",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "ptvs doesn't inspect class members",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Project System",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "ironpython remote debugging with ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Project System",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "unit tests not running",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "how can i specify search paths for unusual modules in ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Project System",
+          "startPos": 10,
+          "endPos": 10
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "plugin for applications that embed python",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "you don't understand much.",
+      "intent": "None",
+      "entities": [
+        {
+          "entity": "Sentiment::Negative",
+          "startPos": 1,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to add a typescript file to a ptvs project.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Project System",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 9
+        }
+      ]
+    },
+    {
+      "text": "break into debugger on numpy exception",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "incorrect intellisense",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Sentiment::Negative",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "intellisense not working",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "how to make a 'simple' wsgi app?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "using psychopg2 in ironpython",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "no intellisesne in ironpython project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "can you .gitignore the .ptvs file?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how can i use ipython's search history function?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "ironpython, no python exceptions being raised.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Language",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "why can i not import python libraries?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how to highlight all symbol appearances in python code with ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Project System",
+          "startPos": 10,
+          "endPos": 10
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "my favorite color is blue",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "he likes to play soccer.",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "i love coding",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "why is coding so much fun?",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "is python better than c#?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Language",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "editing autocomplete settings in visual studio 2013",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how to reference or use python source code in one project from a second project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 14,
+          "endPos": 14
+        }
+      ]
+    },
+    {
+      "text": "how do i suppress the console window when debugging python code?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "how to debug code embedded in c#?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 6,
+          "endPos": 7
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "ironpython exception jumps to last line",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "you should be able to find that information out.",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "how to debug python running on a local lighttpd server",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Code",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 9
+        }
+      ]
+    },
+    {
+      "text": "refactoring actions are disabled",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "how to debug a remote python application",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "error: expected int but got slice while executing python script",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Code::Error/Exception",
+          "startPos": 0,
+          "endPos": 6
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "unable to debug on raspberry pi",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "raspberry pi",
+      "intent": "None",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "python",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "silly",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "omg",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "wtf",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "python tests pass on cmd and fail on vs2012",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to specify language for watch window expressions in a multi-language debugging environment?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 6
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 10,
+          "endPos": 12
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 13,
+          "endPos": 13
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 14,
+          "endPos": 14
+        }
+      ]
+    },
+    {
+      "text": "python tools for visual studio: “the current thread is not currently running code or the call stack could not be obtained”",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Code::Error/Exception",
+          "startPos": 7,
+          "endPos": 22
+        }
+      ]
+    },
+    {
+      "text": "installing python packages for ironpython",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Language",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "autogenerate python docstrings in visual studio express 2013",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "console windows closes right after i hit ctrl+f5 in visual studio tools for python",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 15,
+          "endPos": 15
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "how to run a python script with python tools for visual studio in a virtualenv?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Language",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 14,
+          "endPos": 14
+        }
+      ]
+    },
+    {
+      "text": "mutlithreaded python application not hitting breakpoints in visual studio",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "design view not available with python tools for visual studio 2010",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 0,
+          "endPos": 1
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "python tools for visual studio repair fails with “the specified account already exists”",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Code::Error/Exception",
+          "startPos": 9,
+          "endPos": 13
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "is it possible to check whether ptvs python debugger is attached to process?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "how to install numpy?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how to install requests?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how to install pygame?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "error while trying to attach debugger from ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "tell me about debugging.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "why can't i attach a debugger to my process?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "how to attach a debugger to my process?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how to use the debugger?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is the proper way to attach a debugger to my process?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 11,
+          "endPos": 11
+        }
+      ]
+    },
+    {
+      "text": "error when attaching debugger to remote process.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how do i debug a nonlocal process?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how to use remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "help me with remote debugging",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "i can't seem to be able to figure out how to debug my program?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 13,
+          "endPos": 13
+        }
+      ]
+    },
+    {
+      "text": "how to attach a debugger to a process with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how do you attach a debugger to a process?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "error while trying to attach debugger",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "can i check if a process has a remote debugger attached?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "how do i use remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "i need to know how to install ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "i need help with remote debugging!",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how do i attach a debugger to a process in python?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 10,
+          "endPos": 10
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "how do i install ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "where can i learn more about ptvs in general?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "can i use ntvs and ptvs at the same time?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 8,
+          "endPos": 9
+        },
+        {
+          "entity": "Project System",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "where do i go to install rtvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "what's the different between ptvs and rtvs intellisense?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Project System",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 9
+        }
+      ]
+    },
+    {
+      "text": "why doesn't the intellisense work the same with ptvs as it does for c#?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 15,
+          "endPos": 16
+        },
+        {
+          "entity": "Project System",
+          "startPos": 10,
+          "endPos": 10
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how does ptvs predict member classes?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Project System",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "i need help installing ptvs.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how to install ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how to install ntvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "help with installing numpy?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "help with installing numpy.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "help with installing numpy",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "help me with remote debugging.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "i can't figure out how to install numpy???!!!",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "i can't seem to figure out how to install numpy!?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 11,
+          "endPos": 11
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "what features are supported with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "install numpy",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "help me install ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "i can't get ptvs to install.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how to setup remote debugging ?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "i can't get ptvs to install?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "help me with remote debugging in ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "i can't seem to figure out how to install ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 11,
+          "endPos": 11
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "what is cool about ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what can i do with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "where do i go to learn more about ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "features",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "ptvs features",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "what features are available with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "what features are offered with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "where can i learn more about the features of ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "editing",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "intellisense",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "refactoring",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "tutorials",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "contributing",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "navigation",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "refactor",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "formatting",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "code editing",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "code formatting",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "code refactoring",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "just testing out my latest changes.",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "how can i contribute to ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "help with remote debugging.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "intellisense, debugging",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do i install requests?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Code::Module/Package",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "help me with remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "tell me about the features of ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how do i use remote debugging in ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how to debug with a project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how to debug without a project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "the debug interactive window.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how can i use the debug interactive window?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how to use the interactive window with debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "can you use the interactive window for debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "must you have a project to use debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "help with quick info",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "why isn't my quick info working?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "there is a problem with my quick info.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how to fix issues with quick info.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "my completions aren't working",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "why won't completions start?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what's the problem with completions?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how to get completions to work?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "where can i find tutorials for django?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "do you have tutorials on flask?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how to use mysql with django?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "bottle and mongodb",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "bottle and azure table storage",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "mongodb and bottle",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "bottle table storage",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "flask and azure table storage",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "flask and azure",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "flask table storage",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "flask and mongodb",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "django and mysql",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do i use mysql with django?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "take me to the wiki",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "wiki",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "aklj",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "what",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "who",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "sky",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "o",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "but what if",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "whoas;",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "help with my cloud service project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "help with my cloud project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to get my project in the cloud?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "how to get my project into azure?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how to create a new project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how do i use linked files?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "what are linked files?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "link a module",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do i install a package with pip?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "remote debugging",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "i need help using remote debugging with my cloud service project.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "my python environment isn't working",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how to use the visual studio python environments feature",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "how can i use different python environments within the same project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "can i use visual studio express with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how do i setup an azure project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how do i link files?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to create an azure project in the cloud?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "i can't get my files to link in ptvs.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 10,
+          "endPos": 10
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "how do i check to see if a process is attached?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "how to start a flask project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "how do i create a django database?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "what is a symbol table?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how do i careate a flask project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how do i add references to .net assemblies?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 7
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how do i add an existing item as a link?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 9
+        }
+      ]
+    },
+    {
+      "text": "how do i start a flask project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "flask project bababay",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "why isn't autocomplete triggering?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "where can i learn more about symbols?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "search paths",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "how to begin using a flask project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "i wnat to create a flask project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "linked files and search paths",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what's the different between search paths and linked files?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "cloud service project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "completions not working with other projects",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "where do i go to plug django into visual studio?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "my intellisense isn't working",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "how to fix completions",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "where is option to set keybindings?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "what are references?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "what are extension modules?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how to use search paths?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to fix intellisense",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how to install ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do i add .net assemblies to a python project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Language",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "how do i add .net assemblies?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how do i learn more about navigation in vs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "who's going to die next in game of thrones?",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "is he really a targaryan if he can burned, or do we know if he can be?",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "what is intellisense?",
+      "intent": "Get Help",
+      "entities": []
+    },
+    {
+      "text": "how do i use ptvs without creating a project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 6
+        },
+        {
+          "entity": "Project System",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "what is the proper way to contribute to the ptvs project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 9,
+          "endPos": 9
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 10,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "interactive repl",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "you are no help ata ll!",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Sentiment::Negative",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "when did dinosaurs stop roaming the earth?",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "tell me about navigation",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how did john snow come back to life?",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "what navigation techniques does visual studio include?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "how do i easily import an unimported module?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "switching scopes in the repl",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 1
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is your problem? ugh.",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "why are you so slow?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "learn about navigation",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do i use a flask project while remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 9
+        }
+      ]
+    },
+    {
+      "text": "tell me about remote debugging",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is the interactive repl?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is the interactive repl",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "help me with ipython.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how to use the interactive repl",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "learn about navigation techniques",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "learn about how to use vs navigation technqiues",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "how do i link a file?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "tell me about code formatting",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to use pip with visual studio?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "does the conda tool work with anaconda inside of visual studio?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "does pip come with vs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 1
+        }
+      ]
+    },
+    {
+      "text": "you can't.",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "how to install modules with pip?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "contributing to ptvs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "what kind of code formatting can i do?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to use pip?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how to turn on autocomplete for installed modules",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 6,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is the keybinding for showing autocomplete features?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "link a file",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "tell me about vs navigation",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how do i format code",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "using linked files",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "where do i go to link a file?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "i want to know about contributing.",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "setting search paths",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "navgating in vs",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "how to remove imports",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how to use ipython with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "what does send code to interactive mean?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "what does it mean to extract a method?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "get me to the wiki",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "imports",
+      "intent": "None",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "what purpose does the interactive repl serve?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how do i use ipython with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 6,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what can you do with bottle?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "get me home.",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "how do i send code to interactive?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "can i use ipython?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "what is ipython?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do i remove imports?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "how to add an import",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "ugh, web projects?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how do you use remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how do i rename a variable?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how do i specify search paths?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "django",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "how to add code i've already written to a new project?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 11,
+          "endPos": 12
+        }
+      ]
+    },
+    {
+      "text": "how to start a project from existing code?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "i want to use django in my project",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        }
+      ]
+    },
+    {
+      "text": "is there a bottle project tutorial?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "this is a test",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "how can i add an import more easily?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "do you know anything!",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "quickly add an import",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how can i use remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how to interact with the repl",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Auxiliary",
+          "startPos": 2,
+          "endPos": 2
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "can i use remote debugging yet?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "help me create a django database",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "what does it mean to switch scopes in the interactive repl?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 6
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 9,
+          "endPos": 10
+        }
+      ]
+    },
+    {
+      "text": "what sort of refactoring can you do with ptvs?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Project System",
+          "startPos": 8,
+          "endPos": 8
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "how can i quickly rename a symbol?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 6,
+          "endPos": 6
+        }
+      ]
+    },
+    {
+      "text": "what does send code to interactive do?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 2,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "how to create a django database?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "i need to know how to use remote debugging?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 7,
+          "endPos": 7
+        },
+        {
+          "entity": "Keyword",
+          "startPos": 8,
+          "endPos": 8
+        }
+      ]
+    },
+    {
+      "text": "quickly remove imports",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 1,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "how do you extract a method?",
+      "intent": "Get Help",
+      "entities": [
+        {
+          "entity": "Keyword",
+          "startPos": 3,
+          "endPos": 5
+        }
+      ]
+    }
+  ]
+}
