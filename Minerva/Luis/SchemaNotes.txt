@@ -1,12 +1,28 @@
-PTVS, RTVS, NTVS, and the other Project Systems should probably have an entity of their own.
-This will help distinguish the project system from a module or package in queries such as:
-	- I need to know how to install PTVS.
-		Intent:  Get Help
-		Keyword:  install
-		Project System:  PTVS
-	...instead of...
-		Intent:  Get Help
-		Keyword:  install
-		Code::Module/Package:  PTVS
+how do you {do something} {extract a method}
+{feature}
+How to use {feature}
+How to {action} {feature}
+what {action} {feature} do[es]?
+how {adjective} {action / feature}
 
-	Discovered while seeding for:  'Installation'
+LEARN_ABOUT_TOPIC - anything that one would associate with an IDE.  They primarily contain entities of type TRIGGER.
+
+SOLVE_PROBLEM - Can be identified by words that are common when having a specific problem (error, 'not working', 'not running', 'breaks', 'broken')
+
+
+JARGON - These are the items that we want to be able to lookup as triggers.
+    > SINGLE WORD - the word itself is jargon.
+    > PHRASE - a set of words in this order is jargon.
+
+SUBJECT - The thing being acted on in some way.  "Remote debuggin on azure." -> azure is the subject.  "How to install ptvs" -> ptvs is subject.  "How to install numpy." -> numpy is the subject.
+
+LEARN_ABOUT_TRIGGERS:
+    > PHRASE
+    > SINGLE WORD
+
+ACTION:
+    GERUND - A verb ending in 'ing'.
+    CONJUGATED VERB - "breaks, broken, fails, work, create"
+
+NEGATOR - Words known grammatically as 'negative words', e.g.: no, not, never, nor.
+
