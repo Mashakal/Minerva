@@ -1,0 +1,47 @@
+{
+  "intents": [
+    {
+      "score": 0.9992004,
+      "intent": "Learn About Topic"
+    },
+    {
+      "score": 0.00569900172,
+      "intent": "Solve Problem"
+    },
+    {
+      "score": 0.00298008625,
+      "intent": "None"
+    }
+  ],
+  "entities": [
+    {
+      "type": "Learn About Triggers::Phrase",
+      "entity": "how to",
+      "startIndex": 0,
+      "score": 0.9965873,
+      "endIndex": 5
+    },
+    {
+      "type": "Action::Conjugated Verb",
+      "entity": "use",
+      "startIndex": 7,
+      "score": 0.9722813,
+      "endIndex": 9
+    },
+    {
+      "type": "Jargon::Single Word",
+      "entity": "debugging",
+      "startIndex": 22,
+      "score": 0.9740324,
+      "endIndex": 30
+    },
+    {
+      "type": "Jargon::Phrase",
+      "entity": "mixed - mode",
+      "startIndex": 11,
+      "score": 0.821540833,
+      "endIndex": 20
+    }
+  ],
+  "query": "How to use mixed-mode debugging?"
+}
