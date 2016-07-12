@@ -18,24 +18,23 @@ class BaseLuisInterpreter(object):
         """Analyzes the json returned from a call to the base LuisClient class's method, query_raw."""
         raise NotImplementedError("Function analyze has not yet been customized.")
      
-    @classmethod
-    def _get_top_scoring_intent(cls, json):
+    def _get_top_scoring_intent(self, json):
         try:
             return json['intents'][0]['intent']
         except LookupError:
             return 'undefined'
 
-    @classmethod
-    def _get_literals(cls, json):
-        return [e['entity'] for e in json['entities']]
+    def _get_literals(self, json):
+        return set(([e['entity'] for e in json['entities']])) or None
 
-    @classmethod
-    def _get_types(cls, json):
-        return [e['type'] for e in json['entities']]
+    def _get_types(self, json):
+        return set(([e['type'] for e in json['entities']])) or None
 
-    @classmethod
-    def _get_all_literals_of_type(cls, t, json):
-        return [e['entity'] for e in json['entities'] if e['type'] == t]
+    def _literals_given_type(self, t, json):
+        return set(([e['entity'] for e in json['entities'] if e['type'] == t])) or None
+
+    def _get_literals_given_parent_type(self, parent, json):
+        return set(([child['entity'] for child in json['entities'] if parent in child['type']])) or None
 
 class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio
@@ -49,28 +48,51 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         
         # Maps an intent to a function.
         self._STRATAGIES = {
-            'Solve Problem': self._get_help,
+            'Solve Problem': self._solve_problem,
+            'Learn About Topic': self._learn_about_topic,
             'None': self._none_intent
         }
 
+    # Entry.
     def analyze(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
-        intent = self._get_top_scoring_intent(json)
+        data = self._format_data(json)
+        self._print_from_data(data)
         try:
-            success = self._STRATAGIES[intent](json)
+            self._STRATAGIES[data['intent']](data)
         except KeyError:
-            success = self._STRATAGIES['undefined']()
-        return success
+            self._STRATAGIES['None']()
+
+    # Utility functions.
+    def _print_from_data(self, data):
+        for k, v in data.items():
+            print("{0}: {1}".format(k.upper(), v))
 
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
         o = {
-            'keywords': self._get_all_literals_of_type('Keyword', json),
-            'intent': self._get_top_scoring_intent(json)
+        # Meta keys - these point to dictionaries.
+            'intents': json['intents'],
+            'entities': json['entities'],
+        # Leaf keys - these point to a value or some container of values.
+            'query': json['query'],
+            'intent': json['intents'][0]['intent'],
+            # The top scoring intent.
+            'top_intent': json['intents'][0]['intent'],
+            # All intents OTHER than the top scoring intent.
+            'other_intents': json['intents'][1:],
+            'subjects': self._literals_given_type('Subject', json),
+            'auxiliaries': self._literals_given_type('Auxiliary', json),
+            'negators': self._literals_given_type('Negator', json),
+            # Action types.
+            'gerunds': self._literals_given_type('Action::Gerund', json),
+            'conjugated_verbs': self._literals_given_type('Action::Conjugated Verb', json),
+            # Jargon
+            'jargon': self._get_literals_given_parent_type('Jargon::', json),
+            # Solve Problem Triggers.
+            'solve_problem_triggers': self._get_literals_given_parent_type('Solve Problem Triggers::', json)
         }
-        # Add to the set any entities that you have urls for in the info.links dict.
-        # Just make sure to call _get_all_literals_of_type(entity, json) as above.
-        o['paths'] = self.__get_paths(set(o['keywords']))
+        
         return o
 
     def __get_paths(self, word_set):
@@ -124,8 +146,19 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # Get all triggers as a set.  This function will use 
         triggers = self._info.set_from_key_values(k_to_collect='Triggers')
         raise NotImplementedError("This function is not yet finished.")
-        
-    def _get_help(self, json):
+       
+    # Intent Functions.
+    def _learn_about_topic(self, data):
+        """Called when the intent is determined to be 'Learn About Topic'.
+        """
+        self._bot.say("It looks like you want to learn about a topic.")
+
+    def _solve_problem(self, data):
+        """Called when the intent is determined to be 'Solve Problem'.
+        """
+        self._bot.say("It looks like you want to solve a problem.")
+
+    def _get_help(self, data):
         """Called from function 'analyze' when the intent of a LUIS query is determined
         to be 'Get Help'.
         """
@@ -163,7 +196,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 u = self._info.traverse_keys(path)
             return u
 
-        data = self._format_data(json)
         # Check if the user triggered any links to the wiki page.
         paths = clarify_paths(data['paths'])
         if paths:
@@ -176,7 +208,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             self._bot.say("Hmmm, I'm not sure the wiki can help.\nLet me see what I can find through stackoverflow.\n\n")
             #raise NotImplementedError("Querying stackoverflow is not yet implemented.")
             
-
     def _none_intent(self):
         self._bot.say("I'm sorry, I don't know what you're asking.")
         # "Help me understand what I can do for you?"
