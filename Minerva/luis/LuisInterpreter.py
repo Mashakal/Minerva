@@ -17,7 +17,7 @@ class BaseLuisInterpreter(object):
     def analyze(self, json):
         """Analyzes the json returned from a call to the base LuisClient class's method, query_raw."""
         raise NotImplementedError("Function analyze has not yet been customized.")
-
+     
     @classmethod
     def _get_top_scoring_intent(cls, json):
         try:
@@ -56,18 +56,21 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def analyze(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
         intent = self._get_top_scoring_intent(json)
-        return self._STRATAGIES[intent](json)
+        try:
+            rv = self._STRATAGIES[intent](json)
+        except KeyError:
+            rv = self._STRATAGIES['undefined']()
+        return rv
 
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
         o = {
             'keywords': self._get_all_literals_of_type('Keyword', json),
-            'vs_features': self._get_all_literals_of_type('Visual Studio Feature', json),
             'intent': self._get_top_scoring_intent(json)
         }
         # Add to the set any entities that you have urls for in the info.links dict.
         # Just make sure to call _get_all_literals_of_type(entity, json) as above.
-        o['paths'] = self.__get_paths(set(o['keywords'] + o['vs_features']))
+        o['paths'] = self.__get_paths(set(o['keywords']))
         return o
 
     def __get_paths(self, word_set):
@@ -114,6 +117,17 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # TODO:  Log how many paths were returned, and which ones.
         return paths
     
+    def _get_trigger_paths(self):
+        """Returns a mapping of a trigger to a set of keys that will lead to the value
+        for the key that this trigger is mapped to.
+        """
+        # Get all triggers as a set.  This function will use 
+        triggers = self._info.set_from_key_values(k_to_collect='Triggers')
+     
+    def _get_path_from_trigger(self, trigger):   
+        # Reduce search time by implementing this function and using it to create a map of triggers during start up.
+        pass
+        
     def _get_help(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
         to be 'Get Help'.
@@ -139,42 +153,32 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             """
             u = self._info.traverse_keys(path)
             while not isinstance(u, str):   # Path might not lead to url yet.
-                if 'Home' in u.keys():
-                    path.append('Home') # Some keys have sub keys and an url.
+                # If our path doesn't point to a key with its own url,
+                # ask the user where to go from here.
+                keys = list(u.keys())
+                # We only need to ask when there is more than one potential key.
+                if 1 < len(keys):
+                    self._bot.acknowledge(path[len(path) - 1])
+                    next = self._bot.give_options([k for k in u.keys()])
+                    path.append(next)
                 else:
-                    # If our path doesn't point to a key with its own url,
-                    # ask the user where to go from here.
-                    keys = list(u.keys())
-                    # We only need to ask when there is more than one potential key.
-                    if 1 < len(keys):
-                        next = self._bot.give_options([k for k in u.keys()])
-                        path.append(next)
-                    else:
-                        path.append(keys[0])
+                    path.append(keys[0])
                 u = self._info.traverse_keys(path)
             return u
 
         data = self._format_data(json)
-        
-        # Print some debugging information.
-        #print("QUERY: {0}".format(data['query']))
-        #for i in range(len(data['literals'])):
-        #    print("{0}: {1}".format(data['types'][i].upper(), data['literals'][i]))
-        #print("*" * 79)
-
         # Check if the user triggered any links to the wiki page.
         paths = clarify_paths(data['paths'])
         if paths:
             urls = [get_ending_url(path) for path in paths]
-            print(urls)
             topics = [self._info.get_url_description(u) for u in urls]
-            print(urls)
             self._bot.acknowledge(topics)
             self._bot.suggest_multiple_urls(urls, topics)
         else:
             # Try StackExchange
-            self._bot.say("Hmmm, I'm not sure the wiki can help.\nLet me see what I can find through stackoverflow.")
-            raise NotImplementedError("Querying stackoverflow is not yet implemented.")
+            self._bot.say("Hmmm, I'm not sure the wiki can help.\nLet me see what I can find through stackoverflow.\n\n")
+            #raise NotImplementedError("Querying stackoverflow is not yet implemented.")
+            
 
     def _undefined(self):
         self._bot.say("I'm sorry, I don't know what you're asking.")
