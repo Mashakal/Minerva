@@ -14,10 +14,7 @@ APP_IDS = {
 }
 
 # Debugging items.
-JSON_FILE = "test_multiple_wiki_paths.json"
-JSON_FILE = "test_no_paths_found.json"
-#JSON_FILE = "test_LuisInterpreter_get_paths.json"
-#JSON_FILE = "errorwhiletryingtoattachdebuger.json"
+JSON_FILE = 'petricca_test_file.json'
 
 def build_luis_url(app_name):
     s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
@@ -35,15 +32,14 @@ def load_debug_json(client, filename):
     return j
 
 
-
 def main():
     bot = VSAgent()   # Interacts with the user.
     interp = ProjectSystemLuisInterpreter(bot, 'ptvs')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(build_luis_url('Petricca'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
-    j = lc.query(bot.start_query(), 'verbose')
-    #j = load_debug_json(lc, JSON_FILE)
+    #j = lc.query(bot.start_query(), 'verbose')
+    j = load_debug_json(lc, JSON_FILE)
     interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
 
 
