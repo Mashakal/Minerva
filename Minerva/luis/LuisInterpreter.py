@@ -49,8 +49,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         
         # Maps an intent to a function.
         self._STRATAGIES = {
-            'Get Help': self._get_help,
-            'undefined': self._undefined
+            'Solve Problem': self._get_help,
+            'None': self._none_intent
         }
 
     def analyze(self, json):
@@ -180,7 +180,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             #raise NotImplementedError("Querying stackoverflow is not yet implemented.")
             
 
-    def _undefined(self):
+    def _none_intent(self):
         self._bot.say("I'm sorry, I don't know what you're asking.")
         # "Help me understand what I can do for you?"
         # Give options on different intents, call that function with the original query or a new one, whichever makes more sense.
