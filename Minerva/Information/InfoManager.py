@@ -33,37 +33,37 @@ class InfoManager(object):
 
     def find_key_path(self, literal, path=None, dic=None):
         """When literal is found to be a trigger, a list of keys that will lead to
-        the item the literal matches is returned.  Otherwise, False is returned.
+        the key the literal matches is returned.  Otherwise, False is returned.
         """
         d = dic if dic else self.key_map
         p = path if path else []
         for k, v in d.items():
-            # See if our literal is in any of this key's triggers.
-            if isinstance(v, dict):     # A key's triggers are always in its value's dictionary.
+            # See if any keys are triggered by literal in this dict or any of its descendents.
+            if isinstance(v, dict):   # A key's triggers are always in its value's dictionary.
                 try:
                     if literal.lower() in v['Triggers']:
                         # We found a key in this dict.
                         p.append(k)
                         return p
                     else:
-                        # This key wasn't triggered, but maybe...
-                        p.append(k) # ...one of k's children might lead us to a trigger...
+                        # This key wasn't triggered, but...
+                        p.append(k) # ...maybe a descendants key will be triggered.
                         p = self.find_key_path(literal, p, v) # ... let's check.
                 except KeyError:
-                    pass    # A dictionary might not have 'Triggers' as a key.
-                # p will now be different than path if we found a subkey in this dict's children.
-                # Or it will be False, no subkey was triggered.
+                    # A dictionary might not have 'Triggers' as a key.
+                    pass    
+                # If no key was triggered in any descendants p will be the same, and False.
                 if p == path or not p:
                     # Path stays the same or is reset, depending on the 
                     # depth of the dictionary (v) we are searching.
                     p = path if path else []
+                # If a descendant's key was triggered by literal, p will have been changed.
                 else:
-                    # We found a key in a child dict.
                     return p
         if p:
-            # None of v's subkeys were triggered, nor any of its heir's subkeys.
-            p.pop() # Ditch v's key.
-        return p or False
+            # If we're here, no descendant's keys were triggered by literal.
+            p.pop() # So remove this key from the path.
+        return p or False   # False when no key triggered in root dict.
 
     def traverse_keys(self, keys):
         """Traverses the links dictionary of the current module by way of keys.
@@ -99,9 +99,51 @@ class ProjectSystemInfoManager(InfoManager):
         return s or False
 
 
+    def set_from_key_values(self, dic=None, set_=None, k_to_collect=None):
+        """Creates a set of all the values for every key matches the string k_to_collect.  This can be used
+        to create Phrase List Features on the fly after creating an info file that adheres
+        to the specifications.  It works by searching the key map (or any dict, for that matter) for
+        all values of dic['k_to_collect'] and adding them to the the set of those already found.
+        You can use this set to seed your Luis app programatically.
+        """
+        d = dic if dic else self.key_map
+        set_ = set_ if set_ else set(())
+        k_to_collect = k_to_collect if k_to_collect else 'Triggers'
+
+        for k, v in d.items():
+            if isinstance(v, dict):
+                try:
+                    t = v[k_to_collect]
+                    if t:
+                        set_ |= t
+                except KeyError:
+                    # set_ stays the same.
+                    pass
+                finally:
+                    set_ = self.set_from_key_values(v, set_, k_to_collect)
+        return set_
+
+    def gen_file_from_info(self, filename, func, **kwargs):
+        """Iterates over the return value of func called with kwargs passed in
+        as the parameters.  Filename should be a .txt file.  Values will be
+        added to the file delimited by a comma.
+        """
+        fn = filename if filename.endswith('.txt') else filename + '.txt'
+        with open(fn, 'w') as fd:
+            for el in func(kwargs):
+                el += ","
+                fd.write(el)
+     
+    def get_trigger_path(self, trigger):
+        """Gets the path to trigger within the key map.
+        """
+        raise NotImplementedError("Function get_trigger_path is not yet implemented.")
+
+
 def main():
     im = ProjectSystemInfoManager('ptvs')
-    return    
+    print(im.set_from_key_values())
+    im.gen_file_from_info('triggers_we_hope.txt', im.set_from_key_values)
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
