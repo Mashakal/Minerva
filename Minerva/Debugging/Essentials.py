@@ -2,7 +2,7 @@
 # FUNCTIONS
 def print_smart(item, depth=0):
     """Prints a container object and its contents in a readable way."""
-    if isinstance(item, str, int, float, bool):
+    if type(item) in [str, int, float, bool]:
         print(' ' * (depth * 3) + str(item))
         return
     new_depth = depth + 1
