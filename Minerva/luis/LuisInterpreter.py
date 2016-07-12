@@ -117,12 +117,13 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # TODO:  Log how many paths were returned, and which ones.
         return paths
     
-    def _get_trigger_paths(self):
+    def _map_triggers_to_paths(self):
         """Returns a mapping of a trigger to a set of keys that will lead to the value
         for the key that this trigger is mapped to.
         """
         # Get all triggers as a set.  This function will use 
         triggers = self._info.set_from_key_values(k_to_collect='Triggers')
+        raise NotImplementedError("This function is not yet finished.")
         
     def _get_help(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined
