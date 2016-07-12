@@ -3,6 +3,7 @@ import collections
 
 # For development purposes only:
 from Essentials import enter_and_exit_labels, print_smart
+import sys
 
 # Constants
 # These may be better off in the Bot module.
@@ -65,8 +66,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     # Utility functions.
     def _print_from_data(self, data):
-        for k, v in data.items():
-            print("{0}: {1}".format(k.upper(), v))
+        #for k, v in data.items():
+        #    print("{0}: {1}".format(k.upper(), v))
+        for key in ['query', 'intent', 'jargon', 'auxiliaries', 'gerunds', 'conjugated_verbs', 'negators', 'solve_problem_triggers']:
+            print ("  {0}:\t{1}".format(key.upper(), data[key]))
+        print()
 
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
@@ -77,8 +81,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # Leaf keys - these point to a value or some container of values.
             'query': json['query'],
             'intent': json['intents'][0]['intent'],
-            # The top scoring intent.
-            'top_intent': json['intents'][0]['intent'],
             # All intents OTHER than the top scoring intent.
             'other_intents': json['intents'][1:],
             'subjects': self._literals_given_type('Subject', json),
@@ -145,7 +147,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         # Get all triggers as a set.  This function will use 
         triggers = self._info.set_from_key_values(k_to_collect='Triggers')
-        raise NotImplementedError("This function is not yet finished.")
+        return {trigger: self._info.find_path_to_trigger_key(trigger) for trigger in triggers}
+
        
     # Intent Functions.
     def _learn_about_topic(self, data):
@@ -212,3 +215,16 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._bot.say("I'm sorry, I don't know what you're asking.")
         # "Help me understand what I can do for you?"
         # Give options on different intents, call that function with the original query or a new one, whichever makes more sense.
+
+
+
+
+def main():
+    import Agent
+    inter = ProjectSystemLuisInterpreter(Agent.VSAgent(), 'ptvs')
+    trigger_paths = inter._map_triggers_to_paths()
+    for path in trigger_paths:
+        print("{0}: {1}".format(path, trigger_paths[path]))
+
+if __name__ == "__main__":
+    sys.exit(int(main() or 0))
