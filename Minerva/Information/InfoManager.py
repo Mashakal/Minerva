@@ -117,7 +117,6 @@ class ProjectSystemInfoManager(InfoManager):
                     if t:
                         set_ |= t
                 except KeyError:
-                    # set_ stays the same.
                     pass
                 finally:
                     set_ = self.set_from_key_values(v, set_, k_to_collect)
@@ -134,6 +133,16 @@ class ProjectSystemInfoManager(InfoManager):
                 el += ","
                 fd.write(el)
      
+    def map_triggers_to_paths(self):
+        """Returns a mapping of a trigger to a set of keys that will lead to the value
+        for the key that this trigger is mapped to.
+        """
+        # Get all triggers as a set.  This function will use 
+        triggers = self._info.set_from_key_values(k_to_collect='Triggers')
+        return {trigger: self._info.find_path_to_trigger_key(trigger) for trigger in triggers}
+
+
+
 def main():
     im = ProjectSystemInfoManager('ptvs')
     print(im.set_from_key_values())
