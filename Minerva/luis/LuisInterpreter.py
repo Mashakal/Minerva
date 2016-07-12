@@ -87,7 +87,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             """
             paths = []
             for word in word_set:
-                path = self._info.find_key_path(word)
+                path = self._info.find_path_to_trigger_key(word)
                 if path:
                     paths.append(path)
             return paths
@@ -123,10 +123,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         # Get all triggers as a set.  This function will use 
         triggers = self._info.set_from_key_values(k_to_collect='Triggers')
-     
-    def _get_path_from_trigger(self, trigger):   
-        # Reduce search time by implementing this function and using it to create a map of triggers during start up.
-        pass
         
     def _get_help(self, json):
         """Called from function 'analyze' when the intent of a LUIS query is determined

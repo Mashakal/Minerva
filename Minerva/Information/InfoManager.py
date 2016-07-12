@@ -31,7 +31,7 @@ class InfoManager(object):
         except KeyError:
             raise ValueError("Cannot find module named: {0}".format(mod))
 
-    def find_key_path(self, literal, path=None, dic=None):
+    def find_path_to_trigger_key(self, literal, path=None, dic=None):
         """When literal is found to be a trigger, a list of keys that will lead to
         the key the literal matches is returned.  Otherwise, False is returned.
         """
@@ -48,7 +48,7 @@ class InfoManager(object):
                     else:
                         # This key wasn't triggered, but...
                         p.append(k) # ...maybe a descendants key will be triggered.
-                        p = self.find_key_path(literal, p, v) # ... let's check.
+                        p = self.find_path_to_trigger_key(literal, p, v) # ... let's check.
                 except KeyError:
                     # A dictionary might not have 'Triggers' as a key.
                     pass    
@@ -134,12 +134,6 @@ class ProjectSystemInfoManager(InfoManager):
                 el += ","
                 fd.write(el)
      
-    def get_trigger_path(self, trigger):
-        """Gets the path to trigger within the key map.
-        """
-        raise NotImplementedError("Function get_trigger_path is not yet implemented.")
-
-
 def main():
     im = ProjectSystemInfoManager('ptvs')
     print(im.set_from_key_values())
