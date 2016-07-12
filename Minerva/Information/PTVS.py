@@ -2,7 +2,7 @@
 # TO NOTE:
 #  - All keys in LINKS should be unique.
 #  - All triggers in KEY_MAP should be unique.
-#  - 
+#  - All punctuation in triggers should be separated by spaces, to conform to LUIS standards.
 ############################################################################################
 # There should be some way to validate that there are no triggers are the same for two separate keys.
 
@@ -161,6 +161,21 @@ KEY_MAP = {
         'Triggers': {'debugging', 'debug', 'debugger', 'debuggor'},
         'Remote Debugging': {
             'Triggers': {'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
+        },
+        'Basic Debugging': {
+            'Triggers': {'basic debugging'}
+        },
+        'Debugging with a Project': {
+            'Triggers': {'debugging with a project'}
+        },
+        'Debugging without a Project': {
+            'Triggers': {'debugging without a project'}
+        },
+        'The Debug Interactive Window': {
+            'Triggers': {'debug interactive window', 'debugging interactive window'}
+        },
+        'Mixed-Mode Debugging': {
+            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode'}
         }
     },
     'Interactive REPL': {

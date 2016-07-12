@@ -23,19 +23,19 @@ class BaseLuisInterpreter(object):
         try:
             return json['intents'][0]['intent']
         except LookupError:
-            return 'undefined'
+            return 'None'
 
     def _get_literals(self, json):
-        return set(([e['entity'] for e in json['entities']])) or None
+        return set(([e['entity'] for e in json['entities']]))
 
     def _get_types(self, json):
-        return set(([e['type'] for e in json['entities']])) or None
+        return set(([e['type'] for e in json['entities']]))
 
     def _literals_given_type(self, t, json):
-        return set(([e['entity'] for e in json['entities'] if e['type'] == t])) or None
+        return set(([e['entity'] for e in json['entities'] if e['type'] == t]))
 
     def _get_literals_given_parent_type(self, parent, json):
-        return set(([child['entity'] for child in json['entities'] if parent in child['type']])) or None
+        return set(([child['entity'] for child in json['entities'] if parent in child['type']]))
 
 class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio
@@ -44,7 +44,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def __init__(self, bot, project_system):
         # _info is the main point of access for anything specific to a project
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
-        self._trigger_paths = self._info.map_triggers_to_paths()
+
         # Use _bot to interact with the user (e.g. ask a question, clarify between options, acknowledge keywords).
         self._bot = bot
         
@@ -61,9 +61,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         data = self._format_data(json)
         self._print_from_data(data)
         try:
-            self._STRATAGIES[data['intent']](data)
+            func = self._STRATAGIES[data['intent']]
         except KeyError:
-            self._STRATAGIES['None']()
+            func = self._STRATAGIES['None']
+        finally:
+            func(data)
 
     # Utility functions.
     def _print_from_data(self, data):
@@ -135,12 +137,40 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 paths = remove_duplicates(paths, key) 
         # TODO:  Log how many paths were returned, and which ones.
         return paths
-       
+
     # Intent Functions.
     def _learn_about_topic(self, data):
         """Called when the intent is determined to be 'Learn About Topic'.
         """
+        def path_from_topic(paths, topic):
+            """Returns the first list in paths whose last element matches
+            topic.
+            """
+            for p in paths:
+                if p[len(p) - 1] == topic:
+                    return p
+
         self._bot.say("It looks like you want to learn about a topic.")
+        # Petricca may map a keyword to jargon or to auxiliaries, in most cases.
+        keywords = data['jargon'] | data['auxiliaries']
+        paths = self._info.get_paths(keywords)
+        matched_topics = [p[len(p) - 1] for p in paths]
+        print("Paths: {0}".format(paths))
+        print("Matched_topics: {0}".format(matched_topics))
+
+        if 1 < len(matched_topics):
+            topic = self._bot.give_options(matched_topics)
+            path = path_from_topic(topic)
+        elif 1 == len(matched_topics):
+            topic = paths[0][len(paths[0]) - 1]
+            path = paths[0]
+        else:
+            # Let's do something worthwhile here.
+            pass
+        self._bot.acknowledge(topic)
+        url = self._info.get_url(topic)
+        self._bot.suggest_url(url, topic)
+            
 
     def _solve_problem(self, data):
         """Called when the intent is determined to be 'Solve Problem'.
@@ -199,11 +229,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             
     def _none_intent(self):
         self._bot.say("I'm sorry, I don't know what you're asking.")
-        # "Help me understand what I can do for you?"
-        # Give options on different intents, call that function with the original query or a new one, whichever makes more sense.
-
-
-
+        
 
 def main():
     import Agent

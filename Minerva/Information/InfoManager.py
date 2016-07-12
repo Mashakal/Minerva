@@ -65,7 +65,7 @@ class InfoManager(object):
             p.pop() # So remove this key from the path.
         return p or False   # False when no key triggered in root dict.
 
-    def traverse_keys(self, keys):
+    def _traverse_keys(self, keys):
         """Traverses the links dictionary of the current module by way of keys.
         Returns the value of the deepest key in keys.
         """
@@ -82,6 +82,9 @@ class ProjectSystemInfoManager(InfoManager):
     """ A derived class from InfoManager.  Has some logic that is coupled with
     project systems as a whole.
     """
+    def __init__(self, moduleName):
+        super().__init__(moduleName)
+        self._trigger_map = self._map_triggers_to_paths()
 
     def get_url_description(self, url):
         """Grabs the last filename, which is usually the most descriptive of
@@ -97,7 +100,6 @@ class ProjectSystemInfoManager(InfoManager):
             s = s.replace('-', ' ')
             s = s.replace('#', ': ')
         return s or False
-
 
     def set_from_key_values(self, dic=None, set_=None, k_to_collect=None):
         """Creates a set of all the values for every key matches the string k_to_collect.  This can be used
@@ -133,15 +135,41 @@ class ProjectSystemInfoManager(InfoManager):
                 el += ","
                 fd.write(el)
      
-    def map_triggers_to_paths(self):
+    def _map_triggers_to_paths(self):
         """Returns a mapping of a trigger to a set of keys that will lead to the value
         for the key that this trigger is mapped to.
         """
         # Get all triggers as a set.  This function will use 
-        triggers = self._info.set_from_key_values(k_to_collect='Triggers')
-        return {trigger: self._info.find_path_to_trigger_key(trigger) for trigger in triggers}
+        triggers = self.set_from_key_values(k_to_collect='Triggers')
+        return {trigger: self.find_path_to_trigger_key(trigger) for trigger in triggers}
 
+    def _remove_subpaths(self, paths):
+        """Removes any path within paths that is a subpath of another path.
+        """
+        subpaths = []
+        for i in range(len(paths) - 1):
+            if paths[i] == paths[i + 1][:len(paths[i])]:
+                subpaths.append(paths[i])
+        for path in subpaths:
+            paths.remove(path)
+        return paths
 
+    def get_paths(self, triggers):
+        """Returns a list of paths given a list of triggers.  If remove_duplicates is True
+        the subpaths will be removed before returning."""
+        paths = []
+        for trigger in triggers:
+            try:
+                p = self._trigger_map[trigger]
+            except KeyError:
+                pass
+            else:
+                paths.append(p)
+
+        return self._remove_subpaths(paths)
+
+    def get_url(self, path):
+        return self._traverse_keys(path)
 
 def main():
     im = ProjectSystemInfoManager('ptvs')
