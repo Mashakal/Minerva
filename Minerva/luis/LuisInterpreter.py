@@ -42,8 +42,9 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     as a part of a help bot.
     """
     def __init__(self, bot, project_system):
-        # _info is the main point of access for anything specific to a project (e.g. urls, triggers, keywords).
+        # _info is the main point of access for anything specific to a project
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
+        self._trigger_paths = self._info.map_triggers_to_paths()
         # Use _bot to interact with the user (e.g. ask a question, clarify between options, acknowledge keywords).
         self._bot = bot
         
@@ -74,28 +75,22 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def _format_data(self, json):
         """Formats the raw json into a more easily managable dictionary."""
-        o = {
+        return {
         # Meta keys - these point to dictionaries.
             'intents': json['intents'],
             'entities': json['entities'],
         # Leaf keys - these point to a value or some container of values.
             'query': json['query'],
             'intent': json['intents'][0]['intent'],
-            # All intents OTHER than the top scoring intent.
             'other_intents': json['intents'][1:],
             'subjects': self._literals_given_type('Subject', json),
             'auxiliaries': self._literals_given_type('Auxiliary', json),
             'negators': self._literals_given_type('Negator', json),
-            # Action types.
             'gerunds': self._literals_given_type('Action::Gerund', json),
             'conjugated_verbs': self._literals_given_type('Action::Conjugated Verb', json),
-            # Jargon
             'jargon': self._get_literals_given_parent_type('Jargon::', json),
-            # Solve Problem Triggers.
             'solve_problem_triggers': self._get_literals_given_parent_type('Solve Problem Triggers::', json)
         }
-        
-        return o
 
     def __get_paths(self, word_set):
         # I die a little inside everytime I look at this function.
@@ -140,15 +135,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 paths = remove_duplicates(paths, key) 
         # TODO:  Log how many paths were returned, and which ones.
         return paths
-    
-    def _map_triggers_to_paths(self):
-        """Returns a mapping of a trigger to a set of keys that will lead to the value
-        for the key that this trigger is mapped to.
-        """
-        # Get all triggers as a set.  This function will use 
-        triggers = self._info.set_from_key_values(k_to_collect='Triggers')
-        return {trigger: self._info.find_path_to_trigger_key(trigger) for trigger in triggers}
-
        
     # Intent Functions.
     def _learn_about_topic(self, data):
