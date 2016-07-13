@@ -34,7 +34,7 @@ class BaseLuisInterpreter(object):
     def _literals_given_type(self, t, json):
         return set(([e['entity'] for e in json['entities'] if e['type'] == t]))
 
-    def _get_literals_given_parent_type(self, parent, json):
+    def _literals_given_parent_type(self, parent, json):
         return set(([child['entity'] for child in json['entities'] if parent in child['type']]))
 
 class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
@@ -71,7 +71,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def _print_from_data(self, data):
         #for k, v in data.items():
         #    print("{0}: {1}".format(k.upper(), v))
-        for key in ['query', 'intent', 'jargon', 'auxiliaries', 'gerunds', 'conjugated_verbs', 'negators', 'solve_problem_triggers']:
+        for key in ['query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']:
             print ("  {0}:\t{1}".format(key.upper(), data[key]))
         print()
 
@@ -90,8 +90,10 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'negators': self._literals_given_type('Negator', json),
             'gerunds': self._literals_given_type('Action::Gerund', json),
             'conjugated_verbs': self._literals_given_type('Action::Conjugated Verb', json),
-            'jargon': self._get_literals_given_parent_type('Jargon::', json),
-            'solve_problem_triggers': self._get_literals_given_parent_type('Solve Problem Triggers::', json)
+            'all_jargon': self._literals_given_parent_type('Jargon::', json),
+            'phrase_jargon': self._literals_given_type('Jargon::Phrase', json),
+            'single_jargon': self._literals_given_type('Jargon::Single Word', json),
+            'solve_problem_triggers': self._literals_given_parent_type('Solve Problem Triggers::', json)
         }
 
     def __get_paths(self, word_set):
@@ -138,38 +140,103 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # TODO:  Log how many paths were returned, and which ones.
         return paths
 
-    # Intent Functions.
-    def _learn_about_topic(self, data):
-        """Called when the intent is determined to be 'Learn About Topic'.
+    def __get_all_paths(self, interests, data):
+        """Returns a dictionary where the interest is the key and a list of
+        keys that map to a url is the value.  If no path is found for any
+        interest, its value will be None.
         """
-        def path_from_topic(paths, topic):
-            """Returns the first list in paths whose last element matches
-            topic.
-            """
-            for p in paths:
-                if p[len(p) - 1] == topic:
-                    return p
+        interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
+        all_paths = {}
+        for interest in interests:
+            path = self._info.get_paths(data[interest])
+            path = self._info.remove_subpaths(path)
+            all_paths[interest] = path if path else None
+        return all_paths
 
-        self._bot.say("It looks like you want to learn about a topic.")
-        # Petricca may map a keyword to jargon or to auxiliaries, in most cases.
-        keywords = data['jargon'] | data['auxiliaries']
-        paths = self._info.get_paths(keywords)
-        matched_topics = [p[len(p) - 1] for p in paths]
-        print("Paths: {0}".format(paths))
-        print("Matched_topics: {0}".format(matched_topics))
+    def __topic_from_path(self, path):
+        """Returns the 'topic' of a path, that is, the last key in the list of
+        keys in the path."""
+        return path[len(path) - 1]
 
-        if 1 < len(matched_topics):
-            topic = self._bot.give_options(matched_topics)
-            path = path_from_topic(topic)
-        elif 1 == len(matched_topics):
-            topic = paths[0][len(paths[0]) - 1]
-            path = paths[0]
-        else:
-            # Let's do something worthwhile here.
-            pass
-        self._bot.acknowledge(topic)
-        url = self._info.get_url(topic)
-        self._bot.suggest_url(url, topic)
+    def __longest_paths(self, paths):
+        max_len = 0
+        for path in paths:
+            if len(path) > max_len:
+                max_len = len(path)
+        return [path for path in paths if len(path) == max_len]
+      
+    def _learn_about_topic(self, data):
+        """Another try at learn about topic procedure.
+        """
+        # Find all paths for any topic of interest found in the user's query.
+        interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
+        paths_dict = self.__get_all_paths(interests, data)  # Dictionary - interest: paths
+        all_paths = self._info.remove_subpaths(paths_dict)  # List of all paths, subpaths removed.
+
+        # Get all of the deepest paths. THIS IS AN AREA WHOSE LOGIC CAN BE IMPROVED.
+        longest_paths = self.__longest_paths(all_paths)
+        if not longest_paths:
+            # Check if we have anything to go on.
+            print("Luis didn't find any keywords in your query.  Sorry.")
+            print("In the future, I'll be able to try stackoverflow for you.")
+            return    
+
+        # Positive or negative acknowledgement.
+        topics = [self.__topic_from_path(path) for path in longest_paths]
+        self._bot.acknowledge(topics)
+
+        # Map a topic to a corresponding url.
+        urls = {topics[i]: self._info.get_url(path) for i, path in enumerate(longest_paths)}
+        urls = []
+        for i, path in enumerate(longest_paths):
+            raise NotImplementedError("Finish this!")
+
+        # Make sure we have an url, otherwise we need some clarification.
+        topics_needing_chosen = {k: v.keys() for k, v in urls.items() if not isinstance(v, str)}
+        for t in topics_needing_chosen:
+            choice = self._bot.give_options(topics_needing_chosen[t])
+            
+        # Suggest the url(s).
+        self._bot.suggest_multiple_urls(list(urls.values()), list(urls.keys()))
+
+        # Get feedback if an url was suggested.
+
+        # Make additional action based on the feedback.
+
+    # Intent Functions.
+    #def _learn_about_topic(self, data):
+    #    """Called when the intent is determined to be 'Learn About Topic'.
+    #    """
+    #    def path_from_topic(paths, topic):
+    #        """Returns the first list in paths whose last element matches
+    #        topic.
+    #        """
+    #        for p in paths:
+    #            if p[len(p) - 1] == topic:
+    #                return p
+
+    #    self._bot.say("It looks like you want to learn about a topic.")
+    #    # Petricca may map a keyword to jargon or to auxiliaries, in most cases.
+    #    keywords = data['jargon'] | data['auxiliaries']
+    #    paths = self._info.get_paths(keywords)
+    #    matched_topics = [p[len(p) - 1] for p in paths]
+    #    print("Paths: {0}".format(paths))
+    #    print("Matched_topics: {0}".format(matched_topics))
+
+    #    if 1 < len(matched_topics):
+    #        topic = self._bot.give_options(matched_topics)
+    #        path = path_from_topic(topic)
+    #    elif 1 == len(matched_topics):
+    #        topic = paths[0][len(paths[0]) - 1]
+    #        path = paths[0]
+    #    else:
+    #        # Let's do something worthwhile here.
+    #        pass
+    #    self._bot.acknowledge(topic)
+    #    url = self._info.get_url(topic)
+    #    self._bot.suggest_url(url, topic)
+
+
             
 
     def _solve_problem(self, data):

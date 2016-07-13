@@ -21,7 +21,6 @@ class Agent(object):
     def _prompt(self):
         """Outputs a prompt and returns the user's input.
         """
-        print()
         r = input(">>> ")
         print()
         return r
@@ -30,12 +29,13 @@ class Agent(object):
         """Print a message from the bot to the standard output.
         """
         print(s)
+        print()
 
     def ask(self, s):
         """Print a message/question to the standard output and then
         prints a prompt, then returns the input from the user.
         """
-        print(s)
+        self.say(s)
         return self._prompt()
 
     def acknowledge(self, items, genre='positive_acks', conj='and'):
@@ -139,7 +139,7 @@ class Agent(object):
             s = " " + conj + " %s"
         elif 1 == length:
             s = "%s"
-        return s
+        return s or ''
 
     def _build_list_string(self, length, with_conj=False):
         """Generates a single string that can be formatted using String.format

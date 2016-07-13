@@ -143,15 +143,23 @@ class ProjectSystemInfoManager(InfoManager):
         triggers = self.set_from_key_values(k_to_collect='Triggers')
         return {trigger: self.find_path_to_trigger_key(trigger) for trigger in triggers}
 
-    def _remove_subpaths(self, paths):
+    def remove_subpaths(self, paths):
         """Removes any path within paths that is a subpath of another path.
         """
+        if isinstance(paths, list):
+            # Only have to look at the next path in paths if it is sorted.
+            paths.sort()
+        elif isinstance(paths, dict):
+            # Get a list of all the paths in the dict.
+            paths = [e for k, v in paths.items() if v for e in v]
+
         subpaths = []
         for i in range(len(paths) - 1):
-            if paths[i] == paths[i + 1][:len(paths[i])]:
+            # Check if paths[i] a sublist of paths[i + 1].
+            if paths[i][:len(paths[i])] == paths[i + 1][:len(paths[i])]:
                 subpaths.append(paths[i])
-        for path in subpaths:
-            paths.remove(path)
+        for subpath in subpaths:
+            paths.remove(subpath)
         return paths
 
     def get_paths(self, triggers):
@@ -165,10 +173,10 @@ class ProjectSystemInfoManager(InfoManager):
                 pass
             else:
                 paths.append(p)
-
-        return self._remove_subpaths(paths)
+        return paths
 
     def get_url(self, path):
+        """Returns the value pointed to by path."""
         return self._traverse_keys(path)
 
 def main():
