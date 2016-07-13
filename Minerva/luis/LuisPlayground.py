@@ -16,6 +16,7 @@ APP_IDS = {
 
 # Debugging items.
 JSON_FILE = 'petricca_test_file.json'
+JSON_FILE = 'petricca_multiple_single_jargon.json'
 
 def build_luis_url(app_name):
     s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
@@ -27,22 +28,12 @@ def load_debug_json(client, filename):
     the file doesn't exist.  Will write the newly obtained json to filename."""
     if 0 == get_file_size(filename):
         q = VSAgent().start_query()
-        q = encode_for_luis(q)
         j = client.query(q, 'verbose')
         json_to_file(j, filename)
     else:
         j = file_to_json(filename)
     return j
 
-def encode_for_luis(query):
-    """Replaces any character in the hard-coded list with a space.
-    """
-    letters = list(query)
-    for i, letter in enumerate(letters):
-        if letter in string.punctuation: # Luis makes it hard to work with punctuation because it adds spaces around all unique punctuation.
-            #letters[i] = ' '
-            pass
-    return ''.join(letters)
 
 
 def main():
@@ -51,9 +42,8 @@ def main():
     lc = BotLuisClient(build_luis_url('Petricca'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
-    #q = encode_for_luis(bot.start_query())
-    #j = lc.query(q, 'verbose')
-    j = load_debug_json(lc, JSON_FILE)
+    j = lc.query(bot.start_query(), 'verbose')
+    #j = load_debug_json(lc, JSON_FILE)
     interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
 
 
