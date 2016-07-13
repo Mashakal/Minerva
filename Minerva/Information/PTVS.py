@@ -210,5 +210,23 @@ KEY_MAP = {
     },
     'Code Formatting': {
         'Triggers': {'code formatting'}
+    },
+    'Profiling': {
+        'Triggers': {'profiling', 'profiler', 'performance report', 'performance reports'}
+    },
+    'Unit Tests': {
+        'Triggers': {'unit tests', 'tests', 'unittests', 'unittest', 'unit test', 'unittesting', 'unit testing'}
+    },
+    'PyLint': {
+        'Triggers': {'pylint', 'py lint', 'linter'}
+    },
+    'Azure SDK for Pyhon': {
+        'Triggers': {'azure sdk for python', 'azure sdk', 'azure python', 'python azure'}
+    },
+    'Kinect for Python': {
+        'Triggers': {'kinect for python', 'kinect'}
+    },
+    'wfastcgi (on PyPI)': {
+        'Triggers': {'wfastcgi', 'wfastcgi python', 'wfastcgi on pypi', 'pypi wfastcgi'}
     }
 }
