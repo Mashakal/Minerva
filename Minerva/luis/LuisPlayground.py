@@ -17,6 +17,7 @@ APP_IDS = {
 # Debugging items.
 JSON_FILE = 'petricca_test_file.json'
 JSON_FILE = 'petricca_multiple_single_jargon.json'
+JSON_FILE = 'petricca_remote_debugging_cloud_project.json'
 
 def build_luis_url(app_name):
     s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \

@@ -80,9 +80,10 @@ class Agent(object):
             raise ValueError("opts cannot be empty.")
 
         m = msg if msg else self._get_random_string_constant(genre)
-        self.say(m)
+        print(m)
         for i, v in enumerate(opts):
             print(" " * indent + "{0}: {1}".format(i + 1, v))
+        print()
         n = self._prompt()
         while not validate_input(n, opts):
             n = self.ask("{0} is not valid.  Enter a valid choice.".format(n))

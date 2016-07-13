@@ -164,6 +164,18 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             if len(path) > max_len:
                 max_len = len(path)
         return [path for path in paths if len(path) == max_len]
+
+    def __complete_path(self, path):
+        """If the given path does not already point to a string (we assume if it does the string is an url).
+        It will ask the user to clarify the remaining topics until a string is reached.
+        """
+        end = self._info._traverse_keys(path)
+        while not isinstance(end, str):
+            options = [k for k in end]
+            choice = self._bot.give_options(options)
+            path.append(choice)
+            end = end[choice]
+        return path
       
     def _learn_about_topic(self, data):
         """Another try at learn about topic procedure.
@@ -187,14 +199,14 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         # Map a topic to a corresponding url.
         urls = {topics[i]: self._info.get_url(path) for i, path in enumerate(longest_paths)}
-        urls = []
         for i, path in enumerate(longest_paths):
-            raise NotImplementedError("Finish this!")
+            path = self.__complete_path(path)
+            urls[topics[i]] = self._info.get_url(path)
 
         # Make sure we have an url, otherwise we need some clarification.
-        topics_needing_chosen = {k: v.keys() for k, v in urls.items() if not isinstance(v, str)}
-        for t in topics_needing_chosen:
-            choice = self._bot.give_options(topics_needing_chosen[t])
+        #topics_needing_chosen = {k: v.keys() for k, v in urls.items() if not isinstance(v, str)}
+        #for t in topics_needing_chosen:
+        #    choice = self._bot.give_options(topics_needing_chosen[t])
             
         # Suggest the url(s).
         self._bot.suggest_multiple_urls(list(urls.values()), list(urls.keys()))
