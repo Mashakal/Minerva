@@ -19,9 +19,9 @@ SUGGEST_MULT_URL = [
 ]
 
 SUGGEST_URL = [
-    "You'll find information on that here:\n\t{0}.\n",
-    "For that, I suggest you visit:\n\t{0}.\n",
-    "The following is a good resource for that:\n\t{0}.\n"
+    "You'll find information on that here:\n\t{0}.",
+    "For that, I suggest you visit:\n\t{0}.",
+    "The following is a good resource for that:\n\t{0}."
 ]
 
 OPTIONS = [
