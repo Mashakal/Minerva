@@ -145,7 +145,7 @@ KEY_MAP = {
     'Refactoring': {
         'Triggers': {'refactoring'},
         'Rename': {
-            'Triggers': {'rename', 'rename a variable', 'rename something', 'rename a symbol', 'symbol'}
+            'Triggers': {'rename', 'rename a variable', 'rename something', 'rename a symbol'}
         },
         'Extract Method': {
             'Triggers': {'extract method', 'extract'}
