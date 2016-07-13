@@ -18,3 +18,13 @@ Bot.Agent.Agent.clarify.validate_input
 		desirable interpretation of the user's query prior to clarify
 		being called, which is logic that is decoupled from the method 
 		clarify entirely.
+
+PETRICCA NOTE:
+	> We will need to log the literals from any SUBJECT that is returned.  This
+	is a great statistic that we can use to prioritize improvements to the
+	analyzation on the Luis query results.
+		> I am thinking that checking to see if the subject is a module or package
+		it would be easy to map to a link for that module/package, especially if it
+		is frequently queried (numpy?).
+		> Is it a project system? (RTVS, NTVS, PTVS?)
+

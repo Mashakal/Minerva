@@ -5,18 +5,20 @@ How to {action} {feature}
 what {action} {feature} do[es]?
 how {adjective} {action / feature}
 
+INTENTS:
 LEARN_ABOUT_TOPIC - anything that one would associate with an IDE.  They primarily contain entities of type TRIGGER.
 
 SOLVE_PROBLEM - Can be identified by words that are common when having a specific problem (error, 'not working', 'not running', 'breaks', 'broken')
 
 
+ENTITIES:
 JARGON - These are the items that we want to be able to lookup as triggers.
     > SINGLE WORD - the word itself is jargon.
     > PHRASE - a set of words in this order is jargon.
 
 SUBJECT - The thing being acted on in some way.  "Remote debuggin on azure." -> azure is the subject.  "How to install ptvs" -> ptvs is subject.  "How to install numpy." -> numpy is the subject.
 
-LEARN_ABOUT_TRIGGERS:
+LEARN ABOUT TRIGGERS:
     > PHRASE
     > SINGLE WORD
 
