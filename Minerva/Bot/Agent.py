@@ -35,7 +35,7 @@ class Agent(object):
         """Print a message/question to the standard output and then
         prints a prompt, then returns the input from the user.
         """
-        print(s)
+        self.say(s)
         return self._prompt()
 
     def acknowledge(self, items, genre='positive_acks', conj='and'):
