@@ -146,12 +146,15 @@ class ProjectSystemInfoManager(InfoManager):
     def _remove_subpaths(self, paths):
         """Removes any path within paths that is a subpath of another path.
         """
+        # Only have to look at the next path in paths if it is sorted.
+        paths.sort()
         subpaths = []
         for i in range(len(paths) - 1):
-            if paths[i] == paths[i + 1][:len(paths[i])]:
+            # Check if paths[i] a sublist of paths[i + 1].
+            if paths[i][:len(paths[i])] == paths[i + 1][:len(paths[i])]:
                 subpaths.append(paths[i])
-        for path in subpaths:
-            paths.remove(path)
+        for subpath in subpaths:
+            paths.remove(subpath)
         return paths
 
     def get_paths(self, triggers):
@@ -165,7 +168,6 @@ class ProjectSystemInfoManager(InfoManager):
                 pass
             else:
                 paths.append(p)
-
         return self._remove_subpaths(paths)
 
     def get_url(self, path):
