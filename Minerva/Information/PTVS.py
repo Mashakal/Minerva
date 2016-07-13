@@ -88,7 +88,7 @@ KEY_MAP = {
             'Triggers': {'flask and azure table storage', 'flask and azure', 'flask table storage'}
         },
         'Flask and MongoDB': {
-            'Triggers': {'flask and mongodb', 'mongodb and flask'}
+            'Triggers': {'flask and mongodb', 'mongodb and flask', 'flask mongodb', 'mongodb flask'}
         },
         'Django and SQL Database': {
             'Triggers': {'django and sql database', 'django and sql', 'django database', 'django with sql'}
@@ -160,7 +160,7 @@ KEY_MAP = {
     "Debugging": {
         'Triggers': {'debugging', 'debug', 'debugger', 'debuggor'},
         'Remote Debugging': {
-            'Triggers': {'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
+            'Triggers': {'remote debugging', 'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
         },
         'Basic Debugging': {
             'Triggers': {'basic debugging'}
@@ -172,7 +172,7 @@ KEY_MAP = {
             'Triggers': {'debugging without a project'}
         },
         'The Debug Interactive Window': {
-            'Triggers': {'debug interactive window', 'debugging interactive window'}
+            'Triggers': {'debug interactive window', 'debugging interactive window', 'interactive window'}
         },
         'Mixed-Mode Debugging': {
             'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode'}
@@ -181,7 +181,7 @@ KEY_MAP = {
     'Interactive REPL': {
         'Triggers': {'interactive repl', 'repl', 'interactive'},
         'Switching Scopes': {
-            'Triggers': {'switching scopes'}
+            'Triggers': {'switching scopes', 'changing scopes'}
         },
         'Send Code to Interactive': {
             'Triggers': {'send code to interactive', 'send to interactive', 'to interactive'}
