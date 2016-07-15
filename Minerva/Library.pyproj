@@ -36,9 +36,6 @@
     <Compile Include="Information\InfoManager.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Information\module1.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Information\PTVS.py">
       <SubType>Code</SubType>
     </Compile>
