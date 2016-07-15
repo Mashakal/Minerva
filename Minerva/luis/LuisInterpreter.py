@@ -19,30 +19,39 @@ class BaseLuisInterpreter(abc.ABC):
     
     @abc.abstractmethod
     def analyze(self, json):
-        """Analyzes the json returned from a call to the base LuisClient class's method, query_raw."""
+        """Analyzes the json returned from a call to LuisClient's method, query_raw."""
         raise NotImplementedError("Function analyze has not yet been customized.")
      
     def _get_top_scoring_intent(self, json):
+        """Returns the top scoring intent, or None."""
         try:
             return json['intents'][0]['intent']
         except LookupError:
             return 'None'
 
     def _get_literals(self, json):
+        """Returns the set of literals for each entity."""
         return {e['entity'] for e in json['entities']}
 
     def _get_types(self, json):
+        """Returns the set of entity types for each entity."""
         return {e['type'] for e in json['entities']}
 
     def _literals_given_type(self, t, json):
+        """Returns the set of all literals of a certain entity type."""
         return {e['entity'] for e in json['entities'] if e['type'] == t}
 
     def _literals_given_parent_type(self, parent, json):
+        """Returns all literals that are children of entity type parent."""
         return {child['entity'] for child in json['entities'] if parent in child['type']}
 
     def _print_from_data(self, data):
-        #for k, v in data.items():
-        #    print("{0}: {1}".format(k.upper(), v))
+        """Prints a predefined set of information from data.
+        
+        This method can easily be overriden to print out whatever is pertinent
+        for your application.
+        
+        """
         for key in ['query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']:
             print ("  {0}:\t{1}".format(key.upper(), data[key]))
         print()
@@ -51,11 +60,11 @@ class BaseLuisInterpreter(abc.ABC):
 class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio."""
 
-    def __init__(self, bot, project_system):
+    def __init__(self, agent, project_system):
         # _info is the main point of access for anything specific to a project
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
         # Use _bot to interact with the user (e.g. ask a question, clarify between options, acknowledge keywords).
-        self._bot = bot
+        self._agent = agent
         
         # Maps an intent to a function.
         self._STRATAGIES = {
@@ -171,7 +180,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         end = self._info._traverse_keys(path)
         while not isinstance(end, str):
             options = [k for k in end]
-            choice = self._bot.give_options(options)
+            choice = self._agent.give_options(options)
             path.append(choice)
             end = end[choice]
         return path
@@ -196,7 +205,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         # Positive or negative acknowledgement.
         topics = [self._topic_from_path(path) for path in longest_paths]
-        self._bot.acknowledge(topics)
+        self._agent.acknowledge(topics)
 
         # Map a topic to a corresponding url.
         urls = {topics[i]: self._info.get_url(path) for i, path in enumerate(longest_paths)}
@@ -206,7 +215,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             urls[topics[i]] = self._info.get_url(path)
 
         # Suggest the url(s).
-        self._bot.suggest_multiple_urls(list(urls.values()), list(urls.keys()))
+        self._agent.suggest_multiple_urls(list(urls.values()), list(urls.keys()))
 
         # Get feedback if an url was suggested.
 
@@ -215,10 +224,10 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def _solve_problem(self, data):
         """Called when the intent is determined to be 'Solve Problem'.
         """
-        self._bot.say("It looks like you want to solve a problem.")
+        self._agent.say("It looks like you want to solve a problem.")
            
     def _none_intent(self):
-        self._bot.say("I'm sorry, I don't know what you're asking.")
+        self._agent.say("I'm sorry, I don't know what you're asking.")
         
 
 def main():
