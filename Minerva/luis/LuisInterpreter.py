@@ -15,6 +15,7 @@ _NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
 
 
 class BaseLuisInterpreter(abc.ABC):
+
     """A base class for all interpreters."""
     
     @abc.abstractmethod
@@ -58,6 +59,7 @@ class BaseLuisInterpreter(abc.ABC):
 
 
 class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
+
     """Interprets questions for language specific project systems of Visual Studio."""
 
     def __init__(self, agent, project_system):
@@ -110,11 +112,12 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def _get_paths(self, word_set):
         # I die a little inside everytime I look at this function.
-        """Get's paths to all words in the set, if a path for it exists.
+        """Retrieves a list of keys that can be used to traverse an info file's links.
+
         Filters the paths found such that only the deepest path will be
-        returned, which is helpful when a Luis picks up a trigger to a key
-        and also a trigger to a more specialized version of that key in the
-        same query.
+        returned, which is helpful when LUIS picks up a trigger to a key
+        and also a trigger to more specialized version of that same key.
+
         """
         def get_paths(word_set):
             """Returns an unfiltered list of all the paths pointed to by 
