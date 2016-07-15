@@ -16,6 +16,7 @@ class ProjectSystemBot(Bot):
     """A bot for Visual Studio Project Systems."""
 
     def __init__(self, project_system):
+        self._luis_client = LuisClient.BotLuisClient()
         self.agent = Agent.VSAgent()
         self.interpreter = LuisInterpreter.ProjectSystemLuisInterpreter(self.agent, project_system)
 

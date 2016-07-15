@@ -1,5 +1,6 @@
 import sys
 import abc
+import itertools
 
 import InfoManager
 import collections
@@ -118,18 +119,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         returned, which is helpful when LUIS picks up a trigger to a key
         and also a trigger to more specialized version of that same key.
 
-        """
-        def get_paths(word_set):
-            """Returns an unfiltered list of all the paths pointed to by 
-            words in the word set.
-            """
-            paths = []
-            for word in word_set:
-                path = self._info.find_path_to_trigger_key(word)
-                if path:
-                    paths.append(path)
-            return paths
-        
+        """     
         def remove_duplicates(paths, key):
             """Remove all but the longest path from paths."""
             # Get the paths that contain key.
@@ -142,12 +132,14 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             [paths.remove(p) for p in with_key if p is not list_max]
             return paths
         
-        paths = get_paths(word_set)
-        flattened_paths = [p for path in paths for p in path]
-        counter = collections.Counter(flattened_paths)
-        for key, count in counter.most_common(): # Get ALL elements in counter.
-            if count > 1:
-                paths = remove_duplicates(paths, key) 
+        paths = filter(self._info.find_path_to_trigger_key, word_set)
+        flat_paths = itertools.chain.from_iterable(paths)
+        #counter = collections.Counter(flat_paths)
+        max_ = max(map(len, flat_paths)) 
+        paths = filter(lambda x: len(x) == max_, flat_paths)
+        #for key, count in counter.most_common(): # Get ALL elements in counter.
+        #    if count > 1:
+        #        paths = remove_duplicates(paths, key) 
         # TODO:  Log how many paths were returned, and which ones.
         return paths
 
@@ -161,7 +153,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for interest in interests:
             path = self._info.get_paths(data[interest])
             path = self._info.remove_subpaths(path)
-            all_paths[interest] = path if path else None
+            all_paths[interest] = path or None
         return all_paths
 
     def _topic_from_path(self, path):
