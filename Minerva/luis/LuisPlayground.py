@@ -1,5 +1,7 @@
 import sys
 import string
+
+import Bot
 from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
 from Agent import VSAgent
@@ -25,8 +27,12 @@ def build_luis_url(app_name):
     return s
 
 def load_debug_json(client, filename):
-    """Loads json from the file specified by 'filename'.  Makes a call to sendQuery when
-    the file doesn't exist.  Will write the newly obtained json to filename."""
+    """Loads json from the file specified by 'filename'.  
+    
+    Makes a call to sendQuery when the file doesn't exist.
+    Will write the newly obtained json to filename.
+
+    """
     if 0 == get_file_size(filename):
         q = VSAgent().start_query()
         j = client.query(q, 'verbose')
@@ -38,6 +44,8 @@ def load_debug_json(client, filename):
 
 
 def main():
+    #bot = Bot.ProjectSystemBot('ptvs')
+
     bot = VSAgent()   # Interacts with the user.
     interp = ProjectSystemLuisInterpreter(bot, 'ptvs')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(build_luis_url('Petricca'))    # Handles queries to the LUIS client.

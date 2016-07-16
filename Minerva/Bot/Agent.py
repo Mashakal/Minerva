@@ -32,7 +32,7 @@ class Agent(object):
         print()
 
     def ask(self, s):
-        """Print a message/question to the standard output and then
+        """Print a message/question to the standard output, then
         prints a prompt, then returns the input from the user.
         """
         self.say(s)
@@ -118,14 +118,13 @@ class Agent(object):
         msg = self._get_random_string_constant('clarify')
         # Allow an arbitrary number of opts to be printed.
         msg += " " + self._build_list_string(len(opts), True if 1 < len(opts) else False)
-        # Conjunction string depends on size of opts.
         msg += self._build_conj_string(len(opts), conj)
         msg += "?"
         # Require a match to at least one of opts.
         opt = validate_input(self.ask(msg % tuple(opts)), opts) # False on failure.
         while not opt:
             # Negative acknowledgement and ask the message again.
-            self.say("I don't understand, {0}".format((msg % tuple(opts)).lower()))
+            self.say("I don't understand, {0}".format((msg % tuple(opts))))
             opt = validate_input(self._prompt(), opts)
         return opt
 

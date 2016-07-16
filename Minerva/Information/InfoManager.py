@@ -65,7 +65,7 @@ class InfoManager(object):
             p.pop() # So remove this key from the path.
         return p or False   # False when no key triggered in root dict.
 
-    def _traverse_keys(self, keys):
+    def traverse_keys(self, keys):
         """Traverses the links dictionary of the current module by way of keys.
         Returns the value of the deepest key in keys.
         """
@@ -155,11 +155,12 @@ class ProjectSystemInfoManager(InfoManager):
 
         subpaths = []
         for i in range(len(paths) - 1):
-            # Check if paths[i] a sublist of paths[i + 1].
+            # Check if paths[i] is a sublist of paths[i + 1].
             if paths[i][:len(paths[i])] == paths[i + 1][:len(paths[i])]:
                 subpaths.append(paths[i])
-        for subpath in subpaths:
-            paths.remove(subpath)
+        filter(paths.remove, subpaths)
+        #for subpath in subpaths:
+        #    paths.remove(subpath)
         return paths
 
     def get_paths(self, triggers):
@@ -177,7 +178,7 @@ class ProjectSystemInfoManager(InfoManager):
 
     def get_url(self, path):
         """Returns the value pointed to by path."""
-        return self._traverse_keys(path)
+        return self.traverse_keys(path)
 
 def main():
     im = ProjectSystemInfoManager('ptvs')

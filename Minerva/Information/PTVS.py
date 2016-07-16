@@ -151,7 +151,7 @@ KEY_MAP = {
             'Triggers': {'extract method', 'extract'}
         },
         'Add Import': {
-            'Triggers': {'add import', 'add imports'}
+            'Triggers': {'add import', 'add imports', 'add an import'}
         },
         'Remove Imports': {
             'Triggers': {'remove imports', 'remove import'}

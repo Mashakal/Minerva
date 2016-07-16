@@ -3,6 +3,13 @@ DATA THAT WILL BE HELPFUL:
 		- Knowing this will help:
 			> Identify where improvements to suggestions can be made.
 
+	- 
+
+QUESTIONS:
+	- How can we determine which entities carry the most weight for each intent?
+		- How do we know that the weights are accurate?
+		- 
+	- 		
 
 DOCUMENTATION, WHY LOG IT?:
 
