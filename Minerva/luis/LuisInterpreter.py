@@ -247,9 +247,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     #    self._bot.acknowledge(topic)
     #    url = self._info.get_url(topic)
     #    self._bot.suggest_url(url, topic)
-
-
-            
+               
 
     def _solve_problem(self, data):
         """Called when the intent is determined to be 'Solve Problem'.
