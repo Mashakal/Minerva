@@ -175,7 +175,7 @@ KEY_MAP = {
             'Triggers': {'debug interactive window', 'debugging interactive window', 'interactive window'}
         },
         'Mixed-Mode Debugging': {
-            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode'}
+            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode', 'mixed mode debugging'}
         }
     },
     'Interactive REPL': {
