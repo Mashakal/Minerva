@@ -47,7 +47,7 @@ def main():
     #bot = Bot.ProjectSystemBot('ptvs')
 
     bot = VSAgent()   # Interacts with the user.
-    interp = ProjectSystemLuisInterpreter(bot, 'ptvs')    # Interpreter for a LUIS json query response.
+    interp = ProjectSystemLuisInterpreter(bot, 'PTVS')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(build_luis_url('Petricca'))    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
