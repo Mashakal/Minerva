@@ -186,8 +186,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         # Find all paths for any topic of interest found in the user's query.
         interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
-        paths_dict = self._get_all_paths(interests, data)  # Dictionary - interest: paths
-        all_paths = self._info.remove_subpaths(paths_dict)  # List of all paths, subpaths removed.
+        paths_dict = self._get_all_paths(interests, data)
+        all_paths = self._info.remove_subpaths([e for k, v in paths_dict.items() if v for e in v])
 
         # Get all of the deepest paths. THIS IS AN AREA WHOSE LOGIC CAN BE IMPROVED.
         longest_paths = self._longest_paths(all_paths)
@@ -202,11 +202,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent.acknowledge(topics)
 
         # Map a topic to a corresponding url.
-        urls = {topics[i]: self._info.get_url(path) for i, path in enumerate(longest_paths)}
+        urls = {topics[i]: self._info.traverse_keys(path) for i, path in enumerate(longest_paths)}
         for i, path in enumerate(longest_paths):
             # Complete any path that doesn't point to an url.
             path = self._complete_path(path)
-            urls[topics[i]] = self._info.get_url(path)
+            urls[topics[i]] = self._info.traverse_keys(path)
 
         # Suggest the url(s).
         self._agent.suggest_multiple_urls(list(urls.values()), list(urls.keys()))
