@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Luis\LuisPlayground.py</StartupFile>
+    <StartupFile>Information\InfoManager.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -40,6 +40,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Information\PTVS.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Information\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Luis\LuisClient.py">
