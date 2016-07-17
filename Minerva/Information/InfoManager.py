@@ -103,7 +103,7 @@ class InfoManager:
 
     def remove_subpaths(self, paths):
         """Removes any path within paths that is a subpath of any other path."""
-        # Algorithm is much simpler with a sorted list of paths.
+        # Algorithm is much simpler when the list of paths is sorted.
         paths.sort()
         # Find all subpaths, i.e. where paths[i] is a sublist of paths[i + 1].
         subpaths = [paths[i] for i in range(len(paths) - 1) \
