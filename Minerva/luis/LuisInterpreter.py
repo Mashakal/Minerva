@@ -91,7 +91,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     # Utility functions.
     def _format_data(self, json):
-        """Formats the raw json into a more easily managable dictionary."""
+        """Formats the raw json into a more easily accessible dictionary."""
         return {
             # Meta keys - these point to dictionaries.
             'intents': json['intents'],
@@ -112,16 +112,18 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
 
     def _get_all_paths(self, interests, data):
-        """Returns a dictionary where the interest is the key and a list of
-        keys that map to a url is the value.  If no path is found for any
-        interest, its value will be None.
+        """Returns a dict of interest/path pairs.
+       
+        Interest is the key.  The path that leads to interest is the
+        value.
+
         """
         interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
         all_paths = {}
         for interest in interests:
             path = self._info.get_paths(data[interest])
             path = self._info.remove_subpaths(path)
-            all_paths[interest] = path or None
+            all_paths[interest] = path
         return all_paths
 
     def _topic_from_path(self, path):
