@@ -164,7 +164,7 @@ class VSAgent(Agent):
         else:
             self.say(s.format(topic, url))
 
-    def suggest_multiple_urls(self, urls, topics):
+    def suggest_multiple_urls(self, topics, urls):
         """Suggests all url.
         """
         # Print the suggested url with it's corresponding key/topic.
