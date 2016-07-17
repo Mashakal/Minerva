@@ -155,8 +155,6 @@ class ProjectSystemInfoManager(InfoManager):
 
 def main():
     im = ProjectSystemInfoManager('PTVS')
-    x = im.set_from_key_values()
-    for el in x: print(el)
     im.gen_file_from_info('triggers_we_hope.txt', im.set_from_key_values)
 
 
