@@ -1,9 +1,9 @@
 import sys
 import abc
 import itertools
+import collections
 
 import InfoManager
-import collections
 
 # For development purposes only:
 from Essentials import enter_and_exit_labels, print_smart
@@ -25,7 +25,7 @@ class BaseLuisInterpreter(abc.ABC):
         raise NotImplementedError("Function analyze has not yet been customized.")
      
     def _get_top_scoring_intent(self, json):
-        """Returns the top scoring intent, or None."""
+        """Returns the top scoring intent, or the string 'None'."""
         try:
             return json['intents'][0]['intent']
         except LookupError:
@@ -64,12 +64,12 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio."""
 
     def __init__(self, agent, project_system):
-        # _info is the main point of access for anything specific to a project
+        # _info is the main point of access for anything specific to a project.
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
         # Use _bot to interact with the user (e.g. ask a question, clarify between options, acknowledge keywords).
         self._agent = agent
         
-        # Maps an intent to a function.
+        # Intents point to functions.
         self._STRATAGIES = {
             'Solve Problem': self._solve_problem,
             'Learn About Topic': self._learn_about_topic,
@@ -110,37 +110,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'single_jargon': self._literals_given_type('Jargon::Single Word', json),
             'solve_problem_triggers': self._literals_given_parent_type('Solve Problem Triggers::', json)
         }
-
-    def _get_paths(self, word_set):
-        """Retrieves a list of keys that can be used to traverse an info file's links.
-
-        Filters the paths found such that only the deepest path will be
-        returned, which is helpful when LUIS picks up a trigger to a key
-        and also a trigger to more specialized version of that same key.
-
-        """     
-        #def remove_duplicates(paths, key):
-        #    """Remove all but the longest path from paths."""
-        #    # Get the paths that contain key.
-        #    with_key = [path for path in paths if key in path]
-        #    # Find the longest one.
-        #    for path in with_key:
-        #        if not list_max or len(path) > len(list_max):
-        #            list_max = path
-        #    # Remove all lists of paths that are not the one with the longest length.
-        #    [paths.remove(p) for p in with_key if p is not list_max]
-        #    return paths
-        
-        paths = filter(self._info.find_path_to_trigger_key, word_set)
-        flat_paths = itertools.chain.from_iterable(paths)
-        #counter = collections.Counter(flat_paths)
-        max_ = max(map(len, flat_paths)) 
-        paths = filter(lambda x: len(x) == max_, flat_paths)
-        #for key, count in counter.most_common(): # Get ALL elements in counter.
-        #    if count > 1:
-        #        paths = remove_duplicates(paths, key) 
-        # TODO:  Log how many paths were returned, and which ones.
-        return paths
 
     def _get_all_paths(self, interests, data):
         """Returns a dictionary where the interest is the key and a list of
