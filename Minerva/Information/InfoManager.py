@@ -31,7 +31,7 @@ class InfoManager:
         path = path_ or []
         # See if any keys are triggered by literal in this dict or any of its descendents.
         for k, v in dict_.items():
-            # Don't search for a key/value pair unless it's v is a dictionary.
+            # Don't search for a key/value pair unless its v is a dictionary.
             if isinstance(v, dict):
                 # Add the key we are looking at to the path.
                 path.append(k)
@@ -40,7 +40,7 @@ class InfoManager:
                     # We found a key in this dict, return the path that leads to it.
                     return path
                 else:
-                    # Let's check in this dict's descendants.
+                    # Let's check in v's descendants.
                     path = self.find_path_to_trigger_key(literal, path, v)
                 # If no key was triggered in any descendants p will be the same or False.
                 if path == path_ or not path:
@@ -89,29 +89,17 @@ class InfoManager:
                 set_ = self.set_from_key_values(v, set_, k_to_collect)
         return set_
 
-    def _map_triggers_to_paths(self):
-        """Returns a dictionary in the form of {'Trigger': {'First Key', 'Second Key'}}.
-        
-        Setting each trigger as a key in one dictionary at the start of the program 
-        increases the processing speed overall.  Searching the INFO.KEY_MAP dictionary
-        (calling self.find_path_to_trigger_key) is expensive.
-
-        """
-        # Get all triggers as a set.
-        triggers = self.set_from_key_values(k_to_collect='Triggers')
-        return {trigger: self.find_path_to_trigger_key(trigger) for trigger in triggers}
-
-    def gen_file_from_info(self, filename, func, **kwargs): # TODO: BROKEN!.
+    def gen_file_from_info(self, filename, func, delim='\n', **kwargs):
         """Writes all values returned by func to filename.txt.
         
         Iterates over the return value of func called with kwargs passed in
         as the parameters.  Filename should end with '.txt' or have no extension.
-        Values will be added to the file delimited by a comma, without newlines.
+        Values will be added to the file delimited by delim, with a default of '\n'.
+
         """
         fn = filename if filename.endswith('.txt') else filename + '.txt'
         with open(fn, 'w') as fd:
-            for el in func(kwargs):
-                fd.write(','.join(el))
+            fd.write(delim.join(func(kwargs)))
 
     def remove_subpaths(self, paths):
         """Removes any path within paths that is a subpath of any other path."""
@@ -126,6 +114,18 @@ class InfoManager:
     def get_paths(self, trigs):
         """Returns a list of paths given a list of triggers."""
         return [self._trigger_map[t] for t in trigs if t in self._trigger_map]
+
+    def _map_triggers_to_paths(self):
+        """Returns a dictionary in the form of {'Trigger': {'Root Key', 'Second Key'}}.
+        
+        Setting each trigger as a key in one dictionary at the start of the program 
+        increases the processing speed overall.  Searching the INFO.KEY_MAP dictionary
+        (calling self.find_path_to_trigger_key) is expensive.
+
+        """
+        triggers = self.set_from_key_values(k_to_collect='Triggers')
+        return {trigger: self.find_path_to_trigger_key(trigger) for trigger in triggers}
+
 
 
 class ProjectSystemInfoManager(InfoManager):
@@ -155,7 +155,8 @@ class ProjectSystemInfoManager(InfoManager):
 
 def main():
     im = ProjectSystemInfoManager('PTVS')
-    print(im.set_from_key_values())
+    x = im.set_from_key_values()
+    for el in x: print(el)
     im.gen_file_from_info('triggers_we_hope.txt', im.set_from_key_values)
 
 
