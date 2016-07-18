@@ -12,7 +12,7 @@ END = [
     "Thanks for giving me a chance.  Let me know if I can help with anything else."
 ]
 
-SUGGEST_MULT_URL = [
+SUGGEST_URLS = [
     "The following is a good resource for {0}:\n\t{1}.\n",
     "For {0}, I suggest you visit:\n\t{1}.\n",
     "You'll find information on {0} here:\n\t{1}.\n"
@@ -48,5 +48,5 @@ ALL_STRINGS = {
     'options': OPTIONS,
     'negative_acks': NEGATIVE_ACKS,
     'end': END,
-    'suggest_mult_url': SUGGEST_MULT_URL
+    'suggest_urls': SUGGEST_URLS
 }
