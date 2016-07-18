@@ -6,9 +6,6 @@ import collections
 import InfoManager
 import DialogueStrings
 
-# For development purposes only:
-from Essentials import enter_and_exit_labels, print_smart
-
 
 class BaseLuisInterpreter(abc.ABC):
 
@@ -82,7 +79,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             func = self._STRATAGIES['None']
         finally:
             func()
-
 
     # Utility functions.
     def _format_data(self, json):
@@ -192,9 +188,9 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent.suggest_urls(url_items[0], url_items[1])
 
         # Get feedback if an url was suggested.
-
         # Make additional action based on the feedback.
-        
+
+        # Return only to indicate the end of method _learn_about_topic.
         return
 
     def _solve_problem(self):

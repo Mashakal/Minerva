@@ -45,7 +45,6 @@ def load_debug_json(client, filename):
 
 def main():
     #bot = Bot.ProjectSystemBot('ptvs')
-
     bot = VSAgent()   # Interacts with the user.
     interp = ProjectSystemLuisInterpreter(bot, 'PTVS')    # Interpreter for a LUIS json query response.
     lc = BotLuisClient(build_luis_url('Petricca'))    # Handles queries to the LUIS client.
