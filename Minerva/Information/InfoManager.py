@@ -63,7 +63,10 @@ class InfoManager:
         v = self._mod.LINKS  # Start at the root of the links dict.
         # Find the final value pointed to by keys.
         for key in keys:
-            v = v[key]
+            try:
+                v = v[key]
+            except KeyError:
+                return None
         return v
 
     def set_from_key_values(self, dict_=None, set_=None, k_to_collect=None):
