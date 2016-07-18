@@ -86,6 +86,7 @@
   <ItemGroup>
     <Content Include="AppInfo.txt" />
     <Content Include="BlogNotes.txt" />
+    <Content Include="Bot\BotDocumentation.txt" />
     <Content Include="Data\Notes.txt" />
     <Content Include="Information\Readme.txt" />
     <Content Include="Luis\SchemaNotes.txt" />
