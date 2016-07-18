@@ -1,6 +1,7 @@
 from projectoxford.luis import LuisClient
 
 class BotLuisClient(LuisClient):
+
     """A derived class of LuisClient that exposes method raw_query."""
 
     def query(self, text, result='standard'):
