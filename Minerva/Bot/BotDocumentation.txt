@@ -1,0 +1,12 @@
+Example calls and outputs for method acknowledge:
+    For example:
+        self.acknowledge(['Debugging']) might output the string:
+            'I would be glad to help you with Debugging.'
+
+        self.acknowledge(['Python Environments', 'PyLint']) might output the string:
+            'I can definitely assist with Python Environments and PyLint.'
+
+        self.acknowledge(['Python Environments', 'PyLint'], conj='as well as')
+            might output the string:
+            'I can get you information on PyLint as well as Python Environments.'
+
