@@ -4,15 +4,10 @@ import itertools
 import collections
 
 import InfoManager
+import DialogueStrings
 
 # For development purposes only:
 from Essentials import enter_and_exit_labels, print_smart
-
-
-# Constants
-# These may be better off in the Bot module.
-_YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 'right', 'correct', "that's right", 'sure', 'for sure']
-_NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
 
 
 class BaseLuisInterpreter(abc.ABC):
@@ -141,6 +136,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         try:
             max_len = max(map(len, paths))
         except ValueError:
+            # Raised when paths is an empty set.
             max_len = 0
         return list(filter(lambda x: len(x) == max_len, paths))
 
@@ -163,7 +159,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             end = end[choice]
         return path
       
-               
     # Intent functions.
     def _learn_about_topic(self):
         """Procedure when the intent is Learn About Topic."""
