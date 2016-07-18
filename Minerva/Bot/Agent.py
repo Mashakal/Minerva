@@ -4,9 +4,10 @@ import random
 import sys
 import DialogueStrings
 
+
 class Agent:
 
-    """Communicates with the user."""
+    """Processes input and output during a query."""
 
     def _get_random_string_constant(self, genre):
         """Returns a random string of type genre.
@@ -29,13 +30,22 @@ class Agent:
         print()
         return r
 
+    def _is_word_type(self, type_, word):
+        """Returns True if word is a type of type_.
+
+        Searches DialogueStrings.ALL_STRINGS[type_] for
+        word and returns True when found, else False.
+
+        """
+        return word.lower() in DialogueStrings.ALL_STRINGS[type_]
+
     def say(self, s):
         """Print a message from the bot to the standard output."""
         print(s)
         print()
 
     def ask(self, s):
-        """Asks and returns a response to some string output."""
+        """Outputs and returns a response to some string."""
         self.say(s)
         return self._prompt()
 
@@ -44,30 +54,22 @@ class Agent:
 
         Constructs a string given a container of items.  The string
         will join together each item in items and and if there is more
-        than one will use the conjunction, conj before the last item.
+        than one will use intelligently use conj before the last item.
         Genre can be set explicitly and defaults to 'positive_acks'.
-        Conj can be set explicitly and defaults to 'and'.
-
-        For example:
-            self.acknowledge(['Debugging']) might output the string:
-                'I would be glad to help you with Debugging.'
-
-            self.acknowledge(['Python Environments', 'PyLint']) might output the string:
-                'I can definitely assist with Python Environments and PyLint.'
-
-            self.acknowledge(['Python Environments', 'PyLint'], conj='as well as')
-                might output the string:
-                'I can get you information on PyLint as well as Python Environments.'
+        Conj can be set explicitly and defaults to 'and'.  Will not
+        output anything when items is empty.
 
         """
         msg = self._get_random_string_constant(genre)
         # Get a string that's formatted to fit the number of items.
-        list_string = self._build_list_string(len(items), (1 < len(items)))
-        list_string = ''.join([list_string, self._build_conj_string(len(items), conj)])
+        items_string = self._build_list_string(len(items), (1 < len(items)))
+        strings = [items_string, self._build_conj_string(len(items), conj)]
+        items_string = ''.join(strings)
         # Get a unified string that has the items listed in order.
-        list_string = list_string.format(*items)
+        items_string = items_string.format(*items)
         # Output.
-        self.say(msg.format(list_string))
+        if items_string:
+            self.say(msg.format(items_string))
 
     def give_options(self, opts, msg=None, indent=2, genre='options'):
         """Require the user to choose a valid option from opts.
@@ -109,9 +111,12 @@ class Agent:
         """Returns a choice between opts after being presented to the user.
         
         Constructs a conversation friendly dialogue asking the user to choose
-        one of a set of options. A conjunction can be set explicitly.  Opts 
-        may also be a list containing only one element, e.g. ['Debugging'] to 
-        ask something like 'Are you asking about Debugging?'.
+        one of a set of options. Conj is added to the opts when there is more
+        than one.  Opts may also be a list containing only one element, e.g. 
+        ['Debugging'] to ask something like 'Are you asking about Debugging?'.
+        Unless the user gives a no-type answer, narrowing down to one opt is
+        required to return.  This means that clarify should not be called when
+        more than one option can be valid at the same time.
 
         """
         def validate_input(ans, opts):
@@ -119,9 +124,20 @@ class Agent:
             
             Validates that the user's input matches one of opts.  Returns a set
             of opts where any word in ans is found in any word of that opt.
+            Will return 'None' if the user's input is in 
+            DialogueStrings.NO_WORDS.
 
             """
-            # Search for each word in the user's input, ignoring punctuation.
+            # If there is only one option, did the user give a positive ack?
+            if len(opts) == 1:
+                if self._is_word_type('yes', ans):
+                    return opts
+            
+            # Look for a blanket no-type answer.    
+            if self._is_word_type('no', ans):
+                return 'None'
+
+            # Get each word in the user's input and opts.
             user_words = {w.lower().strip(string.punctuation) \
                           for w in ans.split(' ')}
             opts_words = [w.lower().split(' ') for w in opts]
@@ -141,35 +157,53 @@ class Agent:
         # Allow an arbitrary number of opts to be printed.
         msg = ' '.join([msg, self._build_list_string(len(opts), 1 < len(opts))])
         msg = ''.join([msg, self._build_conj_string(len(opts), conj), '?'])
+        
         # Require a match to at least one of opts.
-        message = msg.format(tuple(opts))
-        opt = validate_input(self.ask(message), opts) # False on failure.
+        message = msg.format(*opts)
+        opt = validate_input(self.ask(message), opts)
         while not opt:
             # Negative acknowledgement and ask the message again.
             self.say("I don't understand, {0}".format(message))
             opt = validate_input(self._prompt(), opts)
-        return opt  # BUG: Might return more than one opt.  Would be better to remove common words like 'and'.
 
-    def _build_conj_string(self, length, conj):
-        """Builds the conjunction part of the string, using
-        the number of items in opts to determine how the string
-        should be formatted.
+        # If no option was correct.
+        if opt == 'None':
+            return False
+        # If more than one opt was returned as valid, choose one.
+        elif len(opt) > 1:
+            m = "I'm sorry, which of these did you mean?"
+            return self.give_options([o for o in opt], msg=m)
+
+        return opt
+
+    def _build_conj_string(self, no_opts, conj):
+        """Builds the conjunction part of the string.
+       
+        Uses the number of options to determine the appropriate
+        conjunction string to build.  Returns the newly built
+        string.
+
         """
         s = ''
-        if 2 < length:
+        if 2 < no_opts:
             s = ''.join([', ', conj, ' {}'])
-        elif 2 == length:
+        elif 2 == no_opts:
             s = ''.join([' ', conj, ' {}'])
-        elif 1 == length:
+        elif 1 == no_opts:
             s = '{}'
         return s
 
-    def _build_list_string(self, length, with_conj=False):
-        """Generates a single string that can be formatted using String.format
-        given an array-like object.  The array-like object must be converted into
-        a tuple and passed as the parameter to the call to String.format.
+    def _build_list_string(self, no_strings, with_conj=False):
+        """Builds a string that can be formatted with variable no of strings.
+
+        Generates a single string that can be formatted using String.format
+        given a container object whose values can be coerced to string.
+
         """
-        num = 0 if not with_conj else length - 1
+        # When there is only one string to display, a list is not necessary.
+        if no_strings == 1:
+            return ''
+        num = no_strings if not with_conj else no_strings - 1
         return ', '.join(['{}'] * num)
 
 
@@ -185,7 +219,10 @@ class VSAgent(Agent):
 
     def suggest_urls(self, topics, urls):
         """Suggests all url."""
-        # Print the suggested url with it's corresponding key/topic.
+        # Quick error check.
+        if len(urls) != len(topics):
+            raise ValueError("Every url must have a corresponding topic.")
+        # Suggest each url.
         g = 'suggest_urls' if len(urls) > 1 else 'suggest_url'
         for i, url in enumerate(urls):
             self.suggest_url(url, topics[i], genre=g)
@@ -198,9 +235,10 @@ class VSAgent(Agent):
 
 def main():
     agent = VSAgent()
-    options = ['Building', 'Cloud Service Project']
-    #ans = agent.clarify(options)`
-    agent.acknowledge(['Building', 'Cloud Project', 'Remote Debugging'])
+    options = ['Building', 'Cloud Project']
+    options = ['Cloud Project']
+    agent.suggest_url('some_url', 'Cloud Project', genre='suggest_urls')
+
 
 if __name__ == "__main__":
     sys.exit(int(main() or 0))
