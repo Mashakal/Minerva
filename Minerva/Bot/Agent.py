@@ -31,7 +31,7 @@ class Agent:
         return r
 
     def _is_word_type(self, type_, word):
-        """Returns True if word is a type of type_.
+        """Returns True if word is of type type_.
 
         Searches DialogueStrings.ALL_STRINGS[type_] for
         word and returns True when found, else False.
