@@ -138,7 +138,10 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def _longest_paths(self, paths):
         """Returns a list of all paths whose size is equal to the longest."""
-        max_len = max(map(len, paths))
+        try:
+            max_len = max(map(len, paths))
+        except ValueError:
+            max_len = 0
         return list(filter(lambda x: len(x) == max_len, paths))
 
     def _complete_path(self, path):
@@ -188,7 +191,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         # Suggest the url(s).
         url_items = [k for k in urls.keys()], [v for v in urls.values()]
-        self._agent.suggest_multiple_urls(url_items[0], url_items[1])
+        self._agent.suggest_urls(url_items[0], url_items[1])
 
         # Get feedback if an url was suggested.
 
@@ -208,8 +211,6 @@ def main():
     import Agent
     inter = ProjectSystemLuisInterpreter(Agent.VSAgent(), 'PTVS')
     trigger_paths = inter._map_triggers_to_paths()
-    for path in trigger_paths:
-        print("{0}: {1}".format(path, trigger_paths[path]))
 
 if __name__ == "__main__":
     main()
