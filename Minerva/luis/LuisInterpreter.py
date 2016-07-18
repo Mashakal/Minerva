@@ -186,8 +186,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent.acknowledge(topics)
 
         # Point all topics to a value, we hope it to be an url.
-        urls = {topics[i]: self._info.traverse_keys(self._complete_path(path)) \
-                for i, path in enumerate(longest_paths)}
+        urls = {}
+        for i, path in enumerate(longest_paths):
+            completed = self._complete_path(path)
+            if completed:
+                urls[topics[i]] = self._info.traverse_keys(completed)
 
         # Suggest the url(s).
         url_items = [k for k in urls.keys()], [v for v in urls.values()]
