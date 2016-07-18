@@ -23,31 +23,37 @@ class InfoManager:
         """Returns a list of keys that will lead to information on literal.
 
         The list comes from searching INFO.KEY_MAP for a specific key's set of 
-        triggers (keys are generally topics).  When a trigger is matched, the list of
-        keys that lead to the matched trigger (including the current key) is returned.
+        triggers (keys are generally topics).  When a trigger is matched, the 
+        list of keys that lead to the matched trigger (including the current 
+        key) is returned.
         
         """
         dict_ = dict_ or self._mod.KEY_MAP
         path = path_ or []
-        # See if any keys are triggered by literal in this dict or any of its descendents.
+        # See if any keys are triggered by literal in this dict or 
+        # any of its descendents.
         for k, v in dict_.items():
-            # Don't search for a key/value pair unless its v is a dictionary.
+            # Don't search for a key/value pair unless v is a dictionary.
             if isinstance(v, dict):
                 # Add the key we are looking at to the path.
                 path.append(k)
-                # Look for 'Triggers' key, and if it exists, look for literal in the set it points to.
+                # Look for 'Triggers' key, and if it exists,
+                # look for literal in the set it points to.
                 if 'Triggers' in v and literal in v['Triggers']:
-                    # We found a key in this dict, return the path that leads to it.
+                    # We found a key in this dict,
+                    # return the path that leads to it.
                     return path
                 else:
                     # Let's check in v's descendants.
                     path = self.find_path_to_trigger_key(literal, path, v)
-                # If no key was triggered in any descendants p will be the same or False.
+                # If no key was triggered in any descendants p will be 
+                # the same or False.
                 if path == path_ or not path:
                     # Path stays the same or is reset, depending on the 
                     # depth of the dictionary (v) we are searching.
                     path = path_ or []
-                # If a descendant's key was triggered by literal, p will have been changed.
+                # If a descendant's key was triggered by literal, p will 
+                # have been changed.
                 else:
                     return path
         if path:
@@ -74,9 +80,9 @@ class InfoManager:
         
         Note:  Current implementation requires the value to be a set.
 
-        Works by searching a dictionary for any key equal to k_to_collect and then 
-        adds the set for which k_to_collect points to (current implementation expects 
-        a set) as a value.
+        Works by searching a dictionary for any key equal to k_to_collect 
+        and then adds the set for which k_to_collect points to (current 
+        implementation expects a set) as a value.
 
         """
         dict_ = dict_ or self._mod.KEY_MAP
@@ -96,8 +102,9 @@ class InfoManager:
         """Writes all values returned by func to filename.txt.
         
         Iterates over the return value of func called with kwargs passed in
-        as the parameters.  Filename should end with '.txt' or have no extension.
-        Values will be added to the file delimited by delim, with a default of '\n'.
+        as the parameters.  Filename should end with '.txt' or have no 
+        extension.  Values will be added to the file delimited by delim, 
+        with a default of '\n'.
 
         """
         fn = filename if filename.endswith('.txt') else filename + '.txt'
@@ -119,15 +126,17 @@ class InfoManager:
         return [self._trigger_map[t] for t in trigs if t in self._trigger_map]
 
     def _map_triggers_to_paths(self):
-        """Returns a dictionary in the form of {'Trigger': {'Root Key', 'Second Key'}}.
+        """Returns a dictionary of triggers as key and their paths as values.
         
-        Setting each trigger as a key in one dictionary at the start of the program 
-        increases the processing speed overall.  Searching the INFO.KEY_MAP dictionary
-        (calling self.find_path_to_trigger_key) is expensive.
+        Setting each trigger as a key in one dictionary at the start of the 
+        program increases the processing speed overall.  Searching the 
+        INFO.KEY_MAP dictionary (calling self.find_path_to_trigger_key) is 
+        expensive.
 
         """
         triggers = self.set_from_key_values(k_to_collect='Triggers')
-        return {trigger: self.find_path_to_trigger_key(trigger) for trigger in triggers}
+        return {trigger: self.find_path_to_trigger_key(trigger) \
+                for trigger in triggers}
 
 
 
