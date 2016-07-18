@@ -1,3 +1,8 @@
+YES_WORDS = ['yes', 'yeah', 'okay', 'ok', 'k', 'y', 'ya', 
+             'right', 'correct', "that's right", 'sure', 'for sure']
+
+NO_WORDS = ['no', 'n', 'nah', 'nope', 'negative']
+
 POSITIVE_ACKS = [
     "I can definitely help you with {0}.",
     "I will be happy to assist with {0}.",
@@ -13,9 +18,10 @@ END = [
 ]
 
 SUGGEST_URLS = [
-    "The following is a good resource for {0}:\n\t{1}.\n",
-    "For {0}, I suggest you visit:\n\t{1}.\n",
-    "You'll find information on {0} here:\n\t{1}.\n"
+    # {0} is always the url, {1} is the topic.
+    "The following is a good resource for {1}:\n\t{0}.\n",
+    "For {1}, I suggest you visit:\n\t{0}.\n",
+    "You'll find information on {1} here:\n\t{0}.\n"
 ]
 
 SUGGEST_URL = [
@@ -48,5 +54,7 @@ ALL_STRINGS = {
     'options': OPTIONS,
     'negative_acks': NEGATIVE_ACKS,
     'end': END,
-    'suggest_urls': SUGGEST_URLS
+    'suggest_urls': SUGGEST_URLS,
+    'yes': YES_WORDS,
+    'no': NO_WORDS
 }
