@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Luis\LuisPlayground.py</StartupFile>
+    <StartupFile>Bot\LuisPlayground.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -27,12 +27,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bot\Agent.py" />
+    <Compile Include="Bot\api.py" />
+    <Compile Include="Bot\app.py" />
     <Compile Include="Bot\Bot.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bot\DialogueStrings.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Bot\LuisClient.py" />
+    <Compile Include="Bot\LuisInterpreter.py" />
+    <Compile Include="Bot\LuisPlayground.py" />
     <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>
@@ -75,7 +80,6 @@
     <Compile Include="StackExchange\test_querystring.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Ideas.txt" />
     <Compile Include="StackExchange\webrequest.py">
       <SubType>Code</SubType>
     </Compile>
@@ -84,20 +88,33 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AppInfo.txt" />
-    <Content Include="BlogNotes.txt" />
     <Content Include="Bot\BotDocumentation.txt" />
     <Content Include="Data\Notes.txt" />
+    <Content Include="Files\debugfile.json" />
+    <Content Include="Files\errorwhiletryingtoattachdebuger.json" />
+    <Content Include="Files\petricca_multiple_single_jargon.json" />
+    <Content Include="Files\petricca_remote_debugging_cloud_project.json" />
+    <Content Include="Files\petricca_test_file.json" />
+    <Content Include="Files\sampleQueryResults.json" />
+    <Content Include="Files\test_LuisInterpreter_get_paths.json" />
+    <Content Include="Files\test_multiple_wiki_paths.json" />
+    <Content Include="Files\test_no_paths_found.json" />
+    <Content Include="Files\triggers_we_hope.txt" />
     <Content Include="Information\Readme.txt" />
     <Content Include="Luis\SchemaNotes.txt" />
+    <Content Include="NotCode\BlogNotes.txt" />
+    <Content Include="NotCode\Ideas.txt" />
+    <Content Include="NotCode\SchemaNotes.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Files\" />
     <Folder Include="Luis\" />
     <Folder Include="Debugging\" />
     <Folder Include="Information\" />
     <Folder Include="AlmostTrash\" />
     <Folder Include="Bot\" />
     <Folder Include="Data\" />
+    <Folder Include="NotCode\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>
