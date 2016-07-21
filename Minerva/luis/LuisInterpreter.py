@@ -109,7 +109,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         value.
 
         """
-        interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
         all_paths = {}
         for interest in interests:
             path = self._info.get_paths(self.data[interest])
