@@ -1,7 +1,6 @@
 import sys
 import string
 
-import Bot
 from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
 from Agent import VSAgent
@@ -22,9 +21,14 @@ JSON_FILE = 'petricca_multiple_single_jargon.json'
 JSON_FILE = 'petricca_remote_debugging_cloud_project.json'
 
 def build_luis_url(app_name):
-    s = 'https://api.projectoxford.ai/luis/v1/application?id=' + \
-            APP_IDS[app_name] + '&subscription-key=' + SUBSCRIPTION_KEY + '&q='
-    return s
+    items = [
+        'https://api.projectoxford.ai/luis/v1/application?id=',
+        APP_IDS[app_name],
+        '&subscription-key=',
+        SUBSCRIPTION_KEY,
+        '&q='
+    ]
+    return ''.join(items)
 
 def load_debug_json(client, filename):
     """Loads json from the file specified by 'filename'.  
@@ -56,4 +60,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(int(main() or 0))
+    main()
