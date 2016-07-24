@@ -72,10 +72,10 @@ class InfoManager:
             try:
                 v = v[key]
             except KeyError:
-                return None
+                raise ValueError("Illegal path list.  This list cannot be traversed: {}".format(keys))
         return v
 
-    def set_from_key_values(self, dict_=None, set_=None, k_to_collect=None):
+    def set_from_key_values(self, k_to_collect, dict_=None, set_=None):
         """Returns the set of all values whose keys are all k_to_collect.
         
         Note:  Current implementation requires the value to be a set.
@@ -87,29 +87,27 @@ class InfoManager:
         """
         dict_ = dict_ or self._mod.KEY_MAP
         set_ = set_ or set(())
-        k_to_collect = k_to_collect or 'Triggers'
-
+        
         for k, v in dict_.items():
             # Only look for a key/value pair in a dictionary.
             if isinstance(v, dict):
                 if k_to_collect in v:
                     t = v[k_to_collect]
                     set_ |= t
-                set_ = self.set_from_key_values(v, set_, k_to_collect)
+                set_ = self.set_from_key_values(k_to_collect, v, set_)
         return set_
 
-    def gen_file_from_info(self, filename, func, delim='\n', **kwargs):
+    def gen_file_from_info(self, filename, func, delim='\n', *args, **kwargs):
         """Writes all values returned by func to filename.txt.
         
-        Iterates over the return value of func called with kwargs passed in
-        as the parameters.  Filename should end with '.txt' or have no 
+        Uses delim to join the return value of func called using both
+        args and kwargs.  Filename should end with '.txt' or have no 
         extension.  Values will be added to the file delimited by delim, 
         with a default of '\n'.
 
         """
-        fn = filename if filename.endswith('.txt') else filename + '.txt'
-        with open(fn, 'w') as fd:
-            fd.write(delim.join(func(kwargs)))
+        with open(filename, 'w') as fd:
+            fd.write(delim.join(func(*args, **kwargs)))
 
     def remove_subpaths(self, paths):
         """Removes any path within paths that is a subpath of any other path."""
@@ -134,7 +132,7 @@ class InfoManager:
         expensive.
 
         """
-        triggers = self.set_from_key_values(k_to_collect='Triggers')
+        triggers = self.set_from_key_values('Triggers')
         return {trigger: self.find_path_to_trigger_key(trigger) \
                 for trigger in triggers}
 
@@ -167,7 +165,9 @@ class ProjectSystemInfoManager(InfoManager):
 
 def main():
     im = ProjectSystemInfoManager('PTVS')
-    im.gen_file_from_info('triggers_we_hope.txt', im.set_from_key_values)
+    im.gen_file_from_info('testing_gen_file.txt', # Filename.
+                          im.set_from_key_values, # Function to get info from.
+                          k_to_collect='Triggers')# Kwargs to pass to function.
 
 
 if __name__ == "__main__":
