@@ -56,31 +56,49 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     """Interprets questions for language specific project systems of Visual Studio."""
 
     def __init__(self, agent, project_system):
+        """Construct an interpreter for the given project_system module."""
         # _info is the main point of access for anything specific to a project.
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
-        # Use _bot to interact with the user (e.g. ask a question, clarify between options, acknowledge keywords).
+
+        # Use _agent to interact with the user (e.g. ask a question, clarify 
+        # between options, acknowledge keywords).
         self._agent = agent
         
         # Intents point to functions.
-        self._STRATAGIES = {
-            'Solve Problem': self._solve_problem,
-            'Learn About Topic': self._learn_about_topic,
-            'None': self._none_intent
+        self._HANDLERS = {
+            'Solve Problem': self._handle_solve,
+            'Learn About Topic': self._handle_learn,
+            'None': self._handle_none
         }
 
     # Entry.
     def analyze(self, json):
-        """Analyzes the json returned from a call to LuisClient's method, query_raw."""
+        """Analyzes the json returned from a call to LuisClient's method, query_raw.
+        
+        This is the only public method of the interpreter.
+        
+        """
         self.data = self._format_data(json)
-        self._print_from_data()
+        self._print_from_data() # For development.
         try:
-            func = self._STRATAGIES[self.data['intent']]
+            func = self._HANDLERS[self.data['intent']]
         except KeyError:
-            func = self._STRATAGIES['None']
+            func = self._HANDLERS['None']
         finally:
             func()
 
     # Utility functions.
+    def _input_request(func, *args, **kwargs):
+        """Creates and processes a request for input from the user.
+        
+        The func passed in is one of the public methods of self.agent
+        that fits the purpose of _input_request (e.g., give_options,
+        clarify, ask).  Func is called with args and kwargs as its
+        paramters.
+        
+        """
+        pass
+
     def _format_data(self, json):
         """Formats the raw json into a more easily accessible dictionary."""
         return {
@@ -155,7 +173,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return path
       
     # Intent functions.
-    def _learn_about_topic(self):
+    def _handle_learn(self):
         """Procedure when the intent is Learn About Topic."""
         # Find all paths for any topic of interest found in the user's query.
         interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
@@ -192,11 +210,11 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # Return only to indicate the end of method _learn_about_topic.
         return
 
-    def _solve_problem(self):
+    def _handle_solve(self):
         """Procedure when the intent is Solve Problem."""
         self._agent.say("It looks like you want to solve a problem.")
            
-    def _none_intent(self):
+    def _handle_none(self):
         self._agent.say("I'm sorry, I don't know what you're asking.")
         
 
