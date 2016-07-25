@@ -192,19 +192,24 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         filtered_paths = self._info.remove_subpaths(all_paths)
         return self._longest_paths(filtered_paths)
 
-    #def _get_topics
-      
+    def _get_all_topics(self, paths):
+        """Returns the most specialized topic within a path.
+
+        The last key in any path is considered to be the most specialized
+        topic for that path, due to the structure of the topics in the
+        info.py file's LINKS variable.
+
+        """
+        return [self._topic_from_path(p) for p in paths]
+
+
     # Intent functions.
     def _handle_learn(self):
         """Procedure when the intent is Learn About Topic."""
         # Find all paths for any topic of interest found in the user's query.
         interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
-        paths_dict = self._get_all_paths(interests)
-        all_paths = [e for k, v in paths_dict.items() if v for e in v]
-        filtered_paths = self._info.remove_subpaths(all_paths)
-
-        # Get all of the deepest paths. THIS IS AN AREA WHOSE LOGIC CAN BE IMPROVED.
-        longest_paths = self._longest_paths(filtered_paths)
+        longest_paths = self._get_all_longest_paths(interests)
+        
         if not longest_paths:
             # Check if we have anything to go on.
             print("Luis didn't find any keywords in your query.  Sorry.")
@@ -240,18 +245,31 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent.say("I'm sorry, I don't know what you're asking.")
 
 
-class Interpretation:
+class QueryHandler:
     
-    """Holds the query data and state information for a query."""
+    """A handler for a given query, used with LuisInterpreters."""
 
-    def __init__(self, intent):
-        self._intent = intent
+    def __init__(self, process_list):
+        self._process_list = process_list
+        self._current_process_index = 0
+        self._current_process = self._process_list[self._current_process_index]
+        
+    def next(self, user_text):
+        """Called when text is received from the user and a conversation exists."""
+        pass
+
+    def save_state(self):
+        """Saves the handler's state info using the Bot Framework State API."""
+        pass
+
+    def load_state(self):
+        """Loads the handler's state info using the Bot Framework State API."""
+        pass
 
 
 def main():
-    import Agent
-    inter = ProjectSystemLuisInterpreter(Agent.VSConsoleAgent(), 'PTVS')
-    trigger_paths = inter._map_triggers_to_paths()
+    qh = QueryHandler(['some list'])
+    print(qh.__dict__)
 
 if __name__ == "__main__":
     main()
