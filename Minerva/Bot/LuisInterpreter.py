@@ -92,6 +92,8 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         finally:
             func()
 
+
+
     # Utility functions.
     def _input_request(func, *args, **kwargs):
         """Creates and processes a request for input from the user.
@@ -176,6 +178,21 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             path.append(choice)
             end = end[choice]
         return path
+    
+    
+    # Intent processes.
+    def _get_all_longest_paths(self, interests):
+        """Returns a list of all of the longest paths in a given set of paths.
+        
+        The first process of procedure _handle_learn.
+        
+        """
+        paths_dict = self._get_all_paths(interests)
+        all_paths = [e for k, v in paths_dict.items() if v for e in v]
+        filtered_paths = self._info.remove_subpaths(all_paths)
+        return self._longest_paths(filtered_paths)
+
+    #def _get_topics
       
     # Intent functions.
     def _handle_learn(self):
@@ -231,9 +248,6 @@ class Interpretation:
         self._intent = intent
 
 
-
-
-        
 def main():
     import Agent
     inter = ProjectSystemLuisInterpreter(Agent.VSConsoleAgent(), 'PTVS')
