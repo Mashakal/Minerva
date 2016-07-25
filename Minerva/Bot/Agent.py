@@ -3,11 +3,52 @@ import string
 import random
 import sys
 import DialogueStrings
+import abc
 
 
-class Agent:
+class _AbstractAgent(abc.ABC):
+    
+    """An abstract class that acts as an interface for agents."""
 
-    """Processes input and output during a query."""
+    @abc.abstractclassmethod
+    def say():
+        """Writes a message to the standard output."""
+        raise NotImplementedError
+
+    @abc.abstractclassmethod
+    def ask():
+        """Writes a question to the standard output."""
+        raise NotImplementedError
+
+    @abc.abstractclassmethod
+    def acknowledge():
+        """Writes an acknowledgement to the standard output."""
+        raise NotImplementedError
+
+    @abc.abstractclassmethod
+    def clarify(options):
+        """Asks the user to clarify between a set of options."""
+        raise NotImplementedError
+
+    @abc.abstractclassmethod
+    def give_options(options):
+        """Asks the user to make a selection based on the given options."""
+        raise NotImplementedError
+
+    @abc.abstractclassmethod
+    def _validate_from_give_options(user_response, num_options):
+        """Validates the user's response after give_options is called."""
+        raise NotImplementedError
+
+    @abc.abstractclassmethod
+    def _validate_from_clarify(user_response, options):
+        """Validates the user's response after clairfy is called."""
+        raise NotImplementedError
+
+
+class _BaseAgent(_AbstractAgent):
+
+    """A base class for agents."""
 
     def _get_random_string_constant(self, genre):
         """Returns a random string of type genre.
@@ -23,6 +64,58 @@ class Agent:
         else:
             r = random.randint(0, len(strings) - 1)
             return strings[r]
+
+    def _build_conj_string(self, no_opts, conj):
+        """Builds the conjunction part of the string.
+       
+        Uses the number of options to determine the appropriate
+        conjunction string to build.  Returns the newly built
+        string.
+
+        """
+        s = ''
+        if 2 < no_opts:
+            s = ''.join([', ', conj, ' {}'])
+        elif 2 == no_opts:
+            s = ''.join([' ', conj, ' {}'])
+        elif 1 == no_opts:
+            s = '{}'
+        return s
+
+    def _build_list_string(self, no_strings, with_conj=False):
+        """Builds a string that can be formatted with variable no of strings.
+
+        Generates a single string that can be formatted using String.format
+        given a container object whose values can be coerced to string.
+
+        """
+        # When there is only one string to display, a list is not necessary.
+        if no_strings == 1:
+            return ''
+        num = no_strings if not with_conj else no_strings - 1
+        return ', '.join(['{}'] * num)
+
+
+class BotConnectorAgent(_BaseAgent):
+
+    """An agent for the Microsoft Bot Connector."""
+
+    def say(self, message):
+        """Sends a dialogue message as output to the bot connector."""
+        pass
+
+    def _send_message(self, message):
+        """Send message to bot connector for output."""
+        pass
+
+    def _build_connector_url(self):
+        """Builds the appropriate url to send as an api query."""
+        pass
+
+
+class ConsoleAgent(_BaseAgent):
+
+    """Processes input and output during a query."""
 
     def _prompt(self):
         """Outputs a prompt and returns the user's input."""
@@ -81,19 +174,7 @@ class Agent:
         be set explicitly to change the number of empty spaces precending each
         opt.  Genre indicates which string list in ALL_STRINGS to choose from.
 
-        """
-        def validate_input(input, no_opts):
-            """Returns true when user input is valid, otherwise False."""
-            try:
-                n = int(input)
-            except ValueError:
-                return False
-            # Valid indices start at 1.
-            else:
-               if n < 0 or n > no_opts:
-                    return False
-            return True
-        
+        """       
         if not opts:
             raise ValueError("opts cannot be empty.")
 
@@ -103,9 +184,21 @@ class Agent:
             print(''.join([' ' * indent, '{}: {}'.format(i + 1, v)]))
         print()
         n = self._prompt()
-        while not validate_input(n, len(opts)):
+        while not self._validate_from_give_options(n, len(opts)):
             n = self.ask("{} is not valid.  Enter a valid choice.".format(n))
         return opts[int(n) - 1]
+
+    def _validate_from_give_options(self, input, no_opts):
+        """Validates the user's input after a call to method give_options."""
+        try:
+            n = int(input)
+        except ValueError:
+            return False
+        # Valid indices start at 1.
+        else:
+            if n < 0 or n > no_opts:
+                return False
+        return True
 
     def clarify(self, opts, conj='or'):
         """Returns a choice between opts after being presented to the user.
@@ -119,36 +212,6 @@ class Agent:
         more than one option can be valid at the same time.
 
         """
-        def validate_input(ans, opts):
-            """Returns the choice made by the user if input was valid, or False.
-            
-            Validates that the user's input matches one of opts.  Returns a set
-            of opts where any word in ans is found in any word of that opt.
-            Will return 'None' if the user's input is in 
-            DialogueStrings.NO_WORDS.
-
-            """
-            # If there is only one option, did the user give a positive ack?
-            if len(opts) == 1:
-                if self._is_word_type('yes', ans):
-                    return opts
-            
-            # Look for a blanket no-type answer.    
-            if self._is_word_type('no', ans):
-                return 'None'
-
-            # Get each word in the user's input and opts.
-            user_words = {w.lower().strip(string.punctuation) \
-                          for w in ans.split(' ')}
-            opts_words = [w.lower().split(' ') for w in opts]
-            flat_opts_words = {w for li in opts_words for w in li}
-            # Find any matching opts_words.
-            valid_input = user_words & flat_opts_words
-            # Take the valid input and match it to whole opt string matched.
-            chosen = {o for o in opts for valid in valid_input \
-                      if valid in o.lower()}
-            # TODO: Log how many valid input are being returned.
-            return chosen
 
         if not opts:
             raise ValueError("opts cannot be empty.")
@@ -163,8 +226,8 @@ class Agent:
         opt = validate_input(self.ask(message), opts)
         while not opt:
             # Negative acknowledgement and ask the message again.
-            self.say("I don't understand, {0}".format(message))
-            opt = validate_input(self._prompt(), opts)
+            self.say("I don't understand, {}".format(message))
+            opt = self._validate_from_clarify(self._prompt(), opts)
 
         # If no option was correct.
         if opt == 'None':
@@ -175,41 +238,42 @@ class Agent:
             return self.give_options([o for o in opt], msg=m)
 
         return opt
-
-    def _build_conj_string(self, no_opts, conj):
-        """Builds the conjunction part of the string.
-       
-        Uses the number of options to determine the appropriate
-        conjunction string to build.  Returns the newly built
-        string.
-
-        """
-        s = ''
-        if 2 < no_opts:
-            s = ''.join([', ', conj, ' {}'])
-        elif 2 == no_opts:
-            s = ''.join([' ', conj, ' {}'])
-        elif 1 == no_opts:
-            s = '{}'
-        return s
-
-    def _build_list_string(self, no_strings, with_conj=False):
-        """Builds a string that can be formatted with variable no of strings.
-
-        Generates a single string that can be formatted using String.format
-        given a container object whose values can be coerced to string.
+    
+    def _validate_from_clarify(self, ans, opts):
+        """Called to validate user's input after a call to method clarify.
+            
+        Validates that the user's input matches one of opts.  Returns a set
+        of opts where any word in ans is found in any word of that opt.
+        Will return 'None' if the user's input is in 
+        DialogueStrings.NO_WORDS.
 
         """
-        # When there is only one string to display, a list is not necessary.
-        if no_strings == 1:
-            return ''
-        num = no_strings if not with_conj else no_strings - 1
-        return ', '.join(['{}'] * num)
+        # If there is only one option, did the user give a positive ack?
+        if len(opts) == 1:
+            if self._is_word_type('yes', ans):
+                return opts
+            
+        # Look for a blanket no-type answer.    
+        if self._is_word_type('no', ans):
+            return 'None'
+
+        # Get each word in the user's input and opts.
+        user_words = {w.lower().strip(string.punctuation) \
+                        for w in ans.split(' ')}
+        opts_words = [w.lower().split(' ') for w in opts]
+        flat_opts_words = {w for li in opts_words for w in li}
+        # Find any matching opts_words.
+        valid_input = user_words & flat_opts_words
+        # Take the valid input and match it to whole opt string matched.
+        chosen = {o for o in opts for valid in valid_input \
+                    if valid in o.lower()}
+        # TODO: Log how many valid input are being returned.
+        return chosen
 
 
-class VSAgent(Agent):
+class VSConsoleAgent(ConsoleAgent):
 
-    """A Visual Studio bot."""
+    """A Visual Studio console bot. """
 
     def suggest_url(self, *args, genre='suggest_url'):
         """Outputs a string formatted with tuple (url, topic)."""
@@ -234,11 +298,11 @@ class VSAgent(Agent):
 
 
 def main():
-    agent = VSAgent()
+    agent = VSConsoleAgent()
     options = ['Building', 'Cloud Project']
     options = ['Cloud Project']
     agent.suggest_url('some_url', 'Cloud Project', genre='suggest_urls')
 
 
 if __name__ == "__main__":
-    sys.exit(int(main() or 0))
+    main()
