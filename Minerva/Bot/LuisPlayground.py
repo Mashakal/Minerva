@@ -3,32 +3,20 @@ import string
 
 from LuisInterpreter import ProjectSystemLuisInterpreter
 from LuisClient import BotLuisClient
-from Agent import VSAgent
+from Agent import VSConsoleAgent
 
 # For development purposes only.
 from Essentials import print_smart, get_file_size, json_to_file, file_to_json
 
 # Constants.
-SUBSCRIPTION_KEY = '7814a9388ef14151981f2037000ea288'   # Alex Neuenkirk's subscription key.
-APP_IDS = {
-    'HelpBot': '3b58ccb7-4165-4af0-9759-b028c73ce4f9',
-    'Petricca': '8f688b1d-6c6a-4245-8ca5-ec7a9eaddb6b'
-}
+
 
 # Debugging items.
 JSON_FILE = 'petricca_test_file.json'
 JSON_FILE = 'petricca_multiple_single_jargon.json'
 JSON_FILE = 'petricca_remote_debugging_cloud_project.json'
 
-def build_luis_url(app_name):
-    items = [
-        'https://api.projectoxford.ai/luis/v1/application?id=',
-        APP_IDS[app_name],
-        '&subscription-key=',
-        SUBSCRIPTION_KEY,
-        '&q='
-    ]
-    return ''.join(items)
+
 
 def load_debug_json(client, filename):
     """Loads json from the file specified by 'filename'.  
@@ -38,7 +26,7 @@ def load_debug_json(client, filename):
 
     """
     if 0 == get_file_size(filename):
-        q = VSAgent().start_query()
+        q = VSConsoleAgent().start_query()
         j = client.query(q, 'verbose')
         json_to_file(j, filename)
     else:
@@ -49,9 +37,9 @@ def load_debug_json(client, filename):
 
 def main():
     #bot = Bot.ProjectSystemBot('ptvs')
-    bot = VSAgent()   # Interacts with the user.
+    bot = VSConsoleAgent()   # Interacts with the user.
     interp = ProjectSystemLuisInterpreter(bot, 'PTVS')    # Interpreter for a LUIS json query response.
-    lc = BotLuisClient(build_luis_url('Petricca'))    # Handles queries to the LUIS client.
+    lc = BotLuisClient()    # Handles queries to the LUIS client.
 
     # Get the response as json, from a file or from a new query.
     j = lc.query(bot.start_query(), 'verbose')
