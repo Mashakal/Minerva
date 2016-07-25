@@ -216,11 +216,22 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
            
     def _handle_none(self):
         self._agent.say("I'm sorry, I don't know what you're asking.")
-        
 
+
+class Interpretation:
+    
+    """Holds the query data and state information for a query."""
+
+    def __init__(self, intent):
+        self._intent = intent
+
+
+
+
+        
 def main():
     import Agent
-    inter = ProjectSystemLuisInterpreter(Agent.VSAgent(), 'PTVS')
+    inter = ProjectSystemLuisInterpreter(Agent.VSConsoleAgent(), 'PTVS')
     trigger_paths = inter._map_triggers_to_paths()
 
 if __name__ == "__main__":
