@@ -7,14 +7,19 @@ import InfoManager
 import DialogueStrings
 
 
-class BaseLuisInterpreter(abc.ABC):
+class AbstractLuisInterpreter(abc.ABC):
 
-    """A base class for all interpreters."""
-    
+    """An interface-like abstract class for LuisInterpreters."""
+
     @abc.abstractmethod
     def analyze(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
-        raise NotImplementedError("Function analyze has not yet been customized.")
+        raise NotImplementedError
+
+
+class BaseLuisInterpreter(AbstractLuisInterpreter):
+
+    """A base class for all interpreters."""  
      
     def _get_top_scoring_intent(self, json):
         """Returns the top scoring intent, or the string 'None'."""
