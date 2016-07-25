@@ -29,15 +29,13 @@
     <Compile Include="Bot\Agent.py" />
     <Compile Include="Bot\api.py" />
     <Compile Include="Bot\app.py" />
-    <Compile Include="Bot\Bot.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Bot\DialogueStrings.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bot\LuisClient.py" />
     <Compile Include="Bot\LuisInterpreter.py" />
     <Compile Include="Bot\LuisPlayground.py" />
+    <Compile Include="Bot\Session.py" />
     <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>
