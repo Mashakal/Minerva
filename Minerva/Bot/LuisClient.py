@@ -11,10 +11,11 @@ _APP_IDS = {
 
 class BotLuisClient(LuisClient):
 
-    """A derived class of LuisClient that exposes method raw_query."""
+    """A derived class of LuisClient."""
 
-    def __init__(self):
-        url = self._build_luis_url('Petricca')
+    def __init__(self, app_name):
+        self.app_name = app_name
+        url = self._build_luis_url(app_name)
         return super().__init__(url)
 
     def query(self, text, result='standard'):
@@ -32,7 +33,7 @@ class BotLuisClient(LuisClient):
         else:
             raise ValueError("Unknown result type {}.".format(result))
 
-    def _build_luis_url(self, app_name):
+    def _build_luis_url(self):
         """Returns the url that points to the Project System LUIS app.
         
         There will rarely be more than one app, but implemenation allows
@@ -41,7 +42,7 @@ class BotLuisClient(LuisClient):
         """
         items = [
             'https://api.projectoxford.ai/luis/v1/application?id=',
-            _APP_IDS[app_name],
+            _APP_IDS[self.app_name],
             '&subscription-key=',
             _SUBSCRIPTION_KEY,
             '&q='
