@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Bot\LuisInterpreter.py</StartupFile>
+    <StartupFile>BotConnector\Root.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -26,6 +26,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BotConnector\bot.py" />
+    <Compile Include="BotConnector\bot_models.py" />
+    <Compile Include="BotConnector\bot_requests.py" />
+    <Compile Include="BotConnector\Flags.py" />
+    <Compile Include="BotConnector\message.py" />
+    <Compile Include="BotConnector\Root.py" />
     <Compile Include="Bot\Agent.py" />
     <Compile Include="Bot\api.py" />
     <Compile Include="Bot\app.py" />
@@ -86,7 +92,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Bot\BotDocumentation.txt" />
     <Content Include="Data\Notes.txt" />
     <Content Include="Files\debugfile.json" />
     <Content Include="Files\errorwhiletryingtoattachdebuger.json" />
@@ -105,6 +110,7 @@
     <Content Include="NotCode\SchemaNotes.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="BotConnector\" />
     <Folder Include="Files\" />
     <Folder Include="Luis\" />
     <Folder Include="Debugging\" />
