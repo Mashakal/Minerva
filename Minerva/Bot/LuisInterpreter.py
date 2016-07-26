@@ -182,7 +182,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
     
     
     # Intent processes.
-    def _get_all_longest_paths(self, interests):
+    def get_all_longest_paths(self, interests):
         """Returns a list of all of the longest paths in a given set of paths.
         
         The first process of procedure _handle_learn.
@@ -193,7 +193,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         filtered_paths = self._info.remove_subpaths(all_paths)
         return self._longest_paths(filtered_paths)
 
-    def _get_all_topics(self, paths):
+    def get_all_topics(self, paths):
         """Returns the most specialized topic within a path.
 
         The last key in any path is considered to be the most specialized
@@ -203,7 +203,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         return [self._topic_from_path(p) for p in paths]
 
-    def _give_acknowledgement(self, topics):
+    def give_acknowledgement(self, topics):
         """Output a message acknowledging the topics."""
         self._agent.acknowledge(topics)
 
@@ -231,7 +231,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Procedure when the intent is Learn About Topic."""
         # Find all paths for any topic of interest found in the user's query.
         interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
-        longest_paths = self._get_all_longest_paths(interests)
+        longest_paths = self.get_all_longest_paths(interests)
         
         if not longest_paths:
             # Check if we have anything to go on.
@@ -268,7 +268,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent.say("I'm sorry, I don't know what you're asking.")
 
 
-class QueryHandler:
+class IntentHandler:
     
     """A handler for a given query, used with LuisInterpreters."""
 
