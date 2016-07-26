@@ -130,10 +130,11 @@ class ConsoleAgent(AbstractBaseAgent):
         """
         return word.lower() in DialogueStrings.ALL_STRINGS[type_]
 
-    def say(self, s):
+    def say(self, s, trailing_newline=True):
         """Print a message from the bot to the standard output."""
         print(s)
-        print()
+        if trailing_newline:
+            print()
 
     def ask(self, s):
         """Outputs and returns a response to some string."""
@@ -177,10 +178,10 @@ class ConsoleAgent(AbstractBaseAgent):
             raise ValueError("opts cannot be empty.")
 
         m = msg or self._get_random_string_constant(genre)
-        print(m)
+        self.say(m, False)
         for i, v in enumerate(opts):
-            print(''.join([' ' * indent, '{}: {}'.format(i + 1, v)]))
-        print()
+            self.say(''.join([' ' * indent, '{}: {}'.format(i + 1, v)]), False)
+        self.say('', False)
         n = self._prompt()
         while not self._validate_from_give_options(n, len(opts)):
             n = self.ask("{} is not valid.  Enter a valid choice.".format(n))

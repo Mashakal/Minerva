@@ -41,7 +41,7 @@
     <Compile Include="Bot\LuisClient.py" />
     <Compile Include="Bot\LuisInterpreter.py" />
     <Compile Include="Bot\LuisPlayground.py" />
-    <Compile Include="Bot\Session.py" />
+    <Compile Include="Bot\HelpBot.py" />
     <Compile Include="Debugging\Essentials.py">
       <SubType>Code</SubType>
     </Compile>

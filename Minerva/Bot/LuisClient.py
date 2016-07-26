@@ -15,23 +15,8 @@ class BotLuisClient(LuisClient):
 
     def __init__(self, app_name):
         self.app_name = app_name
-        url = self._build_luis_url(app_name)
+        url = self._build_luis_url()
         return super().__init__(url)
-
-    def query(self, text, result='standard'):
-        """Sends a query to the LUIS app.
-
-        The standard result is parsed into a tuple, as returned by a 
-        call to LuisClient.query().  A verbose result will instead
-        return the json from the query.
-        
-        """
-        if result == 'standard':
-            return super().query(text)
-        elif result in ['verbose', 'v']:
-            return super().query_raw(text)
-        else:
-            raise ValueError("Unknown result type {}.".format(result))
 
     def _build_luis_url(self):
         """Returns the url that points to the Project System LUIS app.

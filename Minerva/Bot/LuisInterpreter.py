@@ -5,7 +5,6 @@ import collections
 
 import InfoManager
 import DialogueStrings
-import Flags
 
 
 class AbstractLuisInterpreter(abc.ABC):
@@ -78,21 +77,25 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
 
     # Entry.
-    def analyze(self, json):
+    def analyze(self, json, process_data):
         """Analyzes the json returned from a call to LuisClient's method, query_raw.
         
         This is the only public method of the interpreter.
         
         """
-        self.data = self._format_data(json)
+        self._init_data(json)
         self._print_from_data() # For development.
         try:
             func = self._HANDLERS[self.data['intent']]
+            func = self.test_api_learn_about_topic
         except KeyError:
             func = self._HANDLERS['None']
         finally:
-            func()
-
+            return func(process_data)
+            
+    def _init_data(self, json):
+        """Initializes the data attribute."""
+        self.data = self._format_data(json)
 
 
     # Utility functions.
@@ -191,7 +194,16 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         paths_dict = self._get_all_paths(interests)
         all_paths = [e for k, v in paths_dict.items() if v for e in v]
         filtered_paths = self._info.remove_subpaths(all_paths)
-        return self._longest_paths(filtered_paths)
+        return {
+            'rv': self._longest_paths(filtered_paths),
+            'save_rv_as': 'longest_paths'
+        }
+
+    def verify_paths_found(self, paths):
+        """True if at least one path was found, otherwise False."""
+        if paths:
+            return True
+        return False
 
     def get_all_topics(self, paths):
         """Returns the most specialized topic within a path.
@@ -207,7 +219,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Output a message acknowledging the topics."""
         self._agent.acknowledge(topics)
 
-    def complete_path(self, path):
+    def is_path_complete(self, path):
         """If the path doesn't point to a str, determine where to go next.
         
         When the path does not point to a str, then it points to a dict
@@ -217,14 +229,21 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         end = self._info.traverse_keys(path)
         if not isinstance(end, str):
             # Then end is a dict of specializations.
-            flag_data = {
-                'options': [k for k in end],
-                'path': path
-            }
-            # Ask the user to choose an opt.
-            raise Flags.NeedChoiceBetweenOptions(flag_data)
+            return False
         return path
 
+    def complete_all_paths(self, paths):
+        """Calls complete_path on each path in paths."""
+        pass
+
+    
+    # API FUNCTIONS
+    def test_api_learn_about_topic(self, process_data):
+        """Testing learn_about_topic for the Bot Connector."""
+        
+        interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
+        longest_paths = self.get_all_longest_paths(interests)
+        return 
 
     # Intent functions.
     def _handle_learn(self):
@@ -281,18 +300,58 @@ class IntentHandler:
         """Called when text is received from the user and a conversation exists."""
         pass
 
-    def save_state(self):
-        """Saves the handler's state info using the Bot Framework State API."""
-        pass
 
-    def load_state(self):
-        """Loads the handler's state info using the Bot Framework State API."""
-        pass
+class LearnAboutTopicHandler:
+    """Handler for intent Learn About Topic."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.state_data = {
+            'variables': {
+                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
+            }
+        }
+        self.procedures = [
+            ('get_all_longest_paths', self.interests, None),
+            ('verify_paths_found', self.state_data['variables']['longest_paths']),
+
+
+    def on_return(self, returned):
+        """Called to update the state data with the info returned."""
+        self.state_data[returned['save_rv_as']] = returned['rv']
+
+
+
+class AbstractIntentProcess(abc.ABC):
+    
+    """An abstract class that acts as an interface for IntentProcesses."""
+
+    @abc.abstractclassmethod
+    def call():
+        raise NotImplementedError
+
+
+class IntentProcess(AbstractIntentProcess):
+
+    """A process to be executed by an IntentHandler"""
+
+    def __init__(self, func_attr):
+        self.func_attr = func_attr
+        self.is_complete = False
+        
+    def call(self, obj, *args, **kwargs):
+        """Calls the function tied to this process."""
+        rv = getattr(obj, self.func_attr)(args, kwargs)
+        return {'returned': rv}
+
 
 
 def main():
-    qh = QueryHandler(['some list'])
-    print(qh.__dict__)
+    processes = [
+        'get_all_longest_paths'
+
+
+
 
 if __name__ == "__main__":
     main()

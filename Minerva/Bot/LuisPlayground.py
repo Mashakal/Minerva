@@ -12,10 +12,7 @@ from Essentials import print_smart, get_file_size, json_to_file, file_to_json
 
 
 # Debugging items.
-JSON_FILE = 'petricca_test_file.json'
-JSON_FILE = 'petricca_multiple_single_jargon.json'
-JSON_FILE = 'petricca_remote_debugging_cloud_project.json'
-
+JSON_FILE = 'tutorials_only.json'
 
 
 def load_debug_json(client, filename):
@@ -27,7 +24,7 @@ def load_debug_json(client, filename):
     """
     if 0 == get_file_size(filename):
         q = VSConsoleAgent().start_query()
-        j = client.query(q, 'verbose')
+        j = client.query_raw(q)
         json_to_file(j, filename)
     else:
         j = file_to_json(filename)
@@ -42,8 +39,8 @@ def main():
     lc = BotLuisClient('Petricca')    # Handles queries to the LUIS app.
 
     # Get the response as json, from a file or from a new query.
-    j = lc.query(bot.start_query(), 'verbose')
-    #j = load_debug_json(lc, JSON_FILE)
+    #j = lc.query_raw(bot.start_query())
+    j = load_debug_json(lc, JSON_FILE)
     interp.analyze(j)     # Analyze the json, and get a meaningful message (we hope).
 
 

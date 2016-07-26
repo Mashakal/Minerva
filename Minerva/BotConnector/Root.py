@@ -9,7 +9,7 @@ if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
     bottle.debug(True)
 
 from message import Message
-import bot
+import HelpBot as bot
 
 
 @get('/')
@@ -27,6 +27,12 @@ def home():
 @post('/api/messages')
 def root():
     msg = Message(request.json)
+
+    strings = [' \O/ ' * i for i in range(1, 5)]
+    for s in strings:
+        msg.reply(s)
+    return
+
 
     if msg.type.lower() == 'ping':
         return
