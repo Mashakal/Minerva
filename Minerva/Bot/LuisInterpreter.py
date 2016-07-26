@@ -312,8 +312,8 @@ class LearnAboutTopicHandler:
             }
         }
         self.procedures = [
-            ('get_all_longest_paths', self.interests, None),
-            ('verify_paths_found', self.state_data['variables']['longest_paths']),
+            ('get_all_longest_paths', self.interests),
+            ('verify_paths_found', self.state_data['variables']['longest_paths'],
 
 
     def on_return(self, returned):

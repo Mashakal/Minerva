@@ -33,7 +33,6 @@ def root():
         msg.reply(s)
     return
 
-
     if msg.type.lower() == 'ping':
         return
 
