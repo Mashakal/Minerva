@@ -110,11 +110,7 @@ class BotConnectorAgent(AbstractBaseAgent):
         """Sends a dialogue message as output to the bot connector."""
         pass
 
-    def _send_message(self, message):
-        """Send message to bot connector for output."""
-        pass
-
-    
+        
 class ConsoleAgent(AbstractBaseAgent):
 
     """An agent for a desktop/console applciation."""
