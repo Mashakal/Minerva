@@ -2,13 +2,19 @@ import itertools
 import string
 import random
 import sys
-import DialogueStrings
 import abc
+
+import DialogueStrings
 
 
 class _AbstractAgent(abc.ABC):
     
-    """An abstract class that acts as an interface for agents."""
+    """An abstract class that acts as an interface for agents.
+    
+    The interface is pertinent to the LuisInterpreter classes
+    for interacting with the user.
+    
+    """
 
     @abc.abstractclassmethod
     def say():
@@ -46,9 +52,9 @@ class _AbstractAgent(abc.ABC):
         raise NotImplementedError
 
 
-class _BaseAgent(_AbstractAgent):
+class AbstractBaseAgent(_AbstractAgent):
 
-    """A base class for agents."""
+    """Implementation is added to _AbstractAgent to complete the ABC."""
 
     def _get_random_string_constant(self, genre):
         """Returns a random string of type genre.
@@ -65,7 +71,7 @@ class _BaseAgent(_AbstractAgent):
             r = random.randint(0, len(strings) - 1)
             return strings[r]
 
-    def _build_conj_string(self, no_opts, conj):
+    def _build_conj_string(self, num_opts, conj):
         """Builds the conjunction part of the string.
        
         Uses the number of options to determine the appropriate
@@ -74,15 +80,15 @@ class _BaseAgent(_AbstractAgent):
 
         """
         s = ''
-        if 2 < no_opts:
+        if 2 < num_opts:
             s = ''.join([', ', conj, ' {}'])
-        elif 2 == no_opts:
+        elif 2 == num_opts:
             s = ''.join([' ', conj, ' {}'])
-        elif 1 == no_opts:
+        elif 1 == num_opts:
             s = '{}'
         return s
 
-    def _build_list_string(self, no_strings, with_conj=False):
+    def _build_list_string(self, num_strings, with_conj=False):
         """Builds a string that can be formatted with variable no of strings.
 
         Generates a single string that can be formatted using String.format
@@ -90,13 +96,13 @@ class _BaseAgent(_AbstractAgent):
 
         """
         # When there is only one string to display, a list is not necessary.
-        if no_strings == 1:
+        if num_strings == 1:
             return ''
-        num = no_strings if not with_conj else no_strings - 1
+        num = num_strings if not with_conj else num_strings - 1
         return ', '.join(['{}'] * num)
 
 
-class BotConnectorAgent(_BaseAgent):
+class BotConnectorAgent(AbstractBaseAgent):
 
     """An agent for the Microsoft Bot Connector."""
 
@@ -108,14 +114,10 @@ class BotConnectorAgent(_BaseAgent):
         """Send message to bot connector for output."""
         pass
 
-    def _build_connector_url(self):
-        """Builds the appropriate url to send as an api query."""
-        pass
+    
+class ConsoleAgent(AbstractBaseAgent):
 
-
-class ConsoleAgent(_BaseAgent):
-
-    """Processes input and output during a query."""
+    """An agent for a desktop/console applciation."""
 
     def _prompt(self):
         """Outputs a prompt and returns the user's input."""
@@ -188,7 +190,7 @@ class ConsoleAgent(_BaseAgent):
             n = self.ask("{} is not valid.  Enter a valid choice.".format(n))
         return opts[int(n) - 1]
 
-    def _validate_from_give_options(self, input, no_opts):
+    def _validate_from_give_options(self, input, num_opts):
         """Validates the user's input after a call to method give_options."""
         try:
             n = int(input)
@@ -196,7 +198,7 @@ class ConsoleAgent(_BaseAgent):
             return False
         # Valid indices start at 1.
         else:
-            if n < 0 or n > no_opts:
+            if n < 0 or n > num_opts:
                 return False
         return True
 
