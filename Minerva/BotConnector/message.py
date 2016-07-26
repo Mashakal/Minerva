@@ -79,7 +79,8 @@ class Message:
             'type': 'message',
             'conversation': {'id': self._conversation_id},
             'text': text
-        }.update(extras)
+        }
+        data.update(extras)
 
         if attachments:
             data['attachments'] = [getattr(a, '_data', a) for a in attachments]
@@ -95,7 +96,8 @@ class Message:
             'recipient': self.from_user._data,
             'from': self.recipient._data,
             'text': text,
-        }.update(extras)
+        }
+        data.update(extras)
 
         if attachments:
             data['attachments'] = [getattr(a, '_data', a) for a in attachments]
