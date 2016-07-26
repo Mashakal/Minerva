@@ -5,6 +5,7 @@ import collections
 
 import InfoManager
 import DialogueStrings
+import Flags
 
 
 class AbstractLuisInterpreter(abc.ABC):
@@ -201,6 +202,28 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         """
         return [self._topic_from_path(p) for p in paths]
+
+    def _give_acknowledgement(self, topics):
+        """Output a message acknowledging the topics."""
+        self._agent.acknowledge(topics)
+
+    def complete_path(self, path):
+        """If the path doesn't point to a str, determine where to go next.
+        
+        When the path does not point to a str, then it points to a dict
+        whose keys are sub-specializations of the last key (topic) in path.
+                
+        """
+        end = self._info.traverse_keys(path)
+        if not isinstance(end, str):
+            # Then end is a dict of specializations.
+            flag_data = {
+                'options': [k for k in end],
+                'path': path
+            }
+            # Ask the user to choose an opt.
+            raise Flags.NeedChoiceBetweenOptions(flag_data)
+        return path
 
 
     # Intent functions.
