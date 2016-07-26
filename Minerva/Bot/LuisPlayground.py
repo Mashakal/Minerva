@@ -39,7 +39,7 @@ def main():
     #bot = Bot.ProjectSystemBot('ptvs')
     bot = VSConsoleAgent()   # Interacts with the user.
     interp = ProjectSystemLuisInterpreter(bot, 'PTVS')    # Interpreter for a LUIS json query response.
-    lc = BotLuisClient()    # Handles queries to the LUIS client.
+    lc = BotLuisClient('Petricca')    # Handles queries to the LUIS app.
 
     # Get the response as json, from a file or from a new query.
     j = lc.query(bot.start_query(), 'verbose')
