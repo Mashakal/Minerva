@@ -42,12 +42,12 @@ class _AbstractAgent(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractclassmethod
-    def _validate_from_give_options(user_response, num_options):
+    def validate_from_give_options(user_response, num_options):
         """Validates the user's response after give_options is called."""
         raise NotImplementedError
 
     @abc.abstractclassmethod
-    def _validate_from_clarify(user_response, options):
+    def validate_from_clarify(user_response, options):
         """Validates the user's response after clairfy is called."""
         raise NotImplementedError
 
@@ -106,9 +106,141 @@ class BotConnectorAgent(AbstractBaseAgent):
 
     """An agent for the Microsoft Bot Connector."""
 
-    def say(self, message):
-        """Sends a dialogue message as output to the bot connector."""
+    def _is_word_type(self, type_, word):
+        """Returns True if word is of type type_.
+
+        Searches DialogueStrings.ALL_STRINGS[type_] for
+        word and returns True when found, else False.
+
+        """
+        return word.lower() in DialogueStrings.ALL_STRINGS[type_]
+
+    def say(self, s, trailing_newline=False):
+        """Print a message from the bot to the standard output."""
+        if trailing_newline:
+            return ''.join([s, '  \n'])
+        return s
+
+    def ask(self, s):
+        """Outputs and returns a response to some string."""
+        return self.say(s)
+
+    def acknowledge(self, items, genre='positive_acks', conj='and'):
+        """Output an acknowledgement message for a container of items.
+
+        Constructs a string given a container of items.  The string
+        will join together each item in items and and if there is more
+        than one will use intelligently use conj before the last item.
+        Genre can be set explicitly and defaults to 'positive_acks'.
+        Conj can be set explicitly and defaults to 'and'.  Will not
+        output anything when items is empty.
+
+        """
+        msg = self._get_random_string_constant(genre)
+        # Get a string that's formatted to fit the number of items.
+        items_string = self._build_list_string(len(items), (1 < len(items)))
+        strings = [items_string, self._build_conj_string(len(items), conj)]
+        items_string = ''.join(strings)
+        # Get a unified string that has the items listed in order.
+        items_string = items_string.format(*items)
+        # Output.
+        if items_string:
+            return self.say(msg.format(items_string))
+
+    def give_options(self, opts, msg=None, genre='options'):
+        """Require the user to choose a valid option from opts.
+        
+        Outputs a message to standard output followed by an 
+        ordered list of options defined by opts.  Ordering starts at 1 and
+        each element of opts is output on a new line.  Returns the opt chosen 
+        by the user.  The message can be set explicitly via msg.  Indent can 
+        be set explicitly to change the number of empty spaces precending each
+        opt.  Genre indicates which string list in ALL_STRINGS to choose from.
+
+        """       
+        if not opts:
+            raise ValueError("opts cannot be empty.")
+
+        m = msg or self._get_random_string_constant(genre)
+        opt_strings = [m]
+        for i, v in enumerate(opts):
+            opt_strings.append('. '.join([str(i), '{}'.format(i + 1, v)]))
+        s = '  \n'.join(opt_strings)
+        return self.say(s)
+
+
+    def validate_from_give_options(user_response, num_options):
         pass
+
+    def clarify(self, opts, conj='or'):
+        """Returns a choice between opts after being presented to the user.
+        
+        Constructs a conversation friendly dialogue asking the user to choose
+        one of a set of options. Conj is added to the opts when there is more
+        than one.  Opts may also be a list containing only one element, e.g. 
+        ['Debugging'] to ask something like 'Are you asking about Debugging?'.
+        Unless the user gives a no-type answer, narrowing down to one opt is
+        required to return.  This means that clarify should not be called when
+        more than one option can be valid at the same time.
+
+        """
+
+        if not opts:
+            raise ValueError("opts cannot be empty.")
+
+        msg = self._get_random_string_constant('clarify')
+        # Allow an arbitrary number of opts to be printed.
+        msg = ' '.join([msg, self._build_list_string(len(opts), 1 < len(opts))])
+        msg = ''.join([msg, self._build_conj_string(len(opts), conj), '?'])
+        
+        # Require a match to at least one of opts.
+        message = msg.format(*opts)
+        opt = validate_input(self.ask(message), opts)
+        while not opt:
+            # Negative acknowledgement and ask the message again.
+            self.say("I don't understand, {}".format(message))
+            opt = self._validate_from_clarify(self._prompt(), opts)
+
+        # If no option was correct.
+        if opt == 'None':
+            return False
+        # If more than one opt was returned as valid, choose one.
+        elif len(opt) > 1:
+            m = "I'm sorry, which of these did you mean?"
+            return self.give_options([o for o in opt], msg=m)
+
+        return opt
+    
+    def validate_from_clarify(self, ans, opts):
+        """Called to validate user's input after a call to method clarify.
+            
+        Validates that the user's input matches one of opts.  Returns a set
+        of opts where any word in ans is found in any word of that opt.
+        Will return 'None' if the user's input is in 
+        DialogueStrings.NO_WORDS.
+
+        """
+        # If there is only one option, did the user give a positive ack?
+        if len(opts) == 1:
+            if self._is_word_type('yes', ans):
+                return opts
+            
+        # Look for a blanket no-type answer.    
+        if self._is_word_type('no', ans):
+            return 'None'
+
+        # Get each word in the user's input and opts.
+        user_words = {w.lower().strip(string.punctuation) \
+                        for w in ans.split(' ')}
+        opts_words = [w.lower().split(' ') for w in opts]
+        flat_opts_words = {w for li in opts_words for w in li}
+        # Find any matching opts_words.
+        valid_input = user_words & flat_opts_words
+        # Take the valid input and match it to whole opt string matched.
+        chosen = {o for o in opts for valid in valid_input \
+                    if valid in o.lower()}
+        # TODO: Log how many valid input are being returned.
+        return chosen
 
         
 class ConsoleAgent(AbstractBaseAgent):
@@ -187,7 +319,7 @@ class ConsoleAgent(AbstractBaseAgent):
             n = self.ask("{} is not valid.  Enter a valid choice.".format(n))
         return opts[int(n) - 1]
 
-    def _validate_from_give_options(self, input, num_opts):
+    def validate_from_give_options(self, input, num_opts):
         """Validates the user's input after a call to method give_options."""
         try:
             n = int(input)

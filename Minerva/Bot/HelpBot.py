@@ -10,9 +10,9 @@ import Essentials
 
 
 def on_message(msg):
-    if msg_has_queue(msg):
-        queue_message(msg)
-        return
+    #if msg_has_queue(msg):
+    #    queue_message(msg)
+    #    return
     bot = Conversation('PTVS')
     bot.choose_action(msg)
 
@@ -45,7 +45,7 @@ def msg_has_queue(msg):
 # Strings for easier json decoding.
 CONVERSATION_STATES = {
     'Processing': 'Processing',
-    'WaitingForInput': 'WaitingForInput'
+    'Waiting': 'Waiting'
 }
 
 
@@ -55,7 +55,7 @@ class Conversation:
 
     def __init__(self, project_system):
         self.project_system = project_system
-        self.agent = Agent.VSConsoleAgent()
+        self.agent = Agent.BotConnectorAgent()
 
     def initiate_conversation(self):
         """Starts a conversation between the agent and the user."""
@@ -71,28 +71,52 @@ class Conversation:
         self._set_as_current(msg)
         self._set_conversation_state(msg, CONVERSATION_STATES['Processing'])
 
+        # Debugging.
+        self._delete_state_information(msg)
+
         # Should we send the query to the LUIS app?
         if not self._has_active_query(msg):
+            print("We received a new query.")
             json_results = self.query_luis(msg.text)
             # Save api calls here by adding to data explicitly.
             msg.data['luis_results'] = json_results
             # Marking msg active will also save msg.data.
             self._mark_active(msg)
-
+        else:
+            print("We are continuing work on a query.")
+            print(self._get_interpreter_data(msg))
+            print()
+            
         # Ready up to begin or continue interpretation.
-        self.interpreter = LuisInterpreter.ProjectSystemLuisInterpreter(self.agent, self.project_system)
+        self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
         self.interp_data = self._get_interpreter_data(msg)
         
         # Interpret.
         self.interp_data = self.interpreter.interpret(self.interp_data)
 
+        # Send outgoing messages.
+        try:
+            outbox = self.interp_data['outgoing']
+        except KeyError:
+            pass
+        else:
+            for m in outbox:
+                msg.post(m)
 
-
-        # 
-        response_data = self.interpreter.analyze(msg.data['luis_results'])
-        if response_data['is_reply_ready']:
-            msg.reply(response_data['reply_text'])
+        # Evaluate state based on status from the interpreter data.
+        if self.interp_data['status'] in ['failed', 'complete']:
+            # Delete the state information.
+            print("We should be deleting the state info.")
             self._delete_state_information(msg)
+        else:
+            print('We should retain the state info.')
+            self._set_conversation_state(msg, CONVERSATION_STATES['Waiting'])
+            self._set_interpreter_data(msg)
+
+        print("Exiting conversation items.")
+        print("The interpreter data is: ")
+        print(self._get_interpreter_data(msg))
+
         return
         
     def _get_interpreter_data(self, msg):
@@ -100,7 +124,9 @@ class Conversation:
         try:
             interp_data = msg.data['interpreter']
         except KeyError:
-            interp_data = None
+            interp_data = {'query_json': msg.data['luis_results']}
+        finally:
+            return interp_data
 
     def _set_interpreter_data(self, msg):
         """Sets the conversation's interpreter data."""
