@@ -330,6 +330,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return {
                 'next': 'fail',
                 'post': '  \n'.join(["Luis didn't find any keywords in your query, I'm sorry.",
+                                     '  \n',
                                     "In the future, I'll be able to search StackOverflow for you."])
             }
 
@@ -380,17 +381,19 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'next': 'continue'
         }
 
-    def get_url_items(self, topics):
+    def get_url_items(self, topics, paths):
         """Get url for all complete paths."""
-        urls = {topic: self._info.traverse_keys(topic) for topic in topics}
+        urls = {topic: self._info.traverse_keys(paths[i]) for i, topic in enumerate(topics)}
         return {
             'next': 'continue',
             'urls': urls
         }
 
     def suggest_urls(self, urls):
+        urls_list = list(urls.values())
+        reply = '  \n'.join(['Visit the following:'] + urls_list)
         return {
-            'post': self._agent.give_options(urls, msg="Visit the following:"),
+            'post': reply,
             'next': 'complete'
         }
 
@@ -431,17 +434,15 @@ class LearnAboutTopicHandler:
         self.obj = obj
         self.variables = {
             'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
-            'longest_paths': [],
-            'topics': [],
         }
         self._data = {'variables': self.variables}
         self.procedures = [
             # (Function_Attribute, [variable_names])
             ('get_all_longest_paths', ['interests']),
             ('verify_paths_found', ['longest_paths']),
-            ('get_all_topics', ['longest_paths']),
             ('find_complete_paths', ['longest_paths']),
-            ('get_url_items', ['topics']),
+            ('get_all_topics', ['complete_paths']),
+            ('get_url_items', ['topics', 'complete_paths']),
             ('suggest_urls', ['urls'])
             #('complete_unfinished_paths', ['unfinished_paths', 'current_path_index']),
             #('check_input_on_unfinished_path', ['input', 'options'])
@@ -454,7 +455,8 @@ class LearnAboutTopicHandler:
         """Updates and returns the handler's data."""
         self._data['variables'] = self.variables
         self.data['proc_index'] = self.proc_index
-        return self.data.update(self._data)
+        self.data.update(self._data)
+        return self.data
 
     def run_process(self):
         """Runs the current process."""
@@ -489,6 +491,8 @@ class LearnAboutTopicHandler:
             self.data['status'] = 'failed'
         elif ret['next'] == 'complete':
             self.data['status'] = 'complete'
+        elif ret['next'] == '':
+            self.data['status'] = 'waiting'
         else:
             self.proc_index += 1
 

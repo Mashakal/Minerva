@@ -93,6 +93,8 @@ class Conversation:
         
         # Interpret.
         self.interp_data = self.interpreter.interpret(self.interp_data)
+        #print("We returned, and the interp data is: ")
+        #print(self.interp_data)
 
         # Send outgoing messages.
         try:
@@ -112,10 +114,6 @@ class Conversation:
             print('We should retain the state info.')
             self._set_conversation_state(msg, CONVERSATION_STATES['Waiting'])
             self._set_interpreter_data(msg)
-
-        print("Exiting conversation items.")
-        print("The interpreter data is: ")
-        print(self._get_interpreter_data(msg))
 
         return
         
