@@ -231,6 +231,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def analyze(self):
         pass
 
+    
     def interpret(self, state_data):
         if not 'state' in state_data:
             # This is a new query.
@@ -252,7 +253,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         return intent_handler.get_data()
 
-
     def _format_data(self, json):
         """Formats the raw json into a more easily accessible dictionary."""
         return {
@@ -273,6 +273,39 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'single_jargon': self._literals_given_type('Jargon::Single Word', json),
             'solve_problem_triggers': self._literals_given_parent_type('Solve Problem Triggers::', json)
         }
+
+    def _longest_paths(self, paths):
+        """Returns a list of all paths whose size is equal to the longest."""
+        try:
+            max_len = max(map(len, paths))
+        except ValueError:
+            # Raised when paths is an empty set.
+            max_len = 0
+        return list(filter(lambda x: len(x) == max_len, paths))
+    
+    def _get_all_paths(self, interests):
+        """Returns a dict of interest/path pairs.
+       
+        Interest is the key.  The path that leads to interest is the
+        value.
+
+        """
+        all_paths = {}
+        for interest in interests:
+            path = self._info.get_paths(self.interp_data['json_data'][interest])
+            path = self._info.remove_subpaths(path)
+            all_paths[interest] = path
+        return all_paths
+    
+    def _topic_from_path(self, path):
+        """Returns the 'topic' of a path.
+        
+        The 'topic is the last key in the list of keys in the path.
+        This is useful anytime you want to refer to a path as a topic
+        instead of a list of keys.
+        
+        """
+        return path[len(path) - 1]
 
     # Intent processes.
     def get_all_longest_paths(self, interests):
@@ -328,17 +361,21 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 
         """
         incompletes = []
-        for i, path in enumerate(paths):
+        completes = []
+        for path in paths:
             end = self._info.traverse_keys(path)
             if not isinstance(end, str):
                 # Then end is a dict of specializations.
                 if 'Home' in end:
-                    paths[i].append('Home')
+                    path.append('Home')
+                    completes.append(path)
                 else:
-                    paths.pop(i)
                     incompletes.append(path)
+            else:
+                completes.append(path)
+
         return {
-            'complete_paths': paths,
+            'complete_paths': completes,
             'incomplete_paths': incompletes,
             'next': 'continue'
         }
@@ -424,12 +461,12 @@ class LearnAboutTopicHandler:
         proc = self.procedures[self.proc_index]
         f_attr, v_attr = proc
         print("About to try running {}.".format(f_attr))
-        print(self.variables[v_attr])
+        print("Args are: {}".format(*[self.variables[attr] for attr in v_attr]))
+        ret = getattr(self.obj, f_attr)(*[self.variables[attr] for attr in v_attr])
+        print("Returned by {}".format(f_attr))
+        print(ret)
+        print()
 
-        if len(v_attr) <= 1:
-            ret = getattr(self.obj, f_attr)(self.variables[v_attr])
-        else:
-            ret = getattr(self.obj, f_attr)(*[self.variables[attr] for attr in v_attr])
         self.handle_return(ret)
         self.handle_next(ret)
 
