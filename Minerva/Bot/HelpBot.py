@@ -13,7 +13,7 @@ def on_message(msg):
     if msg_has_queue(msg):
         queue_message(msg)
         return
-    bot = ProjectSystemHelpBot('PTVS')
+    bot = Conversation('PTVS')
     bot.choose_action(msg)
 
 def load_next_message(msg):
@@ -44,14 +44,14 @@ def msg_has_queue(msg):
 
 # Strings for easier json decoding.
 CONVERSATION_STATES = {
-    'Processing': 'processing',
-    'WaitingForInput': 'waitingforinput'
+    'Processing': 'Processing',
+    'WaitingForInput': 'WaitingForInput'
 }
 
 
-class ProjectSystemHelpBot:
+class Conversation:
 
-    """Handles a conversation with a user and an help bot."""
+    """Handles a conversation with a user and a help bot."""
 
     def __init__(self, project_system):
         self.project_system = project_system
@@ -67,21 +67,46 @@ class ProjectSystemHelpBot:
         return luis_client.query_raw(query_text)
 
     def choose_action(self, msg):
+        # Mark this message as the one currently being processed.
         self._set_as_current(msg)
         self._set_conversation_state(msg, CONVERSATION_STATES['Processing'])
-        # Check if the msg is a brand new query.
+
+        # Should we send the query to the LUIS app?
         if not self._has_active_query(msg):
             json_results = self.query_luis(msg.text)
             # Save api calls here by adding to data explicitly.
             msg.data['luis_results'] = json_results
             # Marking msg active will also save msg.data.
             self._mark_active(msg)
+
+        # Ready up to begin or continue interpretation.
         self.interpreter = LuisInterpreter.ProjectSystemLuisInterpreter(self.agent, self.project_system)
-        response_message = self.interpreter.analyze(msg.data['luis_results'])
-        msg.reply(response_message)
-        self._delete_state_information(msg)
+        self.interp_data = self._get_interpreter_data(msg)
+        
+        # Interpret.
+        self.interp_data = self.interpreter.interpret(self.interp_data)
+
+
+
+        # 
+        response_data = self.interpreter.analyze(msg.data['luis_results'])
+        if response_data['is_reply_ready']:
+            msg.reply(response_data['reply_text'])
+            self._delete_state_information(msg)
         return
         
+    def _get_interpreter_data(self, msg):
+        """Returns a conversation's interpreter data."""
+        try:
+            interp_data = msg.data['interpreter']
+        except KeyError:
+            interp_data = None
+
+    def _set_interpreter_data(self, msg):
+        """Sets the conversation's interpreter data."""
+        msg.data['interpreter'] = self.interp_data
+        msg.save_data()
+
     # Methods to manipulate the message's data attribute.
     def _add_to_data(self, msg, key, value):
         """Adds a key/value pair to msg.data and saves it."""
@@ -164,5 +189,3 @@ class ProjectSystemHelpBot:
             pass
         finally:
             msg.save_data()
-
-

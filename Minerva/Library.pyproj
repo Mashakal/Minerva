@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>BotConnector\Root.py</StartupFile>
+    <StartupFile>Bot\LuisInterpreter.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -29,7 +29,6 @@
     <Compile Include="BotConnector\bot.py" />
     <Compile Include="BotConnector\bot_models.py" />
     <Compile Include="BotConnector\bot_requests.py" />
-    <Compile Include="BotConnector\Flags.py" />
     <Compile Include="BotConnector\message.py" />
     <Compile Include="BotConnector\Root.py" />
     <Compile Include="Bot\Agent.py" />

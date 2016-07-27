@@ -28,7 +28,12 @@ def home():
 def root():
     msg = Message(request.json)
 
-    strings = [' \O/ ' * i for i in range(1, 5)]
+    strings = ['. '.join([str(i), 'something', '\n']) for i in range(1, 5)]
+    output = ''.join(strings)
+    print("OUTPUT:\n{}\n".format(output))
+    msg.reply(output)
+    return 
+
     for s in strings:
         msg.reply(s)
     return
