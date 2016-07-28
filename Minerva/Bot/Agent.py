@@ -164,7 +164,7 @@ class BotConnectorAgent(AbstractBaseAgent):
         m = msg or self._get_random_string_constant(genre)
         opt_strings = [m]
         for i, v in enumerate(opts):
-            opt_strings.append('. '.join([str(i), '{}'.format(i + 1, v)]))
+            opt_strings.append('. '.join([str(i), '{}'.format(v)]))
         s = '  \n'.join(opt_strings)
         return self.say(s)
 

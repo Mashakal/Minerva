@@ -2,6 +2,7 @@ import sys
 import abc
 import itertools
 import collections
+from enum import Enum, unique
 
 import InfoManager
 import DialogueStrings
@@ -231,7 +232,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def analyze(self):
         pass
 
-    
     def interpret(self, state_data):
         if not 'state' in state_data:
             # This is a new query.
@@ -248,7 +248,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # Set the interpreter state to working.
         #self.interp_data.set_state('working')
 
-        while intent_handler.data['status'] == 'working':
+        while intent_handler.msg_data['status'] == 'working':
             intent_handler.run_process()
 
         return intent_handler.get_data()
@@ -307,6 +307,18 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         return path[len(path) - 1]
 
+    def _get_unfinished_path_message(self, path):
+        end = self._info.traverse_keys(path)
+        options = [k for k in end]
+        return self._agent.give_options(options)
+
+    def _is_path_complete(self, path):
+        """True if the path is complete, else False."""
+        end = self._info.traverse_keys(path)
+        if not isinstance(end, str):
+            return False
+        return True
+
     # Intent processes.
     def get_all_longest_paths(self, interests):
         """Returns a list of all of the longest paths in a given set of paths.
@@ -354,7 +366,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'post': self._agent.acknowledge(topics)
         }
 
-    def find_complete_paths(self, paths):
+    def evaluate_paths(self, paths):
         """If the path doesn't point to a str, determine where to go next.
         
         When the path does not point to a str, then it points to a dict
@@ -375,11 +387,12 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             else:
                 completes.append(path)
 
-        return {
+        _ret = {
             'complete_paths': completes,
             'incomplete_paths': incompletes,
             'next': 'continue'
         }
+        return  _ret
 
     def get_url_items(self, topics, paths):
         """Get url for all complete paths."""
@@ -397,7 +410,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'next': 'complete'
         }
 
-    def complete_unfinished_paths(self, unfinished_paths, current_path_index=0):
+    def complete_unfinished_paths(self, path):
         """Asks the user where to go from here."""
         path = unfinished_paths[current_path_index]
         end = self._info.traverse_keys(path)
@@ -405,12 +418,12 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         reply = self._agent.give_options(options)
         return {
             'next': 'waiting',
-            'reply': reply,
+            'post': reply,
             'options': options,
             'current_path_index': current_path_index
         }
-
-    def check_input_on_unfinished_path(self, input, options):
+    
+    def check_input_on_unfinished_path(self, options, input):
         """True when the input is valid."""
         try:
             n = int(input)
@@ -418,14 +431,59 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             passed = False
         # Valid indices start at 1.
         else:
-            if n < 0 or n > len(options):
+            if n <= 0 or n > len(options):
                 passed = False
             else:
                 passed = True
-        return {
-            'passed': passed
-        }
-    
+        fail_message = "{} is not a valid input.  Please enter a number from 1-{}".format(input, len(options))
+        if passed:
+            return {
+                'next': 'continue',
+                'chosen_opt': options[n - 1]
+            }
+        else:
+            return {
+                'next': 'waiting',
+                'post': fail_message,
+            }
+
+    def add_key_to_path(self, incomplete_paths, path_index, chosen_opt):
+        """Adds the chosen opt (key) to the incomplete path."""
+        incomplete_paths[path_index].append(chosen_opt)
+
+    def complete_paths(self, incomplete_paths, path_index=0):
+        _ret = {}
+        # Check whether or not we need to do anything.
+        while path_index < len(incomplete_paths):
+            path = incomplete_paths[path_index]
+            # A path might have had a key added since it was marked as incomplete.
+            if not self._is_path_complete(path):
+                _ret['post'] = self._get_unfinished_path_message(path)
+                _ret['next'] = Next.WaitThenContinue
+                _ret['path_index'] = path_index
+                return _ret
+            else:
+                path_index += 1
+        # Reroute to get_all_topics when all paths have been completed.
+        _ret['next'] = Next.Reroute
+        _ret['reroute'] = {'f_attr': 'combine_path_lists'}
+
+
+@unique
+class Next(Enum):
+    # Go to the next procedure.
+    Continue = 0
+    # Wait for input from the user, then go to the next procedure.
+    WaitThenContinue = 1
+    # Wait for input from the user, then call the same procedure again.
+    WaitThenStay = 2
+    # Stop interpreting, end query.
+    Failure = 3
+    # Stop interpreting, end query.
+    Complete = 4
+    # Reroute the next process to another function attribute.
+    Reroute = 5
+
 
 class LearnAboutTopicHandler:
     """Handler for intent Learn About Topic."""
@@ -437,43 +495,44 @@ class LearnAboutTopicHandler:
         }
         self._data = {'variables': self.variables}
         self.procedures = [
-            # (Function_Attribute, [variable_names])
-            ('get_all_longest_paths', ['interests']),
-            ('verify_paths_found', ['longest_paths']),
-            ('find_complete_paths', ['longest_paths']),
-            ('get_all_topics', ['complete_paths']),
-            ('get_url_items', ['topics', 'complete_paths']),
-            ('suggest_urls', ['urls'])
+            # (Function_Attribute, [data_variable_names], [input_vars])
+            ('get_all_longest_paths', ['interests'], []),
+            ('verify_paths_found', ['longest_paths'], []),
+            ('evaluate_paths', ['longest_paths'], []),
+            ('get_all_topics', ['complete_paths'], []),
+            ('get_url_items', ['topics', 'complete_paths'], []),
+            ('suggest_urls', ['urls'], [])
             #('complete_unfinished_paths', ['unfinished_paths', 'current_path_index']),
             #('check_input_on_unfinished_path', ['input', 'options'])
         ]
         self.proc_index = data['proc_index']
-        self.data = data
-        self.data['status'] = 'working'
+        self.msg_data = data
+        self.msg_data['status'] = 'working'
         
     def get_data(self):
         """Updates and returns the handler's data."""
         self._data['variables'] = self.variables
-        self.data['proc_index'] = self.proc_index
-        self.data.update(self._data)
-        return self.data
+        self.msg_data['proc_index'] = self.proc_index
+        self.msg_data.update(self._data)
+        return self.msg_data
 
     def run_process(self):
         """Runs the current process."""
         proc = self.procedures[self.proc_index]
-        f_attr, v_attr = proc
+        f_attr, v_attr, g_attr = proc
         print("About to try running {}.".format(f_attr))
         print("Args are: {}".format(*[self.variables[attr] for attr in v_attr]))
         ret = getattr(self.obj, f_attr)(*[self.variables[attr] for attr in v_attr])
         print("Returned by {}".format(f_attr))
         print(ret)
         print()
+        self._handle_return(ret)
+        self._handle_next(ret)
 
-        self.handle_return(ret)
-        self.handle_next(ret)
 
+    # PRIVATE METHODS
         
-    def handle_return(self, ret):
+    def _handle_return(self, ret):
         """Manages the returned object after a process has been called."""
         KEY_ATTRS = ['post', 'next']
         # Look for outgoing.
@@ -485,96 +544,35 @@ class LearnAboutTopicHandler:
             if attr not in KEY_ATTRS:
                 self.variables[attr] = ret[attr]
 
-    def handle_next(self, ret):
+    def _handle_next(self, ret):
         """Determine what to do after a process has been ran."""
-        if ret['next'] == 'fail':
-            self.data['status'] = 'failed'
-        elif ret['next'] == 'complete':
-            self.data['status'] = 'complete'
-        elif ret['next'] == '':
-            self.data['status'] = 'waiting'
+        if ret['next'] == Next.Failure:
+            self.msg_data['status'] = 'failed'
+        elif ret['next'] == Next.Complete:
+            self.msg_data['status'] = 'complete'
+        elif ret['next'] == Next.WaitThenStay:
+            self.msg_data['status'] = 'wait_then_stay'
+        elif ret['next'] == Next.Reroute:
+            self._reroute(ret['reroute'])
         else:
             self.proc_index += 1
 
-        
+    def _reroute(self, reroute_data):
+        """Changes the current procedure index to match the f_attr of reroute_data.
+
+        Currently only changing the function index is implemented.  In the future,
+        changing the variables may be added.
+
+        """
+        for i, proc in enumerate(self.procedures):
+            if proc[0] == reroute_data['f_attr']:
+                self.proc_index = i
+
     def _add_outgoing_message(self, message):
         """Adds a message to the outgoing list."""
         try:
-            msgs = self.data['outgoing']
+            msgs = self.msg_data['outgoing']
         except KeyError:
             msgs = []
         msgs.append(message)
-        self.data['outgoing'] = msgs
-
-
-
-class IntentProcess:
-
-    """A process to be executed by an IntentHandler."""
-
-    def __init__(self, func_attr, var_names, vars_dict):
-        # The string value of a callable object.
-        self.func_attr = func_attr
-        self.vars = [vars_dict[attr] for attr in var_names]
-        
-        # A list of vars named as strings for each var 
-        # accepted by func_attr.
-        self.accepts = var_names
-        
-    def call(self, obj, *args, **kwargs):
-        """Calls the function tied to this process."""
-        rv = getattr(obj, self.func_attr)(args, kwargs)
-        return {'returned': rv}
-
-
-class InterpreterData:
-    
-    """A container for LuisInterpreter data."""
-
-    _STATES = {
-        'initializing': 'initializing',
-        'initialized': 'initialized',
-        'working': 'working',
-        'waiting': 'waiting',
-        'finished': 'finished'
-    }
-
-    def __init__(self, data=None):
-        object.__setattr__(self, '_data', data or {})
-        self.set_state('initializing')
-
-    def __getattr__(self, attr):
-        try:
-            v = self._data[attr]
-        except KeyError:
-            v = getattr(self, attr, None)
-        finally:
-            return v
-
-    def __setattr__(self, attr, value):
-        self._data[attr] = value
-
-    def set_state(self, value):
-        """Sets the appropriate state based on value.
-
-        Will raise a ValueError when the given value is not
-        an appropriate key for InterpreterData.STATES.
-
-        """
-        # TODO:  We should save this through the api.
-        try:
-            self._data['state'] = InterpreterData._STATES[value]
-        except KeyError:
-            raise ValueError("{} is not a valid state.".format(value))
-    
-def main():
-    data = InterpreterData()
-    print(data.state)
-    data.set_state('working')
-    print(data.state)
-    
-
-    
-
-if __name__ == "__main__":
-    main()
+        self.msg_data['outgoing'] = msgs
