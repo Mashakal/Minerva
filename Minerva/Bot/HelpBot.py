@@ -4,6 +4,7 @@ from enum import Enum, unique
 import Agent
 import LuisInterpreter
 import LuisClient
+from LuisInterpreter import InterpreterStatus
 
 # For development purposes only:
 import Essentials
@@ -13,8 +14,8 @@ def on_message(msg):
     #if msg_has_queue(msg):
     #    queue_message(msg)
     #    return
-    bot = Conversation('PTVS')
-    bot.choose_action(msg)
+    bot_convo = Conversation('PTVS', msg)
+    bot_convo.choose_action()
 
 def load_next_message(msg):
     """Returns the next message in queue."""
@@ -53,9 +54,10 @@ class Conversation:
 
     """Handles a conversation with a user and a help bot."""
 
-    def __init__(self, project_system):
+    def __init__(self, project_system, msg):
         self.project_system = project_system
         self.agent = Agent.BotConnectorAgent()
+        self.msg = msg
 
     def initiate_conversation(self):
         """Starts a conversation between the agent and the user."""
@@ -64,104 +66,111 @@ class Conversation:
     def query_luis(self, query_text):
         """Returns json from a raw_query to the LUIS app."""
         luis_client = LuisClient.BotLuisClient('Petricca')
-        return luis_client.query_raw(query_text)
+        json_results = luis_client.query_raw(query_text)
+        return {'json': json_results,
+                'query': query_text}
 
-    def choose_action(self, msg):
+    def choose_action(self):
         # Mark this message as the one currently being processed.
-        self._set_as_current(msg)
-        self._set_conversation_state(msg, CONVERSATION_STATES['Processing'])
+        #self._set_as_current(self.msg)
 
-        # Debugging.
-        self._delete_state_information(msg)
+        # For debugging.
+        self._delete_state_information()
 
-        # Should we send the query to the LUIS app?
-        if not self._has_active_query(msg):
-            print("We received a new query.")
-            json_results = self.query_luis(msg.text)
-            # Save api calls here by adding to data explicitly.
-            msg.data['luis_results'] = json_results
-            # Marking msg active will also save msg.data.
-            self._mark_active(msg)
-        else:
-            print("We are continuing work on a query.")
-            print(self._get_interpreter_data(msg))
-            print()
-            
-        # Ready up to begin or continue interpretation.
-        self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
-        self.interp_data = self._get_interpreter_data(msg)
-        
+        # Load data.
+        self.convo_data = self._load_conversation_data()
+        self.luis_data = self._load_luis_data()
+        self.interp_data = self._load_interpreter_data()
+
+        print("\nConversation data:")
+        print(self.convo_data)
+        print("\nLuis data:")
+        print(self.luis_data)
+        print("\nInterp data:")
+        print(self.interp_data)
+
+        print("\n\n")
+
         # Interpret.
+        self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
         self.interp_data = self.interpreter.interpret(self.interp_data)
-        #print("We returned, and the interp data is: ")
-        #print(self.interp_data)
+        
+        print("\n\n")
+        
+        # Post-interpretation administrative tasks.
+        self._send_outgoing()
 
-        # Send outgoing messages.
+        # Cleanup.
+        if self.interp_data['status'] in [InterpreterStatus.Complete, InterpreterStatus.Failed]:
+            # Delete the state information.
+            print("We should be deleting the state info.")
+            self._delete_state_information()
+        else:
+            print('We should retain the state info.')
+            self._save_all_data()
+        return
+       
+    def _save_interpreter_data(self):
+        """Saves the conversation's interpreter data."""
+        self.msg.data['interpreter'] = self.interp_data
+        self.msg.save_data()
+
+    def _save_conversation_data(self):
+        """Saves the conversation's data."""
+        self.msg.data['conversation'] = self.convo_data
+        self.msg.save_data()
+
+    def _save_all_data(self):
+        """Saves all data items."""
+        self.msg.data['conversation'] = self.convo_data
+        self.msg.data['interpreter'] = self.interp_data
+        self.msg.data['luis_data'] = self.luis_data
+        self.msg.save_data()
+
+    def _load_conversation_data(self):
+        try:
+            return self.msg.data['conversation']['data']
+        except LookupError:
+           return {'status': InterpreterStatus.Pending,
+                   'isActive': True}
+
+    def _load_interpreter_data(self):
+        """Returns a conversation's interpreter data."""
+        try:
+            interp_data = self.msg.data['interpreter']
+        except KeyError:
+            interp_data = {'status': InterpreterStatus.Pending}
+        finally:
+            interp_data.update({'msg_text': self.msg.text})
+            interp_data['luis_data'] = self.luis_data
+            return interp_data
+
+    def _save_luis_data(self):
+        self.msg.data['luis_data'] = self.luis_data
+        self.msg.save_data()
+
+    def _load_luis_data(self):
+        try:
+            luis_data = self.msg.data['luis_data']
+        except KeyError:
+            luis_data = self.query_luis(self.msg.text)
+        finally:
+            return luis_data
+
+    def _send_outgoing(self):
+        """Sends any messages added to the outgoing list during interpretation."""
         try:
             outbox = self.interp_data['outgoing']
         except KeyError:
             pass
         else:
             for m in outbox:
-                msg.post(m)
+                self.msg.post(m)
 
-        # Evaluate state based on status from the interpreter data.
-        if self.interp_data['status'] in ['failed', 'complete']:
-            # Delete the state information.
-            print("We should be deleting the state info.")
-            self._delete_state_information(msg)
-        else:
-            print('We should retain the state info.')
-            self._set_conversation_state(msg, CONVERSATION_STATES['Waiting'])
-            self._set_interpreter_data(msg)
-
-        return
-        
-    def _get_interpreter_data(self, msg):
-        """Returns a conversation's interpreter data."""
-        try:
-            interp_data = msg.data['interpreter']
-        except KeyError:
-            interp_data = {'query_json': msg.data['luis_results']}
-        finally:
-            return interp_data
-
-    def _set_interpreter_data(self, msg):
-        """Sets the conversation's interpreter data."""
-        msg.data['interpreter'] = self.interp_data
-        msg.save_data()
-
-    # Methods to manipulate the message's data attribute.
-    def _add_to_data(self, msg, key, value):
-        """Adds a key/value pair to msg.data and saves it."""
-        msg.data[key] = value
-        msg.save_data()
-
-    def _del_from_data(self, msg, key):
-        """Deletes key from the msg.data."""
-        try:
-            del msg.data[key]
-        except LookupError:
-            pass
-        finally:
-            msg.save_data()
-
-    def _set_as_current(self, msg):
-        """Sets msg as the current message in msg.data."""
-        self._add_to_data(msg, 'current_message', msg._activity_id)
-
-    def _reset_current(self, msg):
-        """Deletes the current message information."""
-        self._del_from_data(msg, 'current_message')
-
-    def _set_conversation_state(self, msg, state):
-        """Sets the conversation state."""
-        self._add_to_data(msg, 'state', state)
-
-    def _delete_state_information(self, msg):
+    def _delete_state_information(self):
         """Clears out any state information for msg's conversation."""
-        msg.data = {}
-        msg.save_data()
+        self.msg.data = {}
+        self.msg.save_data()
 
     # Methods to handle message's conversation's state.
     def _has_active_query(self, msg):

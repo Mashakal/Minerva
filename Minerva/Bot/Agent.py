@@ -164,7 +164,7 @@ class BotConnectorAgent(AbstractBaseAgent):
         m = msg or self._get_random_string_constant(genre)
         opt_strings = [m]
         for i, v in enumerate(opts):
-            opt_strings.append('. '.join([str(i), '{}'.format(v)]))
+            opt_strings.append('. '.join([str(i + 1), '{}'.format(v)]))
         s = '  \n'.join(opt_strings)
         return self.say(s)
 
@@ -358,7 +358,7 @@ class ConsoleAgent(AbstractBaseAgent):
         while not opt:
             # Negative acknowledgement and ask the message again.
             self.say("I don't understand, {}".format(message))
-            opt = self._validate_from_clarify(self._prompt(), opts)
+            opt = self.validate_from_clarify(self._prompt(), opts)
 
         # If no option was correct.
         if opt == 'None':
@@ -370,7 +370,7 @@ class ConsoleAgent(AbstractBaseAgent):
 
         return opt
     
-    def _validate_from_clarify(self, ans, opts):
+    def validate_from_clarify(self, ans, opts):
         """Called to validate user's input after a call to method clarify.
             
         Validates that the user's input matches one of opts.  Returns a set

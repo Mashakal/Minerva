@@ -78,17 +78,16 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
 
     # Entry.
-    def analyze(self, json, process_data):
+    def analyze(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
         self.data = self._format_data(json)
         self._print_from_data() # For development.
         try:
             func = self._HANDLERS[self.data['intent']]
-            func = self.test_api_learn_about_topic
         except KeyError:
             func = self._HANDLERS['None']
         finally:
-            return func(process_data)
+            return func()
 
 
     # Utility functions.
@@ -181,7 +180,7 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Procedure when the intent is Learn About Topic."""
         # Find all paths for any topic of interest found in the user's query.
         interests = ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']
-        longest_paths = self.get_all_longest_paths(interests)
+        longest_paths = self._longest_paths(interests)
         
         if not longest_paths:
             # Check if we have anything to go on.
@@ -232,30 +231,25 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def analyze(self):
         pass
 
-    def interpret(self, state_data):
-        if not 'state' in state_data:
+    def interpret(self, data):
+        self.data = data
+        if data['status'] == InterpreterStatus.Pending:
             # This is a new query.
-            self.interp_data = {}
-            self.interp_data['json'] = state_data['query_json']
-            self.interp_data['json_data'] = self._format_data(self.interp_data['json'])
-            self.interp_data['proc_index'] = 0
-        else:
-            self.interp_data = state_data
+            self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
+            self.data['proc_index'] = 0
+            self._print_from_data()
 
         # Create the needed intent handler instance.
-        intent_handler = LearnAboutTopicHandler(self, self.interp_data)
-        
-        # Set the interpreter state to working.
-        #self.interp_data.set_state('working')
+        intent_handler = LearnAboutTopicHandler(self, self.data)
 
-        while intent_handler.msg_data['status'] == 'working':
+        while intent_handler.data['status'] == InterpreterStatus.Working:
             intent_handler.run_process()
 
-        return intent_handler.get_data()
+        return intent_handler.data
 
     def _format_data(self, json):
         """Formats the raw json into a more easily accessible dictionary."""
-        return {
+        data = {
             # Meta keys - these point to dictionaries.
             'intents': json['intents'],
             'entities': json['entities'],
@@ -273,6 +267,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'single_jargon': self._literals_given_type('Jargon::Single Word', json),
             'solve_problem_triggers': self._literals_given_parent_type('Solve Problem Triggers::', json)
         }
+        # Cannot serialize empty sets.
+        return {k: v or None for k,v in data.items()}
 
     def _longest_paths(self, paths):
         """Returns a list of all paths whose size is equal to the longest."""
@@ -291,8 +287,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         """
         all_paths = {}
+        triggers = self.data['luis_data']['formatted']
+        print("Interests are: {}".format(interests))
         for interest in interests:
-            path = self._info.get_paths(self.interp_data['json_data'][interest])
+            path = self._info.get_paths(self.data['luis_data']['formatted'][interest])
             path = self._info.remove_subpaths(path)
             all_paths[interest] = path
         return all_paths
@@ -319,6 +317,17 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return False
         return True
 
+    def _print_from_data(self):
+        """Prints a predefined set of information from self.data.
+        
+        This method can easily be overriden to print out whatever is pertinent
+        for your application.
+        
+        """
+        for key in ['query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']:
+            print ("  {0}:\t{1}".format(key.upper(), self.data['luis_data']['formatted'][key]))
+        print()
+
     # Intent processes.
     def get_all_longest_paths(self, interests):
         """Returns a list of all of the longest paths in a given set of paths.
@@ -331,7 +340,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         filtered_paths = self._info.remove_subpaths(all_paths)
         return {
             'longest_paths': self._longest_paths(filtered_paths),
-            'next': 'continue'
+            'next': Next.Continue
         }
 
     def verify_paths_found(self, paths):
@@ -340,7 +349,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return {'next': 'continue'}
         else:
             return {
-                'next': 'fail',
+                'next': Next.Failure,
                 'post': '  \n'.join(["Luis didn't find any keywords in your query, I'm sorry.",
                                      '  \n',
                                     "In the future, I'll be able to search StackOverflow for you."])
@@ -355,14 +364,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         """
         return {
-            'next': 'continue',
+            'next': Next.Continue,
             'topics': [self._topic_from_path(p) for p in paths]
         }
 
     def give_acknowledgement(self, topics):
         """Output a message acknowledging the topics."""
         return {
-            'next': 'continue',
+            'next': Next.Continue,
             'post': self._agent.acknowledge(topics)
         }
 
@@ -390,7 +399,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         _ret = {
             'complete_paths': completes,
             'incomplete_paths': incompletes,
-            'next': 'continue'
+            'next': Next.Continue
         }
         return  _ret
 
@@ -398,7 +407,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Get url for all complete paths."""
         urls = {topic: self._info.traverse_keys(paths[i]) for i, topic in enumerate(topics)}
         return {
-            'next': 'continue',
+            'next': Next.Continue,
             'urls': urls
         }
 
@@ -407,22 +416,9 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         reply = '  \n'.join(['Visit the following:'] + urls_list)
         return {
             'post': reply,
-            'next': 'complete'
+            'next': Next.Complete
         }
-
-    def complete_unfinished_paths(self, path):
-        """Asks the user where to go from here."""
-        path = unfinished_paths[current_path_index]
-        end = self._info.traverse_keys(path)
-        options = [k for k in end]
-        reply = self._agent.give_options(options)
-        return {
-            'next': 'waiting',
-            'post': reply,
-            'options': options,
-            'current_path_index': current_path_index
-        }
-    
+   
     def check_input_on_unfinished_path(self, options, input):
         """True when the input is valid."""
         try:
@@ -438,20 +434,22 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         fail_message = "{} is not a valid input.  Please enter a number from 1-{}".format(input, len(options))
         if passed:
             return {
-                'next': 'continue',
+                'next': Next.Continue,
                 'chosen_opt': options[n - 1]
             }
         else:
             return {
-                'next': 'waiting',
+                'next': Next.WaitThenStay,
                 'post': fail_message,
             }
 
     def add_key_to_path(self, incomplete_paths, path_index, chosen_opt):
         """Adds the chosen opt (key) to the incomplete path."""
         incomplete_paths[path_index].append(chosen_opt)
+        _ret = {'next': Next.Reroute, 'reroute': {'f_attr': 'complete_paths'}}
+        return _ret
 
-    def complete_paths(self, incomplete_paths, path_index=0):
+    def complete_paths(self, incomplete_paths, path_index):
         _ret = {}
         # Check whether or not we need to do anything.
         while path_index < len(incomplete_paths):
@@ -467,6 +465,12 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         # Reroute to get_all_topics when all paths have been completed.
         _ret['next'] = Next.Reroute
         _ret['reroute'] = {'f_attr': 'combine_path_lists'}
+        return _ret
+
+    def combine_path_lists(self, incomplete, complete):
+        """Combines the incomplete adn complete list."""
+        complete = incomplete + complete
+        return {'next': Next.Continue}
 
 
 @unique
@@ -485,49 +489,69 @@ class Next(Enum):
     Reroute = 5
 
 
+@unique
+class InterpreterStatus(Enum):
+    # Currently in process.
+    Working = 0
+    # Interpretation finished unsuccessfully.
+    Failed = 1
+    # Interpretation finished successfully.
+    Complete = 2
+    # Waiting for input.
+    Waiting = 3
+    # A new query needs started.
+    Pending = 4
+
+
 class LearnAboutTopicHandler:
     """Handler for intent Learn About Topic."""
 
     def __init__(self, obj, data):
         self.obj = obj
-        self.variables = {
-            'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
-        }
-        self._data = {'variables': self.variables}
         self.procedures = [
-            # (Function_Attribute, [data_variable_names], [input_vars])
-            ('get_all_longest_paths', ['interests'], []),
-            ('verify_paths_found', ['longest_paths'], []),
-            ('evaluate_paths', ['longest_paths'], []),
-            ('get_all_topics', ['complete_paths'], []),
-            ('get_url_items', ['topics', 'complete_paths'], []),
-            ('suggest_urls', ['urls'], [])
-            #('complete_unfinished_paths', ['unfinished_paths', 'current_path_index']),
-            #('check_input_on_unfinished_path', ['input', 'options'])
-        ]
-        self.proc_index = data['proc_index']
-        self.msg_data = data
-        self.msg_data['status'] = 'working'
-        
-    def get_data(self):
-        """Updates and returns the handler's data."""
-        self._data['variables'] = self.variables
-        self.msg_data['proc_index'] = self.proc_index
-        self.msg_data.update(self._data)
-        return self.msg_data
+            # (Function_Attribute, [data_variable_names], is_msg_needed)
+            ('get_all_longest_paths', ['interests'], False),
+            ('verify_paths_found', ['longest_paths'], False),
+            ('evaluate_paths', ['longest_paths'], False),
+            ('complete_paths', ['incomplete_paths', 'path_index'], False),
+            ('check_input_on_unfinished_path', ['options'], True),
+            ('add_key_to_path', ['incomplete_paths', 'path_index', 'chosen_opt'], False),
+            ('combine_path_lists', ['incomplete_paths', 'complete_paths'], False),
+            ('get_all_topics', ['complete_paths'], False),
+            ('get_url_items', ['topics', 'complete_paths'], False),
+            ('suggest_urls', ['urls'], False)]
+        self._load_from_data(data)
 
     def run_process(self):
         """Runs the current process."""
         proc = self.procedures[self.proc_index]
-        f_attr, v_attr, g_attr = proc
+        f_attr, v_attr, needs_message = proc
         print("About to try running {}.".format(f_attr))
-        print("Args are: {}".format(*[self.variables[attr] for attr in v_attr]))
-        ret = getattr(self.obj, f_attr)(*[self.variables[attr] for attr in v_attr])
+        args = [self.vars[attr] for attr in v_attr]
+        if needs_message:
+            args.append(self.data['msg_text'])
+        print("Args are: {}".format(*args))
+        ret = getattr(self.obj, f_attr)(*args)
         print("Returned by {}".format(f_attr))
         print(ret)
         print()
         self._handle_return(ret)
         self._handle_next(ret)
+            
+    @property
+    def vars(self):
+        return self.data['variables']
+
+    def _load_from_data(self, data):
+        """Loads the needed information from the data passed in during instantiation."""
+        self.data = data
+        self.data['status'] = InterpreterStatus.Working
+        if not 'variables' in data:
+            self.data['variables'] = {
+                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']}
+            # SETUP DEFAULT VALUES:
+            self.proc_index = 0
+            self.vars['path_index'] = 0
 
 
     # PRIVATE METHODS
@@ -542,16 +566,18 @@ class LearnAboutTopicHandler:
         # Update variables
         for attr in ret:
             if attr not in KEY_ATTRS:
-                self.variables[attr] = ret[attr]
+                self.vars[attr] = ret[attr]
 
     def _handle_next(self, ret):
         """Determine what to do after a process has been ran."""
         if ret['next'] == Next.Failure:
-            self.msg_data['status'] = 'failed'
+            self.data['status'] = InterpreterStatus.Failed
         elif ret['next'] == Next.Complete:
-            self.msg_data['status'] = 'complete'
+            self.data['status'] = InterpreterStatus.Complete
         elif ret['next'] == Next.WaitThenStay:
-            self.msg_data['status'] = 'wait_then_stay'
+            self.data['status'] = InterpreterStatus.Waiting
+        elif ret['next'] == Next.WaitThenContinue:
+            self.data['status'] = InterpreterStatus.Waiting
         elif ret['next'] == Next.Reroute:
             self._reroute(ret['reroute'])
         else:
@@ -571,8 +597,8 @@ class LearnAboutTopicHandler:
     def _add_outgoing_message(self, message):
         """Adds a message to the outgoing list."""
         try:
-            msgs = self.msg_data['outgoing']
+            msgs = self.data['outgoing']
         except KeyError:
             msgs = []
         msgs.append(message)
-        self.msg_data['outgoing'] = msgs
+        self.data['outgoing'] = msgs

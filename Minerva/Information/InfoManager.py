@@ -112,6 +112,8 @@ class InfoManager:
     def remove_subpaths(self, paths):
         """Removes any path within paths that is a subpath of any other path."""
         # Algorithm is much simpler when the list of paths is sorted.
+        if not paths:
+            return []
         paths.sort()
         # Find all subpaths, i.e. where paths[i] is a sublist of paths[i + 1].
         subpaths = [paths[i] for i in range(len(paths) - 1) \
@@ -121,7 +123,9 @@ class InfoManager:
 
     def get_paths(self, trigs):
         """Returns a list of paths given a list of triggers."""
-        return [self._trigger_map[t] for t in trigs if t in self._trigger_map]
+        if trigs:
+            return [self._trigger_map[t] for t in trigs if t in self._trigger_map]
+        return None
 
     def _map_triggers_to_paths(self):
         """Returns a dictionary of triggers as key and their paths as values.
