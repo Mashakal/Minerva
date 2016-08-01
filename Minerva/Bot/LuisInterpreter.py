@@ -233,16 +233,17 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def interpret(self, data):
         self.data = data
-        if data['status'] == InterpreterStatus.Pending:
+        if data['status'] is InterpreterStatus.Pending:
+        #if data['status'] == 'pending':
             # This is a new query.
             self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
-            self.data['proc_index'] = 0
+            #self.data['variables']['proc_index'] = 0
             self._print_from_data()
 
         # Create the needed intent handler instance.
         intent_handler = LearnAboutTopicHandler(self, self.data)
 
-        while intent_handler.data['status'] == InterpreterStatus.Working:
+        while intent_handler.data['status'] is InterpreterStatus.Working:
             intent_handler.run_process()
 
         return intent_handler.data
@@ -388,11 +389,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             end = self._info.traverse_keys(path)
             if not isinstance(end, str):
                 # Then end is a dict of specializations.
-                if 'Home' in end:
-                    path.append('Home')
-                    completes.append(path)
-                else:
-                    incompletes.append(path)
+                #if 'Home' in end:
+                #    path.append('Home')
+                #    completes.append(path)
+                incompletes.append(path)
             else:
                 completes.append(path)
 
@@ -459,6 +459,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 _ret['post'] = self._get_unfinished_path_message(path)
                 _ret['next'] = Next.WaitThenContinue
                 _ret['path_index'] = path_index
+                _ret['options'] = [t for t in self._info.traverse_keys(path)]
+                print("Options are: {}".format(_ret['options']))
                 return _ret
             else:
                 path_index += 1
@@ -470,7 +472,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def combine_path_lists(self, incomplete, complete):
         """Combines the incomplete adn complete list."""
         complete = incomplete + complete
-        return {'next': Next.Continue}
+        return {'next': Next.Continue, "complete_paths": complete}
 
 
 @unique
@@ -498,9 +500,10 @@ class InterpreterStatus(Enum):
     # Interpretation finished successfully.
     Complete = 2
     # Waiting for input.
-    Waiting = 3
+    WaitingToStay = 3
+    WaitingToContinue = 4
     # A new query needs started.
-    Pending = 4
+    Pending = 5
 
 
 class LearnAboutTopicHandler:
@@ -518,41 +521,40 @@ class LearnAboutTopicHandler:
             ('add_key_to_path', ['incomplete_paths', 'path_index', 'chosen_opt'], False),
             ('combine_path_lists', ['incomplete_paths', 'complete_paths'], False),
             ('get_all_topics', ['complete_paths'], False),
+            ('give_acknowledgement', ['topics'], False),
             ('get_url_items', ['topics', 'complete_paths'], False),
             ('suggest_urls', ['urls'], False)]
         self._load_from_data(data)
 
     def run_process(self):
         """Runs the current process."""
-        proc = self.procedures[self.proc_index]
+        proc = self.procedures[self.data['variables']['proc_index']]
         f_attr, v_attr, needs_message = proc
         print("About to try running {}.".format(f_attr))
-        args = [self.vars[attr] for attr in v_attr]
+        args = [self.data['variables'][attr] for attr in v_attr]
         if needs_message:
             args.append(self.data['msg_text'])
         print("Args are: {}".format(*args))
         ret = getattr(self.obj, f_attr)(*args)
         print("Returned by {}".format(f_attr))
         print(ret)
-        print()
+        print("\nVariables are now:\n{}\n\n".format(self.data['variables']))
         self._handle_return(ret)
         self._handle_next(ret)
-            
-    @property
-    def vars(self):
-        return self.data['variables']
 
     def _load_from_data(self, data):
         """Loads the needed information from the data passed in during instantiation."""
         self.data = data
-        self.data['status'] = InterpreterStatus.Working
-        if not 'variables' in data:
+        if data['status'] is InterpreterStatus.Pending:
+            # Initialize.
             self.data['variables'] = {
-                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']}
-            # SETUP DEFAULT VALUES:
-            self.proc_index = 0
-            self.vars['path_index'] = 0
-
+                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
+                'proc_index': 0,
+                'path_index': 0
+                }
+        elif data['status'] is InterpreterStatus.WaitingToContinue:
+            self.data['variables']['proc_index'] += 1
+        self.data['status'] = InterpreterStatus.Working
 
     # PRIVATE METHODS
         
@@ -566,22 +568,23 @@ class LearnAboutTopicHandler:
         # Update variables
         for attr in ret:
             if attr not in KEY_ATTRS:
-                self.vars[attr] = ret[attr]
+                self.data['variables'][attr] = ret[attr]
 
     def _handle_next(self, ret):
-        """Determine what to do after a process has been ran."""
+        """Determine what to do after a process has been run."""
         if ret['next'] == Next.Failure:
             self.data['status'] = InterpreterStatus.Failed
         elif ret['next'] == Next.Complete:
             self.data['status'] = InterpreterStatus.Complete
         elif ret['next'] == Next.WaitThenStay:
-            self.data['status'] = InterpreterStatus.Waiting
+            self.data['status'] = InterpreterStatus.WaitingToStay
         elif ret['next'] == Next.WaitThenContinue:
-            self.data['status'] = InterpreterStatus.Waiting
+            self.data['status'] = InterpreterStatus.WaitingToContinue
         elif ret['next'] == Next.Reroute:
             self._reroute(ret['reroute'])
         else:
-            self.proc_index += 1
+            # Go to the next process.
+            self.data['variables']['proc_index'] += 1
 
     def _reroute(self, reroute_data):
         """Changes the current procedure index to match the f_attr of reroute_data.
@@ -592,7 +595,7 @@ class LearnAboutTopicHandler:
         """
         for i, proc in enumerate(self.procedures):
             if proc[0] == reroute_data['f_attr']:
-                self.proc_index = i
+                self.data['variables']['proc_index'] = i
 
     def _add_outgoing_message(self, message):
         """Adds a message to the outgoing list."""

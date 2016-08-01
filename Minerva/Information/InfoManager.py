@@ -65,6 +65,7 @@ class InfoManager:
         """Traverses the links dictionary of the current module by way of keys.
 
         Returns the value of the deepest key in keys.
+
         """
         v = self._mod.LINKS  # Start at the root of the links dict.
         # Find the final value pointed to by keys.
@@ -160,19 +161,8 @@ class ProjectSystemInfoManager(InfoManager):
 
         """
         last = url.rfind('/')
-        if 0 <= last:
+        if last > -1:
             s = url[last + 1:]
             s = s.replace('-', ' ')
             s = s.replace('#', ': ')
         return s or False
-
-
-def main():
-    im = ProjectSystemInfoManager('PTVS')
-    im.gen_file_from_info('testing_gen_file.txt', # Filename.
-                          im.set_from_key_values, # Function to get info from.
-                          k_to_collect='Triggers')# Kwargs to pass to function.
-
-
-if __name__ == "__main__":
-    main()

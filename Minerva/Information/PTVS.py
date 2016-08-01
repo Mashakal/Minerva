@@ -19,7 +19,6 @@ LINKS = {
     "Contributing": "https://github.com/Microsoft/PTVS/wiki/Contributing-to-PTVS,",
     "Build Instructions": "https://github.com/Microsoft/PTVS/wiki/Build-Instructions-for-PTVS",
     "Tutorials": {
-        "Home": "https://github.com/Microsoft/PTVS/wiki#tutorials",
         "Bottle and Azure Table Storage": "https://github.com/Microsoft/PTVS/wiki/Bottle-and-Azure-Table-Storage-on-Azure",
         "Bottle and MongoDB": "https://github.com/Microsoft/PTVS/wiki/Bottle-and-MongoDB-on-Azure",
         "Flask and Azure Table Storage": "https://github.com/Microsoft/PTVS/wiki/Flask-and-Azure-Table-Storage-on-Azure",

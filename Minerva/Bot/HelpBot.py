@@ -1,4 +1,6 @@
 import sys
+import json
+import pickle
 from enum import Enum, unique
 
 import Agent
@@ -73,21 +75,30 @@ class Conversation:
     def choose_action(self):
         # Mark this message as the one currently being processed.
         #self._set_as_current(self.msg)
+        
+        # Deserialize to create instances of custom types.
+        self._deserialize_data()
 
         # For debugging.
-        self._delete_state_information()
+        #self._delete_state_information()
 
         # Load data.
-        self.convo_data = self._load_conversation_data()
+        #self.convo_data = self._load_conversation_data()
         self.luis_data = self._load_luis_data()
         self.interp_data = self._load_interpreter_data()
+        self.interp_data['luis_data'] = self.luis_data
 
-        print("\nConversation data:")
-        print(self.convo_data)
-        print("\nLuis data:")
-        print(self.luis_data)
-        print("\nInterp data:")
-        print(self.interp_data)
+        #print("\nConversation data:")
+        #print(json.dumps(self.convo_data, indent=4, sort_keys=True, cls=DataEncoder))
+        #print("\nLuis data:")
+        #print(json.dumps(self.luis_data, indent=4, sort_keys=True, cls=DataEncoder))
+        try:
+            self.interp_data['variables']
+        except KeyError:
+            pass
+        else:
+            print("\nVARIABLES at the start:")
+            print(json.dumps(self.interp_data['variables'], indent=4, sort_keys=True, cls=DataEncoder))
 
         print("\n\n")
 
@@ -109,7 +120,7 @@ class Conversation:
             print('We should retain the state info.')
             self._save_all_data()
         return
-       
+      
     def _save_interpreter_data(self):
         """Saves the conversation's interpreter data."""
         self.msg.data['interpreter'] = self.interp_data
@@ -117,15 +128,26 @@ class Conversation:
 
     def _save_conversation_data(self):
         """Saves the conversation's data."""
-        self.msg.data['conversation'] = self.convo_data
+        self.msg.data['conversation']['data'] = self.convo_data
         self.msg.save_data()
 
     def _save_all_data(self):
-        """Saves all data items."""
-        self.msg.data['conversation'] = self.convo_data
+        """Saves and encodes all data items."""
+        #self.msg.data['conversation'] = self.convo_data
+        print("VARIABLES when being saved:")
+        print(json.dumps(self.interp_data['variables'], cls=DataEncoder, indent=4, sort_keys=True))
+        print("STATUS on save: {}".format(self.interp_data['status']))
         self.msg.data['interpreter'] = self.interp_data
         self.msg.data['luis_data'] = self.luis_data
+        self.msg.data = json.dumps(self.msg.data, cls=DataEncoder)
         self.msg.save_data()
+
+    def _deserialize_data(self):
+        """Deserializes a help bot data encoded json."""
+        #print(json.dumps(self.msg.data, cls=DataEncoder, indent=4, sort_keys=True))
+        print(self.msg.data)
+        if self.msg.data:
+            self.msg.data = json.loads(self.msg.data, object_hook=DataEncoder.decode_hook)
 
     def _load_conversation_data(self):
         try:
@@ -142,7 +164,6 @@ class Conversation:
             interp_data = {'status': InterpreterStatus.Pending}
         finally:
             interp_data.update({'msg_text': self.msg.text})
-            interp_data['luis_data'] = self.luis_data
             return interp_data
 
     def _save_luis_data(self):
@@ -154,8 +175,7 @@ class Conversation:
             luis_data = self.msg.data['luis_data']
         except KeyError:
             luis_data = self.query_luis(self.msg.text)
-        finally:
-            return luis_data
+        return luis_data
 
     def _send_outgoing(self):
         """Sends any messages added to the outgoing list during interpretation."""
@@ -166,6 +186,9 @@ class Conversation:
         else:
             for m in outbox:
                 self.msg.post(m)
+            # Cleanup.
+            del self.interp_data['outgoing']
+
 
     def _delete_state_information(self):
         """Clears out any state information for msg's conversation."""
@@ -222,3 +245,45 @@ class Conversation:
             pass
         finally:
             msg.save_data()
+
+
+
+#region JSON Encoding/Decoding
+
+class DataEncoder(json.JSONEncoder):
+
+    """A customized json encoder for help bot data."""
+
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return {"__enum__": str(obj)}
+        elif isinstance(obj, set):
+            return {"__set__": str(obj)}
+        return json.JSONEncoder.default(self, obj)
+
+    @classmethod
+    def decode_hook(cls, obj):
+        if "__enum__" in obj:
+            name, member = obj["__enum__"].split('.')
+            return getattr(globals()[name], member)
+        elif "__set__" in obj:
+            return eval(cls._create_set_string(obj["__set__"]))
+        return obj
+
+    @staticmethod
+    def _create_set_string(set_string):
+        """Returns a string formatted for use with eval, to create a set.
+        
+        Examples of set_string when passed into the function are
+            "{'Remote Debugging', 'Mixed-Mode Debugging'}"
+            "{'PyLint'}"
+
+        And being returned:
+            "set(('Remote Deubbing', Mixed-Mode Debugging'))"
+            "{'PyLint'}"
+
+        """
+        trimmed_string = set_string[1:-1]
+        if trimmed_string.count(' ') > 1:
+            return ''.join(['set((', trimmed_string, '))'])
+        return set_string

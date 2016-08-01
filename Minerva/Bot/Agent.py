@@ -41,16 +41,6 @@ class _AbstractAgent(abc.ABC):
         """Asks the user to make a selection based on the given options."""
         raise NotImplementedError
 
-    @abc.abstractclassmethod
-    def validate_from_give_options(user_response, num_options):
-        """Validates the user's response after give_options is called."""
-        raise NotImplementedError
-
-    @abc.abstractclassmethod
-    def validate_from_clarify(user_response, options):
-        """Validates the user's response after clairfy is called."""
-        raise NotImplementedError
-
 
 class AbstractBaseAgent(_AbstractAgent):
 
@@ -101,11 +91,6 @@ class AbstractBaseAgent(_AbstractAgent):
         num = num_strings if not with_conj else num_strings - 1
         return ', '.join(['{}'] * num)
 
-
-class BotConnectorAgent(AbstractBaseAgent):
-
-    """An agent for the Microsoft Bot Connector."""
-
     def _is_word_type(self, type_, word):
         """Returns True if word is of type type_.
 
@@ -114,6 +99,11 @@ class BotConnectorAgent(AbstractBaseAgent):
 
         """
         return word.lower() in DialogueStrings.ALL_STRINGS[type_]
+
+
+class Agent(AbstractBaseAgent):
+
+    """An operational bot agent whose interactions return strings."""
 
     def say(self, s, trailing_newline=False):
         """Print a message from the bot to the standard output."""
@@ -167,10 +157,6 @@ class BotConnectorAgent(AbstractBaseAgent):
             opt_strings.append('. '.join([str(i + 1), '{}'.format(v)]))
         s = '  \n'.join(opt_strings)
         return self.say(s)
-
-
-    def validate_from_give_options(user_response, num_options):
-        pass
 
     def clarify(self, opts, conj='or'):
         """Returns a choice between opts after being presented to the user.
@@ -242,8 +228,8 @@ class BotConnectorAgent(AbstractBaseAgent):
         # TODO: Log how many valid input are being returned.
         return chosen
 
-        
-class ConsoleAgent(AbstractBaseAgent):
+
+class ConsoleAgent(Agent):
 
     """An agent for a desktop/console applciation."""
 
@@ -252,15 +238,6 @@ class ConsoleAgent(AbstractBaseAgent):
         r = input(">>> ")
         print()
         return r
-
-    def _is_word_type(self, type_, word):
-        """Returns True if word is of type type_.
-
-        Searches DialogueStrings.ALL_STRINGS[type_] for
-        word and returns True when found, else False.
-
-        """
-        return word.lower() in DialogueStrings.ALL_STRINGS[type_]
 
     def say(self, s, trailing_newline=True):
         """Print a message from the bot to the standard output."""
@@ -426,6 +403,20 @@ class VSConsoleAgent(ConsoleAgent):
         """Initiates an interaction with the help bot."""
         m = msg or self._get_random_string_constant('start')
         return self.ask(m)
+
+
+class VSBotConnectorAgent(Agent):
+
+    """A Visual Studio agent for the Microsoft Bot Connector."""
+
+    def suggest_url(self, *args, genre='suggest_url'):
+        pass
+
+    def suggest_urls(self):
+        pass
+
+    def start_query(self, msg=None):
+        pass
 
 
 def main():
