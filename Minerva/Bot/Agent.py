@@ -103,7 +103,7 @@ class AbstractBaseAgent(_AbstractAgent):
 
 class Agent(AbstractBaseAgent):
 
-    """An operational bot agent whose interactions return strings."""
+    """A base agent whose interactions return strings."""
 
     def say(self, s, trailing_newline=False):
         """Print a message from the bot to the standard output."""
@@ -229,6 +229,43 @@ class Agent(AbstractBaseAgent):
         return chosen
 
 
+class VSAgent(Agent):
+
+    """A base agent for Visual Studio Bots."""
+
+    def suggest_url(self, *args, genre='suggest_url'):
+        s = self._get_random_string_constant(genre)
+        return self.say(s.format(*args))
+
+    def suggest_urls(self, urls, topics):
+        if len(urls) != len(topics):
+            raise ValueError("Each url must have a corresponding topic, and vice versa.")
+        g = 'suggest_urls' if len(urls) > 1 else 'suggest_url'
+        suggestions = []
+        for i, url in enumerate(urls):
+            suggestions.append(self.suggest_url(url, topics[i], genre=g))
+        return '\n'.join(suggestions)
+
+    def start_query(self, msg=None):
+        m = msg or self._get_random_string_constant('start')
+        return self.ask(m)
+
+
+class VSBotConnectorAgent(VSAgent):
+
+    """A Visual Studio agent for the Microsoft Bot Connector."""
+
+    def suggest_url(self, *args, genre='suggest_url'):
+        s = self._get_random_string_constant(genre)
+        if len(args) == 2:
+            print("args are: {}".format(args))
+            # Format with markdown.
+            url, topic = args
+            url_str = ''.join(['[', topic, '](', url, ')'])
+            return self.say(s.format(url_str, topic))
+        return self.say(s.format(*args))
+
+#Deprecated
 class ConsoleAgent(Agent):
 
     """An agent for a desktop/console applciation."""
@@ -378,7 +415,7 @@ class ConsoleAgent(Agent):
         # TODO: Log how many valid input are being returned.
         return chosen
 
-
+#Deprecated
 class VSConsoleAgent(ConsoleAgent):
 
     """A Visual Studio console bot. """
@@ -403,28 +440,3 @@ class VSConsoleAgent(ConsoleAgent):
         """Initiates an interaction with the help bot."""
         m = msg or self._get_random_string_constant('start')
         return self.ask(m)
-
-
-class VSBotConnectorAgent(Agent):
-
-    """A Visual Studio agent for the Microsoft Bot Connector."""
-
-    def suggest_url(self, *args, genre='suggest_url'):
-        pass
-
-    def suggest_urls(self):
-        pass
-
-    def start_query(self, msg=None):
-        pass
-
-
-def main():
-    agent = VSConsoleAgent()
-    options = ['Building', 'Cloud Project']
-    options = ['Cloud Project']
-    agent.suggest_url('some_url', 'Cloud Project', genre='suggest_urls')
-
-
-if __name__ == "__main__":
-    main()

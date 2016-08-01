@@ -58,7 +58,7 @@ class Conversation:
 
     def __init__(self, project_system, msg):
         self.project_system = project_system
-        self.agent = Agent.BotConnectorAgent()
+        self.agent = Agent.VSBotConnectorAgent()
         self.msg = msg
 
     def initiate_conversation(self):
@@ -88,10 +88,6 @@ class Conversation:
         self.interp_data = self._load_interpreter_data()
         self.interp_data['luis_data'] = self.luis_data
 
-        #print("\nConversation data:")
-        #print(json.dumps(self.convo_data, indent=4, sort_keys=True, cls=DataEncoder))
-        #print("\nLuis data:")
-        #print(json.dumps(self.luis_data, indent=4, sort_keys=True, cls=DataEncoder))
         try:
             self.interp_data['variables']
         except KeyError:
@@ -100,13 +96,9 @@ class Conversation:
             print("\nVARIABLES at the start:")
             print(json.dumps(self.interp_data['variables'], indent=4, sort_keys=True, cls=DataEncoder))
 
-        print("\n\n")
-
         # Interpret.
         self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
         self.interp_data = self.interpreter.interpret(self.interp_data)
-        
-        print("\n\n")
         
         # Post-interpretation administrative tasks.
         self._send_outgoing()

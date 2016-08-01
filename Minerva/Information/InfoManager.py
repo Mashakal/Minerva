@@ -123,7 +123,7 @@ class InfoManager:
         return paths
 
     def get_paths(self, trigs):
-        """Returns a list of paths given a list of triggers."""
+        """Returns a list of paths given a list of trigger literals from a user's query."""
         if trigs:
             return [self._trigger_map[t] for t in trigs if t in self._trigger_map]
         return None

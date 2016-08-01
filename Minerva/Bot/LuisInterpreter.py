@@ -1,7 +1,9 @@
+import string
 import sys
 import abc
 import itertools
 import collections
+from nltk.corpus import stopwords
 from enum import Enum, unique
 
 import InfoManager
@@ -280,6 +282,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             max_len = 0
         return list(filter(lambda x: len(x) == max_len, paths))
     
+    def _get_all_paths_with_query(self, query):
+        # Get all query words that are not also nltk.corpus.stopwords
+        filter_out = set(stopwords.words('english'))
+        query_words = {w.lower() for w in query.strip(string.punctuation).split(" ")}
+        filtered_words = query_words - filter_out
+        print("The query words are: {}".format(query_words))
+        return {'next': Next.Continue}
+
     def _get_all_paths(self, interests):
         """Returns a dict of interest/path pairs.
        
@@ -388,14 +398,9 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for path in paths:
             end = self._info.traverse_keys(path)
             if not isinstance(end, str):
-                # Then end is a dict of specializations.
-                #if 'Home' in end:
-                #    path.append('Home')
-                #    completes.append(path)
                 incompletes.append(path)
             else:
                 completes.append(path)
-
         _ret = {
             'complete_paths': completes,
             'incomplete_paths': incompletes,
@@ -411,9 +416,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'urls': urls
         }
 
-    def suggest_urls(self, urls):
-        urls_list = list(urls.values())
-        reply = '  \n'.join(['Visit the following:'] + urls_list)
+    def suggest_urls(self, url_dict, topics):
+        reply = self._agent.suggest_urls([v for k,v in url_dict.items()], topics)
         return {
             'post': reply,
             'next': Next.Complete
@@ -513,6 +517,7 @@ class LearnAboutTopicHandler:
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
+            ('_get_all_paths_with_query', [], True),
             ('get_all_longest_paths', ['interests'], False),
             ('verify_paths_found', ['longest_paths'], False),
             ('evaluate_paths', ['longest_paths'], False),
@@ -523,7 +528,7 @@ class LearnAboutTopicHandler:
             ('get_all_topics', ['complete_paths'], False),
             ('give_acknowledgement', ['topics'], False),
             ('get_url_items', ['topics', 'complete_paths'], False),
-            ('suggest_urls', ['urls'], False)]
+            ('suggest_urls', ['urls', 'topics'], False)]
         self._load_from_data(data)
 
     def run_process(self):
