@@ -8,8 +8,6 @@
 
 NAME = "PTVS"
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++3.
-
 LINKS = {
     # All key MUST lead to either a url or a dictionary of keys that lead to a url.
     "WIKI": "https://github.com/Microsoft/PTVS/wiki",
@@ -165,7 +163,7 @@ KEY_MAP = {
             'Triggers': {'remote debugging', 'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
         },
         'Basic Debugging': {
-            'Triggers': {'basic debugging'}
+            'Triggers': {'basic debugging', 'debugging', 'debug', 'debugger', 'debuggor'}
         },
         'Debugging with a Project': {
             'Triggers': {'debugging with a project'}
@@ -222,7 +220,7 @@ KEY_MAP = {
     'PyLint': {
         'Triggers': {'pylint', 'py lint', 'linter'}
     },
-    'Azure SDK for Pyhon': {
+    'Azure SDK for Python': {
         'Triggers': {'azure sdk for python', 'azure sdk', 'azure python', 'python azure'}
     },
     'Kinect for Python': {

@@ -1,3 +1,4 @@
+import operator
 import string
 import sys
 import abc
@@ -281,14 +282,39 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             # Raised when paths is an empty set.
             max_len = 0
         return list(filter(lambda x: len(x) == max_len, paths))
-    
-    def _get_all_paths_with_query(self, query):
+
+    def _get_all_topic_matches(self, interests, query):
+        """Returns a list of all topics matched liniently and strictly, along with their scores."""
         # Get all query words that are not also nltk.corpus.stopwords
         filter_out = set(stopwords.words('english'))
         query_words = {w.lower() for w in query.strip(string.punctuation).split(" ")}
+
+        # Get linient scores for topics.
         filtered_words = query_words - filter_out
-        print("The query words are: {}".format(query_words))
-        return {'next': Next.Continue}
+        linient_scores = self._info.liniently_get_scores(filtered_words)
+
+        # Get the strict scores for topics.
+        entities = [self.data['luis_data']['formatted'][interest] for interest in interests]
+        entities = list(filter(None, entities))
+        strict_scores = self._info.strictly_get_scores(entities)
+
+        # Combine the scores.
+        all_scores = {}
+        for k,v in linient_scores.items():
+            if k in strict_scores:
+                all_scores[k] = v + strict_scores[k]
+            else:
+                all_scores[k] = v
+
+
+    def _get_top_scoring_topics(self, interests, top_count, query):
+        
+
+        # Sort and filter the topics.
+        sorted_scores = sorted(all_scores.items(), key=operator.itemgetter(1), reverse=True)
+        top_topics = list(filter(lambda x: x[1] > 1, sorted_scores))[:top_count - 1]
+        
+        return {'next': Next.Continue, 'top_topics': top_topics}
 
     def _get_all_paths(self, interests):
         """Returns a dict of interest/path pairs.
@@ -354,17 +380,13 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'next': Next.Continue
         }
 
-    def verify_paths_found(self, paths):
+    def verify_paths_found(self, top_scoring_topics):
         """True if at least one path was found, otherwise False."""
-        if paths:
+        if top_scoring_topics:
             return {'next': 'continue'}
         else:
-            return {
-                'next': Next.Failure,
-                'post': '  \n'.join(["Luis didn't find any keywords in your query, I'm sorry.",
-                                     '  \n',
-                                    "In the future, I'll be able to search StackOverflow for you."])
-            }
+            return {'next': Next.Failure,
+                    'post': "Luis didn't find any keywords in your query, I'm sorry. In the future, I'll be able to search StackOverflow for you."}
 
     def get_all_topics(self, paths):
         """Returns the most specialized topic within a path.
@@ -386,7 +408,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'post': self._agent.acknowledge(topics)
         }
 
-    def evaluate_paths(self, paths):
+    def evaluate_paths(self, top_scoring_topics):
         """If the path doesn't point to a str, determine where to go next.
         
         When the path does not point to a str, then it points to a dict
@@ -395,6 +417,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         incompletes = []
         completes = []
+        topics = [top_and_score[0] for top_and_score in top_scoring_topics]
+        paths = self._info.get_paths(topics)
         for path in paths:
             end = self._info.traverse_keys(path)
             if not isinstance(end, str):
@@ -404,6 +428,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         _ret = {
             'complete_paths': completes,
             'incomplete_paths': incompletes,
+            'topics': topics,
             'next': Next.Continue
         }
         return  _ret
@@ -517,7 +542,7 @@ class LearnAboutTopicHandler:
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('_get_all_paths_with_query', [], True),
+            ('_get_top_scoring_topics', ['interests', 'top_count'], True),
             ('get_all_longest_paths', ['interests'], False),
             ('verify_paths_found', ['longest_paths'], False),
             ('evaluate_paths', ['longest_paths'], False),
@@ -526,7 +551,7 @@ class LearnAboutTopicHandler:
             ('add_key_to_path', ['incomplete_paths', 'path_index', 'chosen_opt'], False),
             ('combine_path_lists', ['incomplete_paths', 'complete_paths'], False),
             ('get_all_topics', ['complete_paths'], False),
-            ('give_acknowledgement', ['topics'], False),
+            #('give_acknowledgement', ['topics'], False),
             ('get_url_items', ['topics', 'complete_paths'], False),
             ('suggest_urls', ['urls', 'topics'], False)]
         self._load_from_data(data)
@@ -554,6 +579,7 @@ class LearnAboutTopicHandler:
             # Initialize.
             self.data['variables'] = {
                 'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
+                'top_count': 3,
                 'proc_index': 0,
                 'path_index': 0
                 }

@@ -27,6 +27,8 @@ def home():
 @post('/api/messages')
 def root():
     msg = Message(request.json)
+    print("The message is: ")
+    print(msg.text)
 
     #strings = ['  \n'.join(['Some text is here', 'Some more text is here.']) for i in range(1, 5)]
     #output = ''.join(strings)

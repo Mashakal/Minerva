@@ -1,5 +1,6 @@
 import sys
 import importlib
+import itertools
 
 
 class InfoManager:
@@ -18,6 +19,27 @@ class InfoManager:
         
         # Trigger map is module specific.
         self._trigger_map = self._map_triggers_to_paths()
+
+    def liniently_get_scores(self, words):
+        """Returns a dict of count of the number of times a trigger was liniently triggered by words."""
+        scores = {}
+        for k in self._trigger_map:
+            scores[k] = 0
+            for word in words:
+                if word in k.lower().split(' '):
+                    scores[k] += 1
+        return {k:v for k,v in scores.items() if v > 0}
+
+    def strictly_get_scores(self, entities):
+        """Returns a dict of the number of times a trigger was strictly triggered by words."""
+        MATCH_VALUE = 3
+        scores = {}
+        for entity in itertools.chain.from_iterable(entities):
+            for k in self._trigger_map:
+                if entity == k:
+                    scores[k] = entity.count(' ') + MATCH_VALUE
+                    break
+        return {k:v for k,v in scores.items() if v > 0}
 
     def find_path_to_trigger_key(self, literal, path_=None, dict_=None):
         """Returns a list of keys that will lead to information on literal.
