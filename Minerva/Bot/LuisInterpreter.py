@@ -367,7 +367,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
         # Sort and filter the topics.
         sorted_scores = sorted(topic_matches.items(), key=operator.itemgetter(1), reverse=True)
-        top_topics = list(filter(lambda x: x[1] > 1, sorted_scores))[:top_count - 1]
+        top_topics = list(filter(lambda x: x[1] > 0, sorted_scores))[:top_count - 1]
         
         return {'next': Next.Continue, 'top_topics': top_topics}
 

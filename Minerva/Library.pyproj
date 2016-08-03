@@ -32,8 +32,6 @@
     <Compile Include="BotConnector\message.py" />
     <Compile Include="BotConnector\Root.py" />
     <Compile Include="Bot\Agent.py" />
-    <Compile Include="Bot\api.py" />
-    <Compile Include="Bot\app.py" />
     <Compile Include="Bot\DialogueStrings.py">
       <SubType>Code</SubType>
     </Compile>
