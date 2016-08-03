@@ -284,16 +284,16 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return list(filter(lambda x: len(x) == max_len, paths))
 
     def _get_all_topic_matches(self, interests, query):
-        """Returns a list of all topics matched liniently and strictly, along with their scores."""
+        """Returns a dictionary of topic/score pairs."""
         # Get all query words that are not also nltk.corpus.stopwords
         filter_out = set(stopwords.words('english'))
         query_words = {w.lower() for w in query.strip(string.punctuation).split(" ")}
-
-        # Get linient scores for topics.
         filtered_words = query_words - filter_out
+
+        # Use filtered words to get linient scores.
         linient_scores = self._info.liniently_get_scores(filtered_words)
 
-        # Get the strict scores for topics.
+        # Use interested entities to get strict scores.
         entities = [self.data['luis_data']['formatted'][interest] for interest in interests]
         entities = list(filter(None, entities))
         strict_scores = self._info.strictly_get_scores(entities)
@@ -305,16 +305,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 all_scores[k] = v + strict_scores[k]
             else:
                 all_scores[k] = v
-
-
-    def _get_top_scoring_topics(self, interests, top_count, query):
-        
-
-        # Sort and filter the topics.
-        sorted_scores = sorted(all_scores.items(), key=operator.itemgetter(1), reverse=True)
-        top_topics = list(filter(lambda x: x[1] > 1, sorted_scores))[:top_count - 1]
-        
-        return {'next': Next.Continue, 'top_topics': top_topics}
+        return all_scores
 
     def _get_all_paths(self, interests):
         """Returns a dict of interest/path pairs.
@@ -343,9 +334,13 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return path[len(path) - 1]
 
     def _get_unfinished_path_message(self, path):
+        """Returns a string 'give options' message."""
         end = self._info.traverse_keys(path)
         options = [k for k in end]
-        return self._agent.give_options(options)
+        topic = path[len(path) - 1]
+        #self.give_acknowledgement(topic)
+        message = "For {}, which of these is more closely related to what you're asking about?".format(topic)
+        return self._agent.give_options(options, msg=message)
 
     def _is_path_complete(self, path):
         """True if the path is complete, else False."""
@@ -366,6 +361,16 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         print()
 
     # Intent processes.
+    def get_top_scoring_topics(self, interests, top_count, query):
+        """Gets the first top_count topics from all matched topics."""
+        topic_matches = self._get_all_topic_matches(interests, query)
+
+        # Sort and filter the topics.
+        sorted_scores = sorted(topic_matches.items(), key=operator.itemgetter(1), reverse=True)
+        top_topics = list(filter(lambda x: x[1] > 1, sorted_scores))[:top_count - 1]
+        
+        return {'next': Next.Continue, 'top_topics': top_topics}
+
     def get_all_longest_paths(self, interests):
         """Returns a list of all of the longest paths in a given set of paths.
         
@@ -403,21 +408,19 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def give_acknowledgement(self, topics):
         """Output a message acknowledging the topics."""
-        return {
-            'next': Next.Continue,
-            'post': self._agent.acknowledge(topics)
-        }
+        return {'next': Next.Continue,
+                'post': self._agent.acknowledge(topics)}
 
-    def evaluate_paths(self, top_scoring_topics):
+    def evaluate_paths(self, top_topics):
         """If the path doesn't point to a str, determine where to go next.
         
         When the path does not point to a str, then it points to a dict
         whose keys are sub-specializations of the last key (topic) in path.
-                
+        
         """
         incompletes = []
         completes = []
-        topics = [top_and_score[0] for top_and_score in top_scoring_topics]
+        topics = [topic_and_score[0] for topic_and_score in top_topics]
         paths = self._info.get_paths(topics)
         for path in paths:
             end = self._info.traverse_keys(path)
@@ -489,11 +492,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 _ret['next'] = Next.WaitThenContinue
                 _ret['path_index'] = path_index
                 _ret['options'] = [t for t in self._info.traverse_keys(path)]
-                print("Options are: {}".format(_ret['options']))
                 return _ret
             else:
                 path_index += 1
-        # Reroute to get_all_topics when all paths have been completed.
+        # Reroute when all paths have been completed.
         _ret['next'] = Next.Reroute
         _ret['reroute'] = {'f_attr': 'combine_path_lists'}
         return _ret
@@ -542,15 +544,15 @@ class LearnAboutTopicHandler:
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('_get_top_scoring_topics', ['interests', 'top_count'], True),
-            ('get_all_longest_paths', ['interests'], False),
-            ('verify_paths_found', ['longest_paths'], False),
-            ('evaluate_paths', ['longest_paths'], False),
+            ('get_top_scoring_topics', ['interests', 'top_count'], True),
+            #('get_all_longest_paths', ['interests'], False),
+            ('verify_paths_found', ['top_topics'], False),
+            ('evaluate_paths', ['top_topics'], False),
             ('complete_paths', ['incomplete_paths', 'path_index'], False),
             ('check_input_on_unfinished_path', ['options'], True),
             ('add_key_to_path', ['incomplete_paths', 'path_index', 'chosen_opt'], False),
             ('combine_path_lists', ['incomplete_paths', 'complete_paths'], False),
-            ('get_all_topics', ['complete_paths'], False),
+            #('get_all_topics', ['complete_paths'], False),
             #('give_acknowledgement', ['topics'], False),
             ('get_url_items', ['topics', 'complete_paths'], False),
             ('suggest_urls', ['urls', 'topics'], False)]

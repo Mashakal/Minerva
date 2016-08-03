@@ -20,7 +20,7 @@ END = [
 SUGGEST_URLS = [
     # {0} is the url, {1} is the topic.
     "[This link]({0}) is a good resource for {1}.\n",
-    "For {1}, I suggest you visit [this page]({0}).\n",
+    "For {1}, I suggest you visit here: {0}.\n",
     "You'll find information on {1} here:\n{0}.\n"
 ]
 
