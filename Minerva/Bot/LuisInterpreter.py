@@ -420,8 +420,15 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         incompletes = []
         completes = []
+
         topics = [topic_and_score[0] for topic_and_score in top_topics]
         paths = self._info.get_paths(topics)
+        print("Paths is: {}".format(paths))
+        paths = self._info.remove_subpaths(paths)
+        print("The paths are: {}".format(paths))
+        topics = self.get_all_topics(paths)
+        print("The topics are: {}".format(topics))
+
         for path in paths:
             end = self._info.traverse_keys(path)
             if not isinstance(end, str):

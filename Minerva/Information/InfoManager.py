@@ -144,10 +144,10 @@ class InfoManager:
         filter(paths.remove, subpaths)
         return paths
 
-    def get_paths(self, trigs):
+    def get_paths(self, topics):
         """Returns a list of paths given a list of trigger literals from a user's query."""
-        if trigs:
-            return [self._trigger_map[t] for t in trigs if t in self._trigger_map]
+        if topics:
+            return [self._trigger_map[t] for t in topics if t in self._trigger_map]
         return None
 
     def _map_triggers_to_paths(self):
