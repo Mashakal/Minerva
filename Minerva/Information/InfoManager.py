@@ -37,6 +37,7 @@ class InfoManager:
         for entity in itertools.chain.from_iterable(entities):
             for k in self._trigger_map:
                 if entity == k:
+                    # More matched words are worth more.
                     scores[k] = entity.count(' ') + MATCH_VALUE
                     break
         return {k:v for k,v in scores.items() if v > 0}
@@ -141,7 +142,8 @@ class InfoManager:
         # Find all subpaths, i.e. where paths[i] is a sublist of paths[i + 1].
         subpaths = [paths[i] for i in range(len(paths) - 1) \
                     if paths[i] == paths[i + 1][:len(paths[i])]]
-        filter(paths.remove, subpaths)
+        for path in subpaths:
+            paths.remove(path)
         return paths
 
     def get_paths(self, topics):
