@@ -237,28 +237,18 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def __init__(self, agent, project_system):
         """Construct an interpreter for the given project_system module."""
-        # _info is the main point of access for anything specific to a project.
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
-
-        # Use _agent to interact with the user (e.g. ask a question, clarify 
-        # between options, acknowledge keywords).
         self._agent = agent
-        
-    def analyze(self):
-        pass
 
     def interpret(self, data):
         self.data = data
+
         if data['status'] is InterpreterStatus.Pending:
-        #if data['status'] == 'pending':
             # This is a new query.
             self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
-            #self.data['variables']['proc_index'] = 0
             self._print_from_data()
 
-        # Create the needed intent handler instance.
         intent_handler = LearnAboutTopicHandler(self, self.data)
-
         while intent_handler.data['status'] is InterpreterStatus.Working:
             intent_handler.run_process()
 
@@ -286,15 +276,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
         # Cannot serialize empty sets.
         return {k: v or None for k,v in data.items()}
-
-    def _longest_paths(self, paths):
-        """Returns a list of all paths whose size is equal to the longest."""
-        try:
-            max_len = max(map(len, paths))
-        except ValueError:
-            # Raised when paths is an empty set.
-            max_len = 0
-        return list(filter(lambda x: len(x) == max_len, paths))
 
     def _get_all_topic_matches(self, interests, query):
         """Returns a dictionary of topic/score pairs."""
@@ -326,22 +307,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 all_scores[k] = v
         return all_scores
 
-    def _get_all_paths(self, interests):
-        """Returns a dict of interest/path pairs.
-       
-        Interest is the key.  The path that leads to interest is the
-        value.
-
-        """
-        all_paths = {}
-        triggers = self.data['luis_data']['formatted']
-        print("Interests are: {}".format(interests))
-        for interest in interests:
-            path = self._info.get_paths(self.data['luis_data']['formatted'][interest])
-            path = self._info.remove_subpaths(path)
-            all_paths[interest] = path
-        return all_paths
-    
     def _topic_from_path(self, path):
         """Returns the 'topic' of a path.
         
@@ -380,23 +345,24 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         print()
 
     # Intent processes.
-    def get_top_scoring_topics(self, interests, top_count, query):
+    def get_top_scoring_topics(self, interests, query):
         """Gets the first top_count topics from all matched topics."""
         topic_matches = self._get_all_topic_matches(interests, query)
         print("Topic matches are: {}".format(topic_matches))
         # Sort and filter the topics.
         sorted_scores = sorted(topic_matches.items(), key=operator.itemgetter(1), reverse=True)
         print("Sorted scores are: {}".format(sorted_scores))
-        top_topics = list(filter(lambda x: x[1] > 0, sorted_scores))[:top_count - 1]
+        top_topics = list(filter(lambda x: x[1] > 1, sorted_scores))
         print("The top_topics are: {}".format(top_topics))
         return {'next': Next.Continue,
                 'top_topics': top_topics}
 
-    def get_paths_from_top_topics(self, top_topics):
+    def get_paths_from_top_topics(self, top_topics, top_count):
         """Finds all unique topics and their paths."""
+        #matches_with_paths = [(t[1], t[0], self._info.get_path(t[0]))]
         unfiltered_paths = self._info.get_paths([t[0] for t in top_topics])
         print("The unfiltered paths are: {}".format(unfiltered_paths))
-        filtered_paths = self._info.remove_subpaths(unfiltered_paths)
+        filtered_paths = self._info.remove_subpaths(unfiltered_paths)[:top_count - 1]
         print("The filtered paths are: {}".format(filtered_paths))
         return {'next': Next.Continue,
                 'filtered_paths': filtered_paths}
@@ -516,7 +482,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'next': Next.Complete
         }
    
+
     # BELOW ARE DEPRECATED (or at least, not currently used).
+            
+    def analyze(self):
+        pass
 
     def give_acknowledgement(self, items):
         """Output a message acknowledging the topics."""
@@ -536,7 +506,32 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'longest_paths': self._longest_paths(filtered_paths),
             'next': Next.Continue
         }
+    
+    def _longest_paths(self, paths):
+        """Returns a list of all paths whose size is equal to the longest."""
+        try:
+            max_len = max(map(len, paths))
+        except ValueError:
+            # Raised when paths is an empty set.
+            max_len = 0
+        return list(filter(lambda x: len(x) == max_len, paths))
+    
+    def _get_all_paths(self, interests):
+        """Returns a dict of interest/path pairs.
+       
+        Interest is the key.  The path that leads to interest is the
+        value.
 
+        """
+        all_paths = {}
+        triggers = self.data['luis_data']['formatted']
+        print("Interests are: {}".format(interests))
+        for interest in interests:
+            path = self._info.get_paths(self.data['luis_data']['formatted'][interest])
+            path = self._info.remove_subpaths(path)
+            all_paths[interest] = path
+        return all_paths
+    
 
 @unique
 class Next(Enum):
@@ -576,8 +571,8 @@ class LearnAboutTopicHandler:
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('get_top_scoring_topics', ['interests', 'top_count'], True),   # top_topics
-            ('get_paths_from_top_topics', ['top_topics'], False),   # filtered_paths
+            ('get_top_scoring_topics', ['interests'], True),   # top_topics
+            ('get_paths_from_top_topics', ['top_topics', 'top_count'], False),   # filtered_paths
             #('get_all_longest_paths', ['interests'], False),
             ('verify_paths_found', ['filtered_paths'], False),
             ('evaluate_paths', ['filtered_paths'], False),  # completed_paths, incomplete_paths

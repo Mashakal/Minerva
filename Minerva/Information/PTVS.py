@@ -160,7 +160,7 @@ KEY_MAP = {
     "Debugging": {
         'Triggers': {'debugging', 'debug', 'debugger', 'debuggor'},
         'Remote Debugging': {
-            'Triggers': {'remote debugging', 'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
+            'Triggers': {'remote debugging', 'remote debug', 'debug remotely', 'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
         },
         'Basic Debugging': {
             'Triggers': {'basic debugging', 'debugging', 'debug', 'debugger', 'debuggor'}

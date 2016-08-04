@@ -146,6 +146,13 @@ class InfoManager:
             paths.remove(path)
         return paths
 
+    def get_path(self, topic):
+        """Returns the path to a given topic."""
+        try:
+            return self._trigger_map[topic]
+        except KeyError:
+            return None
+
     def get_paths(self, topics):
         """Returns a list of paths given a list of trigger literals from a user's query."""
         if topics:
