@@ -1,3 +1,5 @@
+import warnings
+import json
 import operator
 import string
 import sys
@@ -9,6 +11,7 @@ from enum import Enum, unique
 
 import InfoManager
 import DialogueStrings
+import HelpBot
 
 
 class AbstractLuisInterpreter(abc.ABC):
@@ -237,17 +240,15 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def __init__(self, agent, project_system):
         """Construct an interpreter for the given project_system module."""
-        # _info is the main point of access for anything specific to a project.
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
-
-        # Use _agent to interact with the user (e.g. ask a question, clarify 
-        # between options, acknowledge keywords).
         self._agent = agent
-        
+
     def analyze(self):
         pass
 
     def interpret(self, data):
+        warnings.simplefilter("ignore", ResourceWarning)
+
         self.data = data
         if data['status'] is InterpreterStatus.Pending:
         #if data['status'] == 'pending':
@@ -302,29 +303,23 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         filter_out = set(stopwords.words('english'))
         query_words = set(self._quick_parse(query))
         filtered_words = query_words - filter_out
-        
-        print("Filtered words are: {}".format(filtered_words))
 
         # Use filtered words to get linient scores.
         linient_scores = self._info.liniently_get_scores(filtered_words)
-
-        print("Linient scores are {}".format(linient_scores))
 
         # Use interested entities to get strict scores.
         entities = [self.data['luis_data']['formatted'][interest] for interest in interests]
         entities = list(filter(None, entities))
         strict_scores = self._info.strictly_get_scores(entities)
 
-        print("Strict scores are: {}".format(strict_scores))
-
         # Combine the scores.
-        all_scores = {}
+        matches = []
         for k,v in linient_scores.items():
+            match = InfoManager.TopicMatch(k, v)
             if k in strict_scores:
-                all_scores[k] = v + strict_scores[k]
-            else:
-                all_scores[k] = v
-        return all_scores
+                match.score += strict_scores[k]
+            matches.append(match)
+        return matches
 
     def _get_all_paths(self, interests):
         """Returns a dict of interest/path pairs.
@@ -341,7 +336,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             path = self._info.remove_subpaths(path)
             all_paths[interest] = path
         return all_paths
-    
+
     def _topic_from_path(self, path):
         """Returns the 'topic' of a path.
         
@@ -380,36 +375,35 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         print()
 
     # Intent processes.
-    def get_top_scoring_topics(self, interests, top_count, query):
+    def get_score_data(self, interests, top_count, query):
         """Gets the first top_count topics from all matched topics."""
         topic_matches = self._get_all_topic_matches(interests, query)
-        print("Topic matches are: {}".format(topic_matches))
         # Sort and filter the topics.
-        sorted_scores = sorted(topic_matches.items(), key=operator.itemgetter(1), reverse=True)
-        print("Sorted scores are: {}".format(sorted_scores))
-        top_topics = list(filter(lambda x: x[1] > 0, sorted_scores))[:top_count - 1]
-        print("The top_topics are: {}".format(top_topics))
+        sorted_scores = sorted(topic_matches, key=operator.attrgetter('score'), reverse=True)
+        top_matches = list(filter(lambda x: x.score > 0, sorted_scores))[:top_count - 1]
+        if top_matches[0].score == 1:
+            # A top-score of 1 is not very good.
+            top_matches = top_matches[:1]
         return {'next': Next.Continue,
-                'top_topics': top_topics}
+                'top_matches': top_matches}
 
-    def get_paths_from_top_topics(self, top_topics):
+    def add_paths_to_topics(self, top_matches):
         """Finds all unique topics and their paths."""
-        unfiltered_paths = self._info.get_paths([t[0] for t in top_topics])
-        print("The unfiltered paths are: {}".format(unfiltered_paths))
-        filtered_paths = self._info.remove_subpaths(unfiltered_paths)
-        print("The filtered paths are: {}".format(filtered_paths))
+        for match in top_matches:
+            match.path = self._info.get_path(match.topic)
+        filtered_matches = self._info.remove_subpaths(top_matches)
         return {'next': Next.Continue,
-                'filtered_paths': filtered_paths}
+                'filtered_matches': filtered_matches}
 
-    def verify_paths_found(self, filtered_paths):
+    def verify_matches_found(self, filtered_matches):
         """True if at least one path was found, otherwise False."""
-        if filtered_paths:
+        if filtered_matches:
             return {'next': 'continue'}
         else:
             return {'next': Next.Failure,
-                    'post': "Luis didn't find any keywords in your query, I'm sorry. In the future, I'll be able to search StackOverflow for you."}
+                    'post': "I couldn't find any keywords in your query, I'm sorry. In the future, I'll be able to search StackOverflow for you."}
 
-    def evaluate_paths(self, filtered_paths):
+    def evaluate_paths(self, filtered_matches):
         """If the path doesn't point to a str, determine where to go next.
         
         When the path does not point to a str, then it points to a dict
@@ -419,33 +413,33 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         incompletes = []
         completes = []
 
-        for path in filtered_paths:
-            end = self._info.traverse_keys(path)
+        for match in filtered_matches:
+            end = self._info.traverse_keys(match.path)
             if not isinstance(end, str):
-                incompletes.append(path)
+                incompletes.append(match)
             else:
-                completes.append(path)
+                completes.append(match)
         _ret = {
-            'complete_paths': completes,
-            'incomplete_paths': incompletes,
+            'complete_matches': completes,
+            'incomplete_matches': incompletes,
             'next': Next.Continue
         }
         return  _ret
     
-    def complete_paths(self, incomplete_paths, path_index):
+    def complete_matches(self, incomplete_matches, match_index):
         _ret = {}
         # Check whether or not we need to do anything.
-        while path_index < len(incomplete_paths):
-            path = incomplete_paths[path_index]
+        while match_index < len(incomplete_matches):
+            match = incomplete_matches[match_index]
             # A path might have had a key added since it was marked as incomplete.
-            if not self._is_path_complete(path):
-                _ret['post'] = self._get_unfinished_path_message(path)
+            if not self._is_path_complete(match.path):
+                _ret['post'] = self._get_unfinished_path_message(match.path)
                 _ret['next'] = Next.WaitThenContinue
-                _ret['path_index'] = path_index
-                _ret['options'] = [t for t in self._info.traverse_keys(path)]
+                _ret['match_index'] = match_index
+                _ret['options'] = [t for t in self._info.traverse_keys(match.path)]
                 return _ret
             else:
-                path_index += 1
+                match_index += 1
         # Reroute when all paths have been completed.
         _ret['next'] = Next.Reroute
         _ret['reroute'] = {'f_attr': 'combine_path_lists'}
@@ -475,18 +469,19 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 'post': fail_message,
             }
         
-    def add_key_to_path(self, incomplete_paths, path_index, chosen_opt):
+    def add_key_to_path(self, incomplete_matches, match_index, chosen_opt):
         """Adds the chosen opt (key) to the incomplete path."""
-        incomplete_paths[path_index].append(chosen_opt)
-        _ret = {'next': Next.Reroute, 'reroute': {'f_attr': 'complete_paths'}}
+        incomplete_matches[match_index].path.append(chosen_opt)
+        _ret = {'next': Next.Reroute, 'reroute': {'f_attr': 'complete_matches'}}
         return _ret
     
     def combine_path_lists(self, incomplete, complete):
         """Combines the incomplete adn complete list."""
         complete = incomplete + complete
-        return {'next': Next.Continue, "complete_paths": complete}
+        return {'next': Next.Continue, 
+                'complete_matches': complete}
     
-    def get_all_topics(self, paths):
+    def get_all_topics(self, matches):
         """Returns the most specialized topic within a path.
 
         The last key in any path is considered to be the most specialized
@@ -496,21 +491,19 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """
         return {
             'next': Next.Continue,
-            'topics': [self._topic_from_path(p) for p in paths]
+            'topics': [self._topic_from_path(m.path) for m in matches]
         }
 
-    def get_url_items(self, topics, paths):
+    def get_url_items(self, topics, matches):
         """Get url for all complete paths."""
-        urls = {topic: self._info.traverse_keys(paths[i]) for i, topic in enumerate(topics)}
+        urls = {topic: self._info.traverse_keys(matches[i].path) for i, topic in enumerate(topics)}
         return {
             'next': Next.Continue,
             'urls': urls
         }
 
     def make_suggestion(self, url_dict, topics):
-        print("\nUrl_Dict is:\n{}".format(url_dict))
-        print("\nTopics are:\n{}".format(topics))
-        reply = self._agent.suggest_urls([v for k,v in url_dict.items()], topics)
+        reply = self._agent.suggest_urls(list(url_dict.values()), topics)
         return {
             'post': reply,
             'next': Next.Complete
@@ -576,34 +569,34 @@ class LearnAboutTopicHandler:
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('get_top_scoring_topics', ['interests', 'top_count'], True),   # top_topics
-            ('get_paths_from_top_topics', ['top_topics'], False),   # filtered_paths
+            ('get_score_data', ['interests', 'top_count'], True),   # top_matches
+            ('add_paths_to_topics', ['top_matches'], False),   # filtered_matches
             #('get_all_longest_paths', ['interests'], False),
-            ('verify_paths_found', ['filtered_paths'], False),
-            ('evaluate_paths', ['filtered_paths'], False),  # completed_paths, incomplete_paths
-            ('complete_paths', ['incomplete_paths', 'path_index'], False), # options, path_index - or - None
+            ('verify_matches_found', ['filtered_matches'], False),
+            ('evaluate_paths', ['filtered_matches'], False),  # complete_matches, incomplete_matches
+            ('complete_matches', ['incomplete_matches', 'match_index'], False), # options, match_index - or - None
             ('check_input_on_unfinished_path', ['options'], True), # chosen_opt - or - None
-            ('add_key_to_path', ['incomplete_paths', 'path_index', 'chosen_opt'], False),
-            ('combine_path_lists', ['incomplete_paths', 'complete_paths'], False),
-            ('get_all_topics', ['complete_paths'], False),
+            ('add_key_to_path', ['incomplete_matches', 'match_index', 'chosen_opt'], False),
+            ('combine_path_lists', ['incomplete_matches', 'complete_matches'], False),
+            ('get_all_topics', ['complete_matches'], False),
             #('give_acknowledgement', ['topics'], False),
-            ('get_url_items', ['topics', 'complete_paths'], False),
+            ('get_url_items', ['topics', 'complete_matches'], False), # urls:dict
             ('make_suggestion', ['urls', 'topics'], False)]
         self._load_from_data(data)
 
     def run_process(self):
         """Runs the current process."""
+        print('\n')
         proc = self.procedures[self.data['variables']['proc_index']]
         f_attr, v_attr, needs_message = proc
-        print("About to try running {}.".format(f_attr))
+        print("RUNNING:\n   {}".format(f_attr))
         args = [self.data['variables'][attr] for attr in v_attr]
         if needs_message:
             args.append(self.data['msg_text'])
-        print("Args are: {}".format(*args))
+        print('\n   '.join(["ARGS:"] + ["{}"] * len(args)).format(*args))
         ret = getattr(self.obj, f_attr)(*args)
-        print("Returned by {}".format(f_attr))
-        print(ret)
-        print("\nVariables are now:\n{}\n\n".format(self.data['variables']))
+        print("RETURNED:")
+        print(json.dumps(ret, sort_keys=True, indent=3, cls=HelpBot.DataEncoder))
         self._handle_return(ret)
         self._handle_next(ret)
 
@@ -616,7 +609,7 @@ class LearnAboutTopicHandler:
                 'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
                 'top_count': 3,
                 'proc_index': 0,
-                'path_index': 0}
+                'match_index': 0}
         elif data['status'] is InterpreterStatus.WaitingToContinue:
             self.data['variables']['proc_index'] += 1
         self.data['status'] = InterpreterStatus.Working

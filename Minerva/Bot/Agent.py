@@ -233,37 +233,24 @@ class VSAgent(Agent):
 
     """A base agent for Visual Studio Bots."""
 
-    def suggest_url(self, *args, genre='suggest_url'):
-        s = self._get_random_string_constant(genre)
-        return self.say(s.format(*args))
+    def suggest_url(self, url, topic):
+        """Creates a link from a topic and an url."""
+        return self.say(''.join(['[', topic, '](', url, ')']))
 
     def suggest_urls(self, urls, topics):
         if len(urls) != len(topics):
             raise ValueError("Each url must have a corresponding topic, and vice versa.")
-        g = 'suggest_urls' if len(urls) > 1 else 'suggest_url'
-        suggestions = []
+        
+        top = "## Here are a few links:" if len(urls) > 1 else "## Try this link:"
+        suggestions = [top]
         for i, url in enumerate(urls):
-            suggestions.append(self.suggest_url(url, topics[i], genre=g))
-        return '\n'.join(suggestions)
+            suggestions.append(self.suggest_url(url, topics[i]))
+        return '  \n'.join(suggestions)
 
     def start_query(self, msg=None):
         m = msg or self._get_random_string_constant('start')
         return self.ask(m)
 
-
-class VSBotConnectorAgent(VSAgent):
-
-    """A Visual Studio agent for the Microsoft Bot Connector."""
-
-    def suggest_url(self, *args, genre='suggest_url'):
-        s = self._get_random_string_constant(genre)
-        if len(args) == 2:
-            print("args are: {}".format(args))
-            # Format with markdown.
-            url, topic = args
-            url_str = ''.join(['[', topic, '](', url, ')'])
-            return self.say(s.format(url_str, topic))
-        return self.say(s.format(*args))
 
 #Deprecated
 class ConsoleAgent(Agent):
