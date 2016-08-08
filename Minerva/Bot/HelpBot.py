@@ -4,6 +4,7 @@ import pickle
 from enum import Enum, unique
 
 import Agent
+import InfoManager
 import LuisInterpreter
 import LuisClient
 from LuisInterpreter import InterpreterStatus
@@ -58,7 +59,7 @@ class Conversation:
 
     def __init__(self, project_system, msg):
         self.project_system = project_system
-        self.agent = Agent.VSBotConnectorAgent()
+        self.agent = Agent.VSAgent()
         self.msg = msg
 
     def initiate_conversation(self):
@@ -88,13 +89,13 @@ class Conversation:
         self.interp_data = self._load_interpreter_data()
         self.interp_data['luis_data'] = self.luis_data
 
-        try:
-            self.interp_data['variables']
-        except KeyError:
-            pass
-        else:
-            print("\nVARIABLES at the start:")
-            print(json.dumps(self.interp_data['variables'], indent=4, sort_keys=True, cls=DataEncoder))
+        #try:
+        #    self.interp_data['variables']
+        #except KeyError:
+        #    pass
+        #else:
+        #    print("\nVARIABLES at the start:")
+        #    print(json.dumps(self.interp_data['variables'], indent=4, sort_keys=True, cls=DataEncoder))
 
         # Interpret.
         self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
@@ -106,10 +107,8 @@ class Conversation:
         # Cleanup.
         if self.interp_data['status'] in [InterpreterStatus.Complete, InterpreterStatus.Failed]:
             # Delete the state information.
-            print("We should be deleting the state info.")
             self._delete_state_information()
         else:
-            print('We should retain the state info.')
             self._save_all_data()
         return
       
@@ -137,7 +136,7 @@ class Conversation:
     def _deserialize_data(self):
         """Deserializes a help bot data encoded json."""
         #print(json.dumps(self.msg.data, cls=DataEncoder, indent=4, sort_keys=True))
-        print(self.msg.data)
+        #print(self.msg.data)
         if self.msg.data:
             self.msg.data = json.loads(self.msg.data, object_hook=DataEncoder.decode_hook)
 
@@ -251,6 +250,8 @@ class DataEncoder(json.JSONEncoder):
             return {"__enum__": str(obj)}
         elif isinstance(obj, set):
             return {"__set__": str(obj)}
+        elif isinstance(obj, InfoManager.TopicMatch):
+            return {"__TopicMatch__": dict(obj)}
         return json.JSONEncoder.default(self, obj)
 
     @classmethod
@@ -260,8 +261,10 @@ class DataEncoder(json.JSONEncoder):
             return getattr(globals()[name], member)
         elif "__set__" in obj:
             return eval(cls._create_set_string(obj["__set__"]))
+        elif "__TopicMatch__" in obj:
+            return InfoManager.TopicMatch._init_from_decode(obj)
         return obj
-
+    
     @staticmethod
     def _create_set_string(set_string):
         """Returns a string formatted for use with eval, to create a set.

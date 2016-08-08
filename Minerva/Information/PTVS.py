@@ -29,20 +29,20 @@ LINKS = {
     "Navigation": "https://github.com/Microsoft/PTVS/wiki/Editor-Features#navigation",
     "Code Formatting": "https://github.com/Microsoft/PTVS/wiki/Code-Formatting",
     "Refactoring": {
-        "Home": "https://github.com/Microsoft/PTVS/wiki/Refactoring",
+        "Refactoring": "https://github.com/Microsoft/PTVS/wiki/Refactoring",
         "Rename": "https://github.com/Microsoft/PTVS/wiki/Refactoring#rename-variable",
         "Extract Method": "https://github.com/Microsoft/PTVS/wiki/Refactoring#extract-method",
         "Add Import": "https://github.com/Microsoft/PTVS/wiki/Refactoring#add-import",
         "Remove Imports": "https://github.com/Microsoft/PTVS/wiki/Refactoring#remove-imports"
     },
     "Interactive REPL": {
-        "Home": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL",
+        "Interactive REPL Home": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL",
         "Switching Scopes": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL#switching-scopes",
         "Send Code to Interactive": "https://github.com/Microsoft/PTVS/wiki/Interactive-REPL#sending-code-to-interactive",
         "Using IPython with PTVS": "https://github.com/Microsoft/PTVS/wiki/Using-IPython-with-PTVS"
     },
     "Debugging": {
-        "Home": "https://github.com/Microsoft/PTVS/wiki/Debugging",
+        "Debugging Home": "https://github.com/Microsoft/PTVS/wiki/Debugging",
         "Basic Debugging": "https://github.com/Microsoft/PTVS/wiki/Debugging#basic-debugging",
         "Debugging with a Project": "https://github.com/Microsoft/PTVS/wiki/Debugging#debugging-with-a-project",
         "Debugging without a Project": "https://github.com/Microsoft/PTVS/wiki/Debugging#debugging-without-a-project",
@@ -51,11 +51,11 @@ LINKS = {
             "Windows, Linux, and OS X": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
             "Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging",
         },
-        "Mixed-Mode Debugging": "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging"
+        "Mixed-Mode/Native Debugging": "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging"
     },
     "Profiling": "https://github.com/Microsoft/PTVS/wiki/Profiling",
     "Projects": {
-        "Home": "https://github.com/Microsoft/PTVS/wiki/Projects",
+        "Projects Home": "https://github.com/Microsoft/PTVS/wiki/Projects",
         "Project Types": "https://github.com/Microsoft/PTVS/wiki/Projects#project-types",
         "Django": "https://github.com/Microsoft/PTVS/wiki/Django",
         "Web Projects": "https://github.com/Microsoft/PTVS/wiki/Web-Project",
@@ -133,7 +133,7 @@ KEY_MAP = {
             'Triggers': {'references', 'what are references'}
         },
         'Python Environments': {
-            'Triggers': {'python environments', 'environments', 'help with environments'}
+            'Triggers': {'environments', 'help with environments'}
         },
         'Managing Requirements': {
             'Triggers': {'managing requirements', 'requirements', 'how to use requirements'}
@@ -174,8 +174,8 @@ KEY_MAP = {
         'The Debug Interactive Window': {
             'Triggers': {'debug interactive window', 'debugging interactive window', 'interactive window'}
         },
-        'Mixed-Mode Debugging': {
-            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode', 'mixed mode debugging'}
+        'Mixed-Mode/Native Debugging': {
+            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode', 'mixed mode debugging', 'native debugging', 'native debug'}
         }
     },
     'Interactive REPL': {
@@ -221,12 +221,12 @@ KEY_MAP = {
         'Triggers': {'pylint', 'py lint', 'linter'}
     },
     'Azure SDK for Python': {
-        'Triggers': {'azure sdk for python', 'azure sdk', 'azure python', 'python azure'}
+        'Triggers': {'azure sdk for', 'azure sdk'}
     },
     'Kinect for Python': {
-        'Triggers': {'kinect for python', 'kinect'}
+        'Triggers': {'kinect for', 'kinect'}
     },
     'wfastcgi (on PyPI)': {
-        'Triggers': {'wfastcgi', 'wfastcgi python', 'wfastcgi on pypi', 'pypi wfastcgi'}
+        'Triggers': {'wfastcgi', 'wfastcgi on pypi', 'pypi wfastcgi'}
     }
 }
