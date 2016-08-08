@@ -12,12 +12,12 @@ lc = LuisClient(LUIS_URL)
 
 # Query all stackoverflow questions tagged with 'ptvs'
 query = StackExchangeQuery('stackoverflow')
-query.queryString.addTags('ptvs')
-query.queryString.addPair('pagesize', 100)
-query.queryString.addPair('page', 2)
+query.query_string.add_tags('ptvs')
+query.query_string.add_pair('pagesize', 100)
+query.query_string.add_pair('page', 2)
 
 print('Sending request:')
-print(query.buildFullUrl())
+print(query.build_full_url())
 query.go()
 
 print('We have', len(query.response._results), 'results')

@@ -1,44 +1,37 @@
-#!usr/bin/env python
-from functools import wraps
-import sys
-from essentials import printSmart
+import json
 
+class StackExchangeResponse:
 
-
-
-class StackExchangeResponse(object):
     """Holds the data for a StackExchange API response."""
+    
     def __init__(self, content):
         self._content = content   # The response content returned by requests.get.
         self._json = content.json()
-        self._results = []    # A list of StackExchangeItems or its derivations.
+        self._results = [] # A response's items.
         for q in self._json['items']:
             self._results.append(StackExchangeResult(q))
-        self.resultCount = len(self._results)
+        self.result_count = len(self._results)
         
-    def printResult(self, resultIndex):
-        self._results[resultIndex].getAllValues()
+    def print_result(self, resultIndex):
+        print(self._results[resultIndex].__str__())
 
-    def printAll(self):
-        printSmart(self._json)
-
-    def getResult(self, resultIndex):
+    def get_result(self, resultIndex):
         return self._results[resultIndex]
 
 
-class StackExchangeResult(object):
+class StackExchangeResult:
+    
     """A base class for defining common response item methods and attributes."""
 
-    def __init__(self, dic):
-        self._dic = dic   # Dictionary holding this item's contents.
+    def __init__(self, dict_):
+        self._d = dict_   # Dictionary holding this item's contents.
     
     def get(self):
-        return self._dic
+        return self._d
         
-    def getValue(self, key):
-        return self._dic[key]
+    def get_value(self, key):
+        return self._d[key]
 
-    def printAllPairs(self):
-        for key in self._dic:
-            print(key.upper()),
-            printSmart(self._dic[key], depth=1)
+    def __str__(self):
+        return json.dumps(self._d, indent=4, sort_keys=True)
+        

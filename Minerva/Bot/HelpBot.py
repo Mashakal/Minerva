@@ -46,13 +46,6 @@ def msg_has_queue(msg):
         return True
 
 
-# Strings for easier json decoding.
-CONVERSATION_STATES = {
-    'Processing': 'Processing',
-    'Waiting': 'Waiting'
-}
-
-
 class Conversation:
 
     """Handles a conversation with a user and a help bot."""
@@ -74,9 +67,7 @@ class Conversation:
                 'query': query_text}
 
     def choose_action(self):
-        # Mark this message as the one currently being processed.
-        #self._set_as_current(self.msg)
-        
+       
         # Deserialize to create instances of custom types.
         self._deserialize_data()
 
@@ -88,14 +79,6 @@ class Conversation:
         self.luis_data = self._load_luis_data()
         self.interp_data = self._load_interpreter_data()
         self.interp_data['luis_data'] = self.luis_data
-
-        #try:
-        #    self.interp_data['variables']
-        #except KeyError:
-        #    pass
-        #else:
-        #    print("\nVARIABLES at the start:")
-        #    print(json.dumps(self.interp_data['variables'], indent=4, sort_keys=True, cls=DataEncoder))
 
         # Interpret.
         self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
@@ -135,8 +118,6 @@ class Conversation:
 
     def _deserialize_data(self):
         """Deserializes a help bot data encoded json."""
-        #print(json.dumps(self.msg.data, cls=DataEncoder, indent=4, sort_keys=True))
-        #print(self.msg.data)
         if self.msg.data:
             self.msg.data = json.loads(self.msg.data, object_hook=DataEncoder.decode_hook)
 

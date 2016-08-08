@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>BotConnector\Root.py</StartupFile>
+    <StartupFile>StackExchange\Playground.py</StartupFile>
     <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -66,10 +66,11 @@
     <Compile Include="AlmostTrash\AskLuis.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="StackExchange\querystring.py">
+    <Compile Include="StackExchange\Playground.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="StackExchange\stackexchangequery.py">
+    <Compile Include="StackExchange\query.py" />
+    <Compile Include="StackExchange\querystring.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StackExchange\stackexchangeresponse.py">
