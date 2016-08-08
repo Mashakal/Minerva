@@ -40,9 +40,9 @@ def displayTop3(response):
 def getAnswerContents(result):
     answerId = result.getValue('accepted_answer_id')
     q = StackExchangeQuery(site)
-    q.setQueryType('answers')
-    q.addId(answerId)
-    print(q.buildFullUrl())
+    q.set_query_type('answers')
+    q.add_id(answerId)
+    print(q.build_full_url())
 
 
 def main():
@@ -62,7 +62,7 @@ def getAnswer(result):
 
 def createQuery(site, tags):
     query = StackExchangeQuery(site)
-    query.queryString.addTags(tags)
+    query.query_string.add_tags(tags)
     return query
 
 def getFileSize(filename):

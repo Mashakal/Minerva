@@ -14,13 +14,48 @@ import DialogueStrings
 import HelpBot
 
 
+#region Enumerations
+
+@unique
+class Next(Enum):
+    # Go to the next procedure.
+    Continue = 0
+    # Wait for input from the user, then go to the next procedure.
+    WaitThenContinue = 1
+    # Wait for input from the user, then call the same procedure again.
+    WaitThenStay = 2
+    # Stop interpreting, end query.
+    Failure = 3
+    # Stop interpreting, end query.
+    Complete = 4
+    # Reroute the next process to another function attribute.
+    Reroute = 5
+
+
+@unique
+class InterpreterStatus(Enum):
+    # Currently in process.
+    Working = 0
+    # Interpretation finished unsuccessfully.
+    Failed = 1
+    # Interpretation finished successfully.
+    Complete = 2
+    # Waiting for input.
+    WaitingToStay = 3
+    WaitingToContinue = 4
+    # A new query needs started.
+    Pending = 5
+
+
+#region Interpreters
+
 class AbstractLuisInterpreter(abc.ABC):
 
     """An interface-like abstract class for LuisInterpreters."""
 
     @abc.abstractmethod
-    def analyze(self, json):
-        """Analyzes the json returned from a call to LuisClient's method, query_raw."""
+    def interpret(self, json):
+        """Interprets a user's query."""
         raise NotImplementedError
 
 
@@ -82,22 +117,15 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def __init__(self, agent, project_system):
         """Construct an interpreter for the given project_system module."""
-        # _info is the main point of access for anything specific to a project.
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
-
-        # Use _agent to interact with the user (e.g. ask a question, clarify 
-        # between options, acknowledge keywords).
         self._agent = agent
-        
-        # Intents point to functions.
-        self._HANDLERS = {
-            'Solve Problem': self._handle_solve,
-            'Learn About Topic': self._handle_learn,
-            'None': self._handle_none
-        }
+        # Intents point to handlers.
+        self._HANDLERS = {'Solve Problem': self._handle_solve,
+                          'Learn About Topic': self._handle_learn,
+                          'None': self._handle_none}
 
     # Entry.
-    def analyze(self, json):
+    def interpret(self, json):
         """Analyzes the json returned from a call to LuisClient's method, query_raw."""
         self.data = self._format_data(json)
         self._print_from_data() # For development.
@@ -107,7 +135,6 @@ class ProjectSystemLuisInterpreter(BaseLuisInterpreter):
             func = self._HANDLERS['None']
         finally:
             return func()
-
 
     # Utility functions.
     def _input_request(func, *args, **kwargs):
@@ -242,27 +269,29 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Construct an interpreter for the given project_system module."""
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
         self._agent = agent
-
-    def analyze(self):
-        pass
+        self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
+                          'Solve Problem': SolveProblemHandler}
 
     def interpret(self, data):
+        # NLTK package raises ResourceWarning.
         warnings.simplefilter("ignore", ResourceWarning)
 
         self.data = data
         if data['status'] is InterpreterStatus.Pending:
-        #if data['status'] == 'pending':
             # This is a new query.
             self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
-            #self.data['variables']['proc_index'] = 0
-            self._print_from_data()
+        
+        # Instantiate a handler object.
+        _Handler = self._handlers[self.data['luis_data']['formatted']['intent']]
+        intent_handler = _Handler(self, self.data)
+        self._print_from_data(intent_handler.data['variables']['interests'])
+        print(json.dumps(self.data['luis_data'], indent=3, sort_keys=True, cls=HelpBot.DataEncoder))
 
-        # Create the needed intent handler instance.
-        intent_handler = LearnAboutTopicHandler(self, self.data)
-
+        # Work the query.
         while intent_handler.data['status'] is InterpreterStatus.Working:
             intent_handler.run_process()
-
+        
+        # Return updated data.
         return intent_handler.data
 
     def _format_data(self, json):
@@ -280,6 +309,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'negators': self._literals_given_type('Negator', json),
             'gerunds': self._literals_given_type('Action::Gerund', json),
             'conjugated_verbs': self._literals_given_type('Action::Conjugated Verb', json),
+            'all_action': self._literals_given_parent_type('Action::', json),
             'all_jargon': self._literals_given_parent_type('Jargon::', json),
             'phrase_jargon': self._literals_given_type('Jargon::Phrase', json),
             'single_jargon': self._literals_given_type('Jargon::Single Word', json),
@@ -363,14 +393,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return False
         return True
 
-    def _print_from_data(self):
+    def _print_from_data(self, interests):
         """Prints a predefined set of information from self.data.
         
         This method can easily be overriden to print out whatever is pertinent
         for your application.
         
         """
-        for key in ['query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']:
+        for key in sorted({'query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'} ^ set(interests)):
             print ("  {0}:\t{1}".format(key.upper(), self.data['luis_data']['formatted'][key]))
         print()
 
@@ -508,6 +538,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'post': reply,
             'next': Next.Complete
         }
+
+    def fail_for_delete(self):
+        """Terminates the query with a failure."""
+        return {'next': Next.Failure, 'post': 'Quitting as expected.'}
    
     # BELOW ARE DEPRECATED (or at least, not currently used).
 
@@ -531,58 +565,21 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
 
 
-@unique
-class Next(Enum):
-    # Go to the next procedure.
-    Continue = 0
-    # Wait for input from the user, then go to the next procedure.
-    WaitThenContinue = 1
-    # Wait for input from the user, then call the same procedure again.
-    WaitThenStay = 2
-    # Stop interpreting, end query.
-    Failure = 3
-    # Stop interpreting, end query.
-    Complete = 4
-    # Reroute the next process to another function attribute.
-    Reroute = 5
+#region Intent Handlers
+
+class AbstractHandler(abc.ABC):
+
+    """An abstract class that acts as an interface for LUIS intent handlers."""
+
+    @abc.abstractmethod
+    def _load_from_data(self, data):
+        """Loads the needed information from the data passed in during instantiation."""
+        raise NotImplementedError
 
 
-@unique
-class InterpreterStatus(Enum):
-    # Currently in process.
-    Working = 0
-    # Interpretation finished unsuccessfully.
-    Failed = 1
-    # Interpretation finished successfully.
-    Complete = 2
-    # Waiting for input.
-    WaitingToStay = 3
-    WaitingToContinue = 4
-    # A new query needs started.
-    Pending = 5
-
-
-class LearnAboutTopicHandler:
-    """Handler for intent Learn About Topic."""
-
-    def __init__(self, obj, data):
-        self.obj = obj
-        self.procedures = [
-            # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('get_score_data', ['interests', 'top_count'], True),   # top_matches
-            ('add_paths_to_topics', ['top_matches'], False),   # filtered_matches
-            #('get_all_longest_paths', ['interests'], False),
-            ('verify_matches_found', ['filtered_matches'], False),
-            ('evaluate_paths', ['filtered_matches'], False),  # complete_matches, incomplete_matches
-            ('complete_matches', ['incomplete_matches', 'match_index'], False), # options, match_index - or - None
-            ('check_input_on_unfinished_path', ['options'], True), # chosen_opt - or - None
-            ('add_key_to_path', ['incomplete_matches', 'match_index', 'chosen_opt'], False),
-            ('combine_path_lists', ['incomplete_matches', 'complete_matches'], False),
-            ('get_all_topics', ['complete_matches'], False),
-            #('give_acknowledgement', ['topics'], False),
-            ('get_url_items', ['topics', 'complete_matches'], False), # urls:dict
-            ('make_suggestion', ['urls', 'topics'], False)]
-        self._load_from_data(data)
+class AbstractBaseHandler(AbstractHandler):
+    
+    """A base class to handle Luis determined intents."""
 
     def run_process(self):
         """Runs the current process."""
@@ -600,29 +597,12 @@ class LearnAboutTopicHandler:
         self._handle_return(ret)
         self._handle_next(ret)
 
-    def _load_from_data(self, data):
-        """Loads the needed information from the data passed in during instantiation."""
-        self.data = data
-        if data['status'] is InterpreterStatus.Pending:
-            # Initialize.
-            self.data['variables'] = {
-                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
-                'top_count': 3,
-                'proc_index': 0,
-                'match_index': 0}
-        elif data['status'] is InterpreterStatus.WaitingToContinue:
-            self.data['variables']['proc_index'] += 1
-        self.data['status'] = InterpreterStatus.Working
-
-    # PRIVATE METHODS
-        
     def _handle_return(self, ret):
         """Manages the returned object after a process has been called."""
         KEY_ATTRS = ['post', 'next']
         # Look for outgoing.
         if 'post' in ret:
             self._add_outgoing_message(ret['post'])
-
         # Update variables
         for attr in ret:
             if attr not in KEY_ATTRS:
@@ -663,3 +643,65 @@ class LearnAboutTopicHandler:
             msgs = []
         msgs.append(message)
         self.data['outgoing'] = msgs
+
+
+class LearnAboutTopicHandler(AbstractBaseHandler):
+
+    """Handler for intent Learn About Topic."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            # (Function_Attribute, [data_variable_names], is_msg_needed)
+            ('get_score_data', ['interests', 'top_count'], True),   # top_matches
+            ('add_paths_to_topics', ['top_matches'], False),   # filtered_matches
+            ('verify_matches_found', ['filtered_matches'], False),
+            ('evaluate_paths', ['filtered_matches'], False),  # complete_matches, incomplete_matches
+            ('complete_matches', ['incomplete_matches', 'match_index'], False), # options, match_index - or - None
+            ('check_input_on_unfinished_path', ['options'], True), # chosen_opt - or - None
+            ('add_key_to_path', ['incomplete_matches', 'match_index', 'chosen_opt'], False),
+            ('combine_path_lists', ['incomplete_matches', 'complete_matches'], False),
+            ('get_all_topics', ['complete_matches'], False),
+            ('get_url_items', ['topics', 'complete_matches'], False), # urls:dict
+            ('make_suggestion', ['urls', 'topics'], False)]
+        self._load_from_data(data)
+
+    def _load_from_data(self, data):
+        self.data = data
+        if data['status'] is InterpreterStatus.Pending:
+            # Initialize.
+            self.data['variables'] = {
+                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
+                'top_count': 3,
+                'match_index': 0,
+                'proc_index': 0}
+        elif data['status'] is InterpreterStatus.WaitingToContinue:
+            self.data['variables']['proc_index'] += 1
+        self.data['status'] = InterpreterStatus.Working
+
+
+class SolveProblemHandler(AbstractBaseHandler):
+
+    """Handler for intent Solve Problem."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('get_score_data', ['interests', 'top_count'], True), # top_matches
+            # 
+
+            ('fail_for_delete', [], False)
+        ]
+        self._load_from_data(data)
+
+    def _load_from_data(self, data):
+        self.data = data
+        if data['status'] is InterpreterStatus.Pending:
+            # Initialize... variables for all process/entry function.
+            self.data['variables'] = {
+                'interests': ['subjects', 'auxiliaries', 'negators', 'all_action', 'all_jargon'],
+                'top_count': 1,
+                'proc_index': 0}
+        elif data['status'] is InterpreterStatus.WaitingToContinue:
+            self.data['variables']['proc_index'] += 1
+        self.data['status'] = InterpreterStatus.Working

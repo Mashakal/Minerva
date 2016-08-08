@@ -1,9 +1,5 @@
-#!usr/bin/env python
 from functools import wraps
 import sys
-from essentials import printSmart
-
-
 
 
 class StackExchangeResponse(object):
