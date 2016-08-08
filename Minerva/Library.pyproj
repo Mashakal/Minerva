@@ -69,10 +69,8 @@
     <Compile Include="StackExchange\Playground.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="StackExchange\query.py" />
     <Compile Include="StackExchange\querystring.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\stackexchangequery.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StackExchange\stackexchangeresponse.py">
