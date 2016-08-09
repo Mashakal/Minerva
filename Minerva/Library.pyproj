@@ -6,8 +6,8 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>StackExchange\Playground.py</StartupFile>
-    <SearchPath>StackExchange\;Debugging\;Information\;Bot\</SearchPath>
+    <StartupFile>BotConnector\Root.py</StartupFile>
+    <SearchPath>Debugging\;Information\;Bot\;StackExchange\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -69,13 +69,7 @@
     <Compile Include="StackExchange\Playground.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="StackExchange\query.py" />
-    <Compile Include="StackExchange\querystring.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\stackexchangeresponse.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="StackExchange\Query.py" />
     <Compile Include="StackExchange\test_query.py">
       <SubType>Code</SubType>
     </Compile>

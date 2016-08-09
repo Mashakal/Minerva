@@ -12,6 +12,9 @@ LINKS = {
     # All key MUST lead to either a url or a dictionary of keys that lead to a url.
     "WIKI": "https://github.com/Microsoft/PTVS/wiki",
     "Installation": "https://github.com/Microsoft/PTVS/wiki/PTVS-Installation",
+    "Packages": {
+        'Installing Packages': 'https://github.com/Microsoft/PTVS/wiki/PTVS-Installation#python-package-installation-options'
+    },
     "Feature Matrix": "https://github.com/Microsoft/PTVS/wiki/Features-Matrix",
     "Overview Videos": "https://github.com/Microsoft/PTVS/wiki/Videos",
     "Contributing": "https://github.com/Microsoft/PTVS/wiki/Contributing-to-PTVS,",
@@ -51,7 +54,10 @@ LINKS = {
             "Windows, Linux, and OS X": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
             "Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging",
         },
-        "Mixed-Mode/Native Debugging": "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging"
+        "Mixed-Mode/Native Debugging": {
+            'General Info': "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging",
+            'Symbols for Mixed-Mode Debugging': 'https://github.com/Microsoft/PTVS/wiki/Symbols-for-Python-mixed-mode-debugging'
+        }
     },
     "Profiling": "https://github.com/Microsoft/PTVS/wiki/Profiling",
     "Projects": {
@@ -95,6 +101,12 @@ KEY_MAP = {
         },
         'Django and MySql': {
             'Triggers': {'django and mysql', 'django with mysql'}
+        }
+    },
+    'Packages': {
+        'Triggers': {'packages'},
+        'Installing Packages': {
+            'Triggers': {'installing packages'}
         }
     },
     'WIKI': {
@@ -175,7 +187,10 @@ KEY_MAP = {
             'Triggers': {'debug interactive window', 'debugging interactive window', 'interactive window'}
         },
         'Mixed-Mode/Native Debugging': {
-            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode', 'mixed mode debugging', 'native debugging', 'native debug'}
+            'Triggers': {'mixed - mode debugging', 'mixed mode', 'mixed - mode', 'mixed mode debugging', 'native debugging', 'native debug'},
+            'Symbols for Mixed-Mode Debugging': {
+                'Triggers': {'symbols', 'download symbols', 'winpython', 'enthought canopy'}
+            }
         }
     },
     'Interactive REPL': {
@@ -221,7 +236,7 @@ KEY_MAP = {
         'Triggers': {'pylint', 'py lint', 'linter'}
     },
     'Azure SDK for Python': {
-        'Triggers': {'azure sdk for', 'azure sdk'}
+        'Triggers': {'azure sdk for', 'azure sdk', 'sdk'}
     },
     'Kinect for Python': {
         'Triggers': {'kinect for', 'kinect'}
