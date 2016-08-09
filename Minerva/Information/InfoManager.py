@@ -183,7 +183,6 @@ class InfoManager:
                 for trigger in triggers}
 
 
-
 class ProjectSystemInfoManager(InfoManager):
 
     """A derived class from InfoManager specific to Project Systems."""

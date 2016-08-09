@@ -7,6 +7,7 @@ import Agent
 import InfoManager
 import LuisInterpreter
 import LuisClient
+import Query
 from LuisInterpreter import InterpreterStatus
 
 # For development purposes only:
@@ -233,6 +234,10 @@ class DataEncoder(json.JSONEncoder):
             return {"__set__": str(obj)}
         elif isinstance(obj, InfoManager.TopicMatch):
             return {"__TopicMatch__": dict(obj)}
+        elif isinstance(obj, Query.StackExchangeResponse):
+            return {"__StackExchangeResponse__": obj._json}
+        elif isinstance(obj, Query.StackExchangeQuery):
+            return {"__StackExchangeQuery__": repr(obj)}
         return json.JSONEncoder.default(self, obj)
 
     @classmethod
@@ -244,6 +249,8 @@ class DataEncoder(json.JSONEncoder):
             return eval(cls._create_set_string(obj["__set__"]))
         elif "__TopicMatch__" in obj:
             return InfoManager.TopicMatch._init_from_decode(obj)
+        elif "__StackExchangeResponse__" in obj:
+            return Query.StackExchangeResponse(None, json=obj["__StackExchangeResponse__"])
         return obj
     
     @staticmethod

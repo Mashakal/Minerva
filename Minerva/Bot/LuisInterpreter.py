@@ -6,12 +6,14 @@ import sys
 import abc
 import itertools
 import collections
-from nltk.corpus import stopwords
+from html.parser import HTMLParser
 from enum import Enum, unique
+from nltk.corpus import stopwords
 
 import InfoManager
 import DialogueStrings
 import HelpBot
+import Query
 
 
 #region Enumerations
@@ -277,7 +279,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         if data['status'] is InterpreterStatus.Pending:
             # This is a new query.
             self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
-        
+
         # Instantiate a handler object.
         _Handler = self._handlers[self.data['luis_data']['formatted']['intent']]
         intent_handler = _Handler(self, self.data)
@@ -303,7 +305,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'other_intents': json['intents'][1:],
             'subjects': self._literals_given_type('Subject', json),
             'auxiliaries': self._literals_given_type('Auxiliary', json),
-            'negators': self._literals_given_type('Negator', json),
+            'negators': set(map(lambda x: x.replace(" ", ""), 
+                                 self._literals_given_type('Negator', json))),
             'gerunds': self._literals_given_type('Action::Gerund', json),
             'conjugated_verbs': self._literals_given_type('Action::Conjugated Verb', json),
             'all_action': self._literals_given_parent_type('Action::', json),
@@ -312,8 +315,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'single_jargon': self._literals_given_type('Jargon::Single Word', json),
             'solve_problem_triggers': self._literals_given_parent_type('Solve Problem Triggers::', json)
         }
-        # Cannot serialize empty sets.
-        return {k: v or None for k,v in data.items()}
+        return data
 
     def _longest_paths(self, paths):
         """Returns a list of all paths whose size is equal to the longest."""
@@ -396,19 +398,71 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for your application.
         
         """
-        for key in sorted({'query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'} ^ set(interests)):
-            print ("  {0}:\t{1}".format(key.upper(), self.data['luis_data']['formatted'][key]))
+        items = ['query', 'intent', 'subjects', 'auxiliaries', 'negators', 'all_action', 'gerunds', 'conjugated_verbs', 'all_jargon', 'phrase_jargon', 'single_jargon']
+        for key in items:
+            print("  {0}:\t{1}".format(key.upper(), self.data['luis_data']['formatted'][key]))
         print()
 
     # Intent processes.
+    # Solve Problem.
+    def get_stackexchange_query_params(self, query_text):
+        """Returns a dict of stackexchange query parameters."""
+        formatted_data  = self.data['luis_data']['formatted']
+        strict_params = {
+            'tagged': ['ptvs'] + list(formatted_data['subjects'] | formatted_data['all_jargon']),
+        }
+        
+        return {'next': Next.Continue, 
+                'strict_params': strict_params}
+
+    def create_stackexchange_query(self, params):
+        """Creates an sends a stackexchange query."""
+        query_responses = []
+        query = Query.StackExchangeQuery('stackoverflow', query_params=params)
+        query.set_query_path(Query.QueryPaths.AdvancedSearch)
+        return {'next': Next.Continue, 'query': query}
+
+    def get_query_responses(self, query):
+        """Returns a list of query responses."""
+        query.initiate()
+        # Did we get any responses?
+        if not query.response.result_count:
+            popped = query.query_string.tagged.pop()
+            print("POPPED IS: {}".format(popped))
+        else:
+            return {'next': Next.Continue, 'query_response': query.response}
+        # If not, try a more linient query if possible, otherwise fail.
+        if not popped:
+            return {'next': Next.Failure, 'post': "Couldn't find anything."}
+        else:
+            # Try to find queries that at least have the popped tag in the body.
+            query.query_string.add_param('body', popped)
+        return self.get_query_responses(query)
+        
+    def send_solve_problem_acknowledgement(self):
+        """Sends a acknowledgement to the user."""
+        message = "Let me see what I can find about this on StackOverflow.com."
+        return self.outgoing_message(message)
+
+    def outgoing_message(self, message):
+        """Construct and send a message to the user."""
+        return {'next': Next.Continue, 
+                'post': self._agent.say(message)}
+
+    def print_responses(self, response):
+        """Prints all records in a query response."""
+        response.print_results()
+        return {'next': Next.Continue}
+
+    # Learn about topic.
     def get_score_data(self, interests, top_count, query):
         """Gets the first top_count topics from all matched topics."""
         topic_matches = self._get_all_topic_matches(interests, query)
         # Sort and filter the topics.
         sorted_scores = sorted(topic_matches, key=operator.attrgetter('score'), reverse=True)
         top_matches = list(filter(lambda x: x.score > 0, sorted_scores))[:top_count - 1]
-        if top_matches[0].score == 1:
-            # A top-score of 1 is not very good.
+        if top_matches and top_matches[0].score == 1:
+            # A top-score of 1 is not very good, just grab one of them.
             top_matches = top_matches[:1]
         return {'next': Next.Continue,
                 'top_matches': top_matches}
@@ -679,9 +733,12 @@ class SolveProblemHandler(AbstractBaseHandler):
     def __init__(self, obj, data):
         self.obj = obj
         self.procedures = [
-            ('get_score_data', ['interests', 'top_count'], True), # top_matches
-            # 
-
+            ('get_score_data', ['interests', 'top_count'], True), # top_matches, may be None.
+            ('send_solve_problem_acknowledgement', [], False),
+            ('get_stackexchange_query_params', [], True), # strict_params
+            ('create_stackexchange_query', ['strict_params'], False), # query
+            ('get_query_responses', ['query'], False),  # query_response
+            ('print_responses', ['query_response'], False),
             ('fail_for_delete', [], False)
         ]
         self._load_from_data(data)

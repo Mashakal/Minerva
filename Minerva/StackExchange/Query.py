@@ -1,8 +1,7 @@
 import requests
+import json
 from urllib import parse
 from enum import Enum, unique
-
-from stackexchangeresponse import StackExchangeResponse
 
 
 class StackExchangeQuery:
@@ -26,6 +25,7 @@ class StackExchangeQuery:
         # Universal (in terms of paths) default query parameters.
         self.query_string.add_param('site', site)
         self.query_string.add_param('key', StackExchangeQuery._API_KEY)
+        self.query_string.add_param('tagged', 'ptvs')
         self.query_string.add_param('nottagged', 'pycharm')
         #self.query_string.add_param('filter', 'withbody') # Add withbody filter when searching the body is implemented.
 
@@ -34,6 +34,12 @@ class StackExchangeQuery:
 
         # Query path will be converted to a string when URL is built.
         self._query_path = None
+
+    def __iter__(self):
+        if not self.response:
+            return self
+        else:
+            return self.response.__iter__()
 
     def build_full_url(self):
         """Calls urlunparse to get an url string of segments."""
@@ -87,14 +93,11 @@ class StackExchangeQuery:
         """Sets ids to the empty list."""
         self._ids = []
 
-    def go(self):
+    def initiate(self):
         """Actually sends the request."""
         content = requests.get(self.build_full_url())
-        print("The url after get is: {}".format(content.url))
         self.response = StackExchangeResponse(content)
 
-
-#region QueryString
 
 _MAX_TAGS = 5    # Per the stack exchange API.
 _MAX_PAGE_SIZE = 100
@@ -117,6 +120,10 @@ class StackExchangeQueryString:
     def __iter__(self):
         for p in self.parameters:
             yield (parse.quote(p.key), self.retrieve(p.key))
+
+    def __getattr__(self, attr):
+        """Returns the query parameter whose key is attr."""
+        return self._get_query_param(attr)
 
     def get(self):
         """A more abstract way of getting the query string as a list of key/value pairs."""
@@ -153,7 +160,7 @@ class StackExchangeQueryString:
         if param:
             return ';'.join(map(parse.quote, param.values))
         return ''
-        
+
     def _validate_page_size(self, num):
         """Raises a ValueError when the page size is not within bounds."""
         if not 0 < num <= _MAX_PAGE_SIZE:
@@ -216,6 +223,11 @@ class QueryParameter:
     def clear(self):
         self.values = []
 
+    def pop(self):
+        if self.values:
+            return self.values.pop()
+        return False
+
     def _validate_values(self):
         """Determines if a key's values are legal."""
         if not self._is_value_good():
@@ -252,6 +264,52 @@ class QueryPaths(Enum):
         'query_params': [('sort', 'relevance')]
     }
 
+
+#region Results.
+
+class StackExchangeResponse:
+
+    """Holds the data for a StackExchange API response."""
+    
+    def __init__(self, content, json=None):
+        self._content = content   # The response content returned by requests.get.
+        self._json = json or content.json()
+        self._results = [] # A response's items.
+        for q in self._json['items']:
+            self._results.append(StackExchangeResult(q))
+        self.result_count = len(self._results)
+
+    def __iter__(self):
+        for result in self._results:
+            yield result.__str__()
+
+    def print_results(self):
+        for i, result in enumerate(self):
+            print("Result {}:".format(i))
+            print(result.__str__())
+        
+    def print_result(self, result_index):
+        print(self._results[result_index].__str__())
+
+    def get_result(self, result_index):
+        return self._results[result_index]
+
+
+class StackExchangeResult:
+    
+    """A base class for defining common response item methods and attributes."""
+
+    def __init__(self, dict_):
+        self._d = dict_   # Dictionary holding this item's contents.
+    
+    def get(self):
+        return self._d
+        
+    def get_value(self, key):
+        return self._d[key]
+
+    def __str__(self):
+        return json.dumps(self._d, indent=4, sort_keys=True)
 
 
 # STACK EXCHANGE QUERY PARAMETERS FOR ADVANCED SEARCH
