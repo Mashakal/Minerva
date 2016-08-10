@@ -282,7 +282,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
 
         # Instantiate a handler object.
-        _Handler = self._handlers[self.data['luis_data']['formatted']['intent']]
+        _Handler = self._handlers.get(self.data['luis_data']['formatted']['intent'], DefaultHandler)
         intent_handler = _Handler(self, self.data)
         self._print_from_data(intent_handler.data['variables']['interests'])
         print(json.dumps(self.data['luis_data'], indent=3, sort_keys=True, cls=HelpBot.DataEncoder))
@@ -408,9 +408,24 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for key in items:
             print("  {0}:\t{1}".format(key.upper(), self.data['luis_data']['formatted'][key]))
         print()
+        
+    def _outgoing_message(self, message):
+        """Construct and send a message to the user."""
+        return {'next': Next.Continue, 
+                'post': self._agent.say(message)}
 
     # Intent processes.
+    # Default.
+    def default_fail(self):
+        return {'next': Next.Failure,
+                'post': self._agent.say("I'm sorry, but I don't think I can help you with that.")}
+
     # Solve Problem.
+    def send_solve_problem_acknowledgement(self):
+        """Sends a acknowledgement to the user."""
+        message = "Let me see what I can find about this on StackOverflow.com."
+        return self._outgoing_message(message)
+
     def get_stackexchange_query_params(self, query_text):
         """Returns a dict of stackexchange query parameters."""
         formatted_data  = self.data['luis_data']['formatted']
@@ -446,6 +461,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             pass
         return self.get_query_responses(query)
         
+    def print_responses(self, response):
+        """Prints all records in a query response."""
+        response.print_results()
+        return {'next': Next.Continue}
+
     def score_responses(self, query_response, query_text):
         for r in query_response.results:
             r.combine_scores(self.filter_out, self.raw_tags, query_text)
@@ -453,21 +473,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return {'next': Next.Continue,
                 'sorted_results': sorted_results}
 
-
-    def send_solve_problem_acknowledgement(self):
-        """Sends a acknowledgement to the user."""
-        message = "Let me see what I can find about this on StackOverflow.com."
-        return self.outgoing_message(message)
-
-    def outgoing_message(self, message):
-        """Construct and send a message to the user."""
-        return {'next': Next.Continue, 
-                'post': self._agent.say(message)}
-
-    def print_responses(self, response):
-        """Prints all records in a query response."""
-        response.print_results()
-        return {'next': Next.Continue}
+    def suggest_results(self, sorted_results):
+        """Output a message suggesting the top results."""
+        return {'next': Next.Complete,
+                'post': self._agent.suggest_stackexchange_results(sorted_results)}
+    
 
     # Learn about topic.
     def get_score_data(self, interests, top_count, query):
@@ -496,7 +506,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return {'next': 'continue'}
         else:
             return {'next': Next.Failure,
-                    'post': "I couldn't find any keywords in your query, I'm sorry. In the future, I'll be able to search StackOverflow for you."}
+                    'post': "I'm sorry.  I can't seem to find anything to help with that."}
 
     def evaluate_paths(self, filtered_matches):
         """If the path doesn't point to a str, determine where to go next.
@@ -708,6 +718,23 @@ class AbstractBaseHandler(AbstractHandler):
         self.data['outgoing'] = msgs
 
 
+class DefaultHandler(AbstractBaseHandler):
+
+    """Handles the default case."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('default_fail', [], False)
+        ]
+        self._load_from_data(data)
+
+    def _load_from_data(self, data):
+        self.data = data
+        self.data['variables'] = {'proc_index': 0, 'interests': []}
+        self.data['status'] = InterpreterStatus.Working
+        
+
 class LearnAboutTopicHandler(AbstractBaseHandler):
 
     """Handler for intent Learn About Topic."""
@@ -756,7 +783,8 @@ class SolveProblemHandler(AbstractBaseHandler):
             ('create_stackexchange_query', ['strict_params'], False), # query
             ('get_query_responses', ['query'], False),  # query_response
             #('print_responses', ['query_response'], False),
-            ('score_responses', ['query_response'], True),
+            ('score_responses', ['query_response'], True), # sorted_results
+            ('suggest_results', ['sorted_results'], False), # None
             ('fail_for_delete', [], False)
         ]
         self._load_from_data(data)

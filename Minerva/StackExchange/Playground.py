@@ -1,18 +1,23 @@
+import sys
 import string
 import json
 import itertools
 
 import Query
 
+#def main():
+#    question = "Can't view symbols during debugging."
+#    title = "How to debug a remote python application using (Python Tools for) Visual Studio?"
+#    question_words = set(map(trim_punctuation, question.split(" ")))
+#    title_words = set(map(trim_punctuation, title.split(" ")))
+#    scores = {w: title.count(w) for w in question_words}
+#    print(scores)
+#    scores = {w: question.count(w) for w in title_words}
+#    print(scores)
+
 def main():
-    question = "Can't view symbols during debugging."
-    title = "How to debug a remote python application using (Python Tools for) Visual Studio?"
-    question_words = set(map(trim_punctuation, question.split(" ")))
-    title_words = set(map(trim_punctuation, title.split(" ")))
-    scores = {w: title.count(w) for w in question_words}
-    print(scores)
-    scores = {w: question.count(w) for w in title_words}
-    print(scores)
+    print(sys.argv)
+    return
 
 def trim_punctuation(word):
     """Trims any surrounding punctuation."""

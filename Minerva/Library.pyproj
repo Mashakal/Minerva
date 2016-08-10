@@ -16,6 +16,9 @@
     </InterpreterId>
     <InterpreterVersion>
     </InterpreterVersion>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>--proj_sys=PTVS</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +49,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Information\PTVS.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Information\RTVS.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Information\SPADES.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Information\__init__.py">

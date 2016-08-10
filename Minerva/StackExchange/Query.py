@@ -1,12 +1,62 @@
 import requests
 import json
 import functools
-from html.parser import HTMLParser
+import re
+import html
 from urllib import parse
 from enum import Enum, unique
 
 _MAX_TAGS = 5    # Per the stack exchange API.
 _MAX_PAGE_SIZE = 100
+
+
+def trim_non_alpha(word):
+    """Trims any surrounding punctuation."""
+    first = last = None
+    for i, letter in enumerate(word):
+        if letter.isalpha():
+            if first is None:
+                first = i
+            else:
+                last = i
+    if not first:
+        return ''
+    elif not last:
+        return word
+    return word[first:last + 1]
+
+def parse_by_alpha(text):
+    """Returns a list of all segments of text based on the type of each char."""
+    current_type = None
+    start = 0
+    elements = []
+    for i, letter in enumerate(text):
+        chartype = get_char_type(letter)
+        if not chartype is current_type:
+            elements.append(text[start:i])
+            start = i
+            current_type = chartype
+        elif i == len(text) - 1:
+            elements.append(text[start:len(text)])
+    return elements
+
+def get_char_type(c):
+    if c.isalpha(): 
+        return CharType.alpha
+    elif c.isnumeric(): 
+        return CharType.numeric
+    return CharType.other
+
+def parse_and_filter(text, filter_out):
+    elements = parse_by_alpha(text)
+    filtered_set = set(filter(lambda s: s.isalnum() and len(s) > 1, elements))
+    return filtered_set - filter_out
+
+class CharType(Enum):
+    alpha = 1
+    numeric = 2
+    other = 3
+
 
 class StackExchangeQuery:
     _API_KEY = 'E3Ht0FN1L57M68Wk56e2RA(('    # API Key for Minerva, from StackExchange.com
@@ -31,7 +81,7 @@ class StackExchangeQuery:
         self.query_string.add_param('key', StackExchangeQuery._API_KEY)
         self.query_string.add_param('tagged', 'ptvs')
         self.query_string.add_param('nottagged', 'pycharm')
-        #self.query_string.add_param('filter', 'withbody') # Add withbody filter when searching the body is implemented.
+        self.query_string.add_param('filter', 'withbody')
 
         # IDs are added to the path when the URL is built.
         self._ids = []
@@ -323,34 +373,20 @@ class QuestionResult(BaseStackExchangeResult):
     def __init__(self, json):
         self._json = json
 
-        html_parser = HTMLParser()
-        self.title = html_parser.unescape(json['title'])
+
+        self.title = html.unescape(json['title'])
         self.answer_count = json['answer_count']
         self.is_answered = json['is_answered']
         self.link = json['link']
         self.question_id = json['question_id']
         self.tags = json['tags']
         if 'body' in json:
-            self.body =  html_parser.unescape(json['body'])
+            self.body =  html.unescape(json['body'])
         if 'combined_score' in json:
             self.combined_score = json['combined_score']
             
     def score_on_query(self, query, filter_out):
         """Scores this result based on string matching."""
-        def trim_non_alpha(word):
-            """Trims any surrounding punctuation."""
-            first = last = None
-            for i, letter in enumerate(word):
-                if letter.isalpha():
-                    if first is None:
-                        first = i
-                    else:
-                        last = i
-            if not first:
-                return ''
-            elif not last:
-                return word
-            return word[first:last + 1]
         trimmed_query = set(map(trim_non_alpha, query.lower().split(" ")))
         trimmed_title = set(map(trim_non_alpha, self.title.lower().split(" ")))
         intersection = (trimmed_query & trimmed_title) - filter_out
@@ -366,10 +402,22 @@ class QuestionResult(BaseStackExchangeResult):
         self.tag_score = len(intersection) * WEIGHT
         return self.tag_score
 
+    def score_on_body(self, query, filter_out):
+        """Adds scores based on matches from query to body of question."""
+        WEIGHT = 2
+        body_elements = parse_and_filter(self.body.lower(), filter_out)
+        query_elements = parse_and_filter(query.lower(), filter_out)
+        intersection = body_elements & query_elements
+        self.body_score = len(intersection) * WEIGHT
+        return self.body_score
+
     def combine_scores(self, filter_out, raw_tags, query):
+        score_attrs = ['tag_score', 'query_score', 'body_score']
         self.score_on_query(query, filter_out)
         self.score_on_tags(raw_tags)
-        self.combined_score = self.tag_score + self.query_score
+        self.score_on_body(query, filter_out)
+        scores = map(lambda attr: getattr(self, attr, 0), score_attrs)
+        self.combined_score = sum(scores)
         return self.combined_score
 
     def serialize(self):

@@ -6,8 +6,8 @@ import itertools
 
 class InfoManager:
     """Handles accessing of information data for LuisInterpreters."""
-    def __init__(self, moduleName):
-        self.update_mod(moduleName)
+    def __init__(self, mod_name):
+        self.update_mod(mod_name)
 
     def update_mod(self, mod):
         """Sets the InfoManager's module, which is the object's access

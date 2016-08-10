@@ -78,7 +78,7 @@ LINKS = {
     "PyLint": "https://github.com/Microsoft/PTVS/wiki/PyLint",
     "Azure SDK for Python": "https://github.com/Microsoft/PTVS/wiki/AzureSDK",
     "Kinect for Python": "https://github.com/Microsoft/PTVS/wiki/PyKinect",
-    "wfastcgi (on PyPI)": "https://pypi.python.org/pypi/wfastcgi"
+    "wfastcgi (on PyPI)": "https://pypi.python.org/pypi/wfastcgi",
 }
 
 KEY_MAP = {
@@ -243,5 +243,5 @@ KEY_MAP = {
     },
     'wfastcgi (on PyPI)': {
         'Triggers': {'wfastcgi', 'wfastcgi on pypi', 'pypi wfastcgi'}
-    }
+    },
 }

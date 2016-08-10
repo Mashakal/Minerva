@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 from bottle import get, post, request
 
 if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
@@ -11,6 +12,7 @@ if '--debug' in sys.argv[1:] or 'SERVER_DEBUG' in os.environ:
 from message import Message
 import HelpBot as bot
 
+PROJECT_SYSTEM = 'PTVS'
 
 @get('/')
 def home():
@@ -32,7 +34,7 @@ def root():
         return
 
     if msg.type.lower() == 'message':
-        return bot.on_message(msg)
+        return bot.on_message(msg, PROJECT_SYSTEM)
 
     try:
         handler = getattr(bot, msg.type)
@@ -43,9 +45,21 @@ def root():
 
 
 
+def parse_cmd_args():
+    # Handle command line args.
+    global PROJECT_SYSTEM
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--proj_sys", "--project_system", help="The project system whose information is to be used.")
+    args = parser.parse_args()
+    if args.proj_sys:
+        PROJECT_SYSTEM = args.proj_sys.upper()
+
 if __name__ == '__main__':
     import bottle
     bottle.debug(True)
+
+    if len(sys.argv) > 1:
+        parse_cmd_args()
 
     # Starts a local test server.
     HOST = os.environ.get('SERVER_HOST', 'localhost')
@@ -54,6 +68,10 @@ if __name__ == '__main__':
     except ValueError:
         PORT = 3978
     bottle.run(server='wsgiref', host=HOST, port=PORT)
+
+    
+
+    
 else:
     import bottle
 

@@ -238,6 +238,7 @@ class VSAgent(Agent):
         return self.say(''.join(['[', topic, '](', url, ')']))
 
     def suggest_urls(self, urls, topics):
+        # TODO: BUG, urls is a dict and order may differ from topics.
         if len(urls) != len(topics):
             raise ValueError("Each url must have a corresponding topic, and vice versa.")
         
@@ -247,6 +248,12 @@ class VSAgent(Agent):
             suggestions.append(self.suggest_url(url, topics[i]))
         return '  \n'.join(suggestions)
 
+    def suggest_stackexchange_results(self, results):
+        msg = "## These StackOverflow questions may help:"
+        formatted_links = map(lambda r: ''.join(['[', r.title, '](', r.link, ')']), results)
+        enumerated_links = map(lambda t: '. '.join([str(t[0] + 1), t[1]]), enumerate(formatted_links))
+        return self.say('  \n'.join([msg] + list(enumerated_links)))
+        
     def start_query(self, msg=None):
         m = msg or self._get_random_string_constant('start')
         return self.ask(m)

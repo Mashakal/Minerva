@@ -1,6 +1,5 @@
 import sys
 import json
-import pickle
 from enum import Enum, unique
 
 import Agent
@@ -10,15 +9,12 @@ import LuisClient
 import Query
 from LuisInterpreter import InterpreterStatus
 
-# For development purposes only:
-import Essentials
 
-
-def on_message(msg):
+def on_message(msg, system):
     #if msg_has_queue(msg):
     #    queue_message(msg)
     #    return
-    bot_convo = Conversation('PTVS', msg)
+    bot_convo = Conversation(system, msg)
     bot_convo.choose_action()
 
 def load_next_message(msg):
