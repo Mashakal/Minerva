@@ -432,7 +432,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         strict_params = {
             'tagged': ['ptvs'] + list(formatted_data['subjects'] | formatted_data['all_jargon']),
         }
-        self.raw_tags = strict_params['tagged']
+        self.raw_tags = list(map(lambda x: x if not x=="C #" else "C#", strict_params['tagged']))
         return {'next': Next.Continue, 
                 'strict_params': strict_params}
 
@@ -778,7 +778,7 @@ class SolveProblemHandler(AbstractBaseHandler):
         self.obj = obj
         self.procedures = [
             ('get_score_data', ['interests', 'top_count'], True), # top_matches, may be None.
-            ('send_solve_problem_acknowledgement', [], False),
+            #('send_solve_problem_acknowledgement', [], False),
             ('get_stackexchange_query_params', [], True), # strict_params
             ('create_stackexchange_query', ['strict_params'], False), # query
             ('get_query_responses', ['query'], False),  # query_response
