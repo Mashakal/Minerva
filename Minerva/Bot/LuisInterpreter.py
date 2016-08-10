@@ -6,7 +6,6 @@ import sys
 import abc
 import itertools
 import collections
-from html.parser import HTMLParser
 from enum import Enum, unique
 from nltk.corpus import stopwords
 
@@ -107,7 +106,7 @@ class BaseLuisInterpreter(AbstractLuisInterpreter):
             if not letter.isalpha():
                 items.append(text[breadcrumb:i].lower())
                 breadcrumb = i + 1
-        # Look for a trailing word.
+        # Look for a trailing word when there is no trailing punctuation.
         if text[-1].isalpha():
             items.append(text[breadcrumb:].lower())
         return items
@@ -269,7 +268,9 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
         self._agent = agent
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
-                          'Solve Problem': SolveProblemHandler}
+                          'Solve Problem': SolveProblemHandler,
+                          'Debugging Help': SolveProblemHandler,
+                          'Help Bot Help': LearnAboutTopicHandler}
 
     def interpret(self, data):
         # NLTK package raises ResourceWarning.
@@ -326,12 +327,17 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             max_len = 0
         return list(filter(lambda x: len(x) == max_len, paths))
 
+    def _filter_stopwords(self, to_filter):
+        """Removes stopwords from to_filter."""
+        filter_out = set(stopwords.words('english'))
+        word_set = set(to_filter)
+
     def _get_all_topic_matches(self, interests, query):
         """Returns a dictionary of topic/score pairs."""
         # Get all query words that are not also nltk.corpus.stopwords
-        filter_out = set(stopwords.words('english'))
+        self.filter_out = set(stopwords.words('english'))
         query_words = set(self._quick_parse(query))
-        filtered_words = query_words - filter_out
+        filtered_words = query_words - self.filter_out
 
         # Use filtered words to get linient scores.
         linient_scores = self._info.liniently_get_scores(filtered_words)
@@ -411,7 +417,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         strict_params = {
             'tagged': ['ptvs'] + list(formatted_data['subjects'] | formatted_data['all_jargon']),
         }
-        
+        self.raw_tags = strict_params['tagged']
         return {'next': Next.Continue, 
                 'strict_params': strict_params}
 
@@ -436,9 +442,18 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             return {'next': Next.Failure, 'post': "Couldn't find anything."}
         else:
             # Try to find queries that at least have the popped tag in the body.
-            query.query_string.add_param('body', popped)
+            #query.query_string.add_param('body', popped)
+            pass
         return self.get_query_responses(query)
         
+    def score_responses(self, query_response, query_text):
+        for r in query_response.results:
+            r.combine_scores(self.filter_out, self.raw_tags, query_text)
+        sorted_results = sorted(query_response.results, key=operator.attrgetter('combined_score'), reverse=True)[:5]
+        return {'next': Next.Continue,
+                'sorted_results': sorted_results}
+
+
     def send_solve_problem_acknowledgement(self):
         """Sends a acknowledgement to the user."""
         message = "Let me see what I can find about this on StackOverflow.com."
@@ -567,9 +582,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         topic for that path, due to the structure of the topics in the
         info.py file's LINKS variable.
         """
+        topics = [self._topic_from_path(m.path) for m in matches]
+        print("Topics are: {}".format(topics))
         return {
             'next': Next.Continue,
-            'topics': [self._topic_from_path(m.path) for m in matches]
+            'topics': topics
         }
 
     def get_url_items(self, topics, matches):
@@ -738,7 +755,8 @@ class SolveProblemHandler(AbstractBaseHandler):
             ('get_stackexchange_query_params', [], True), # strict_params
             ('create_stackexchange_query', ['strict_params'], False), # query
             ('get_query_responses', ['query'], False),  # query_response
-            ('print_responses', ['query_response'], False),
+            #('print_responses', ['query_response'], False),
+            ('score_responses', ['query_response'], True),
             ('fail_for_delete', [], False)
         ]
         self._load_from_data(data)

@@ -1,8 +1,12 @@
 import requests
 import json
+import functools
+from html.parser import HTMLParser
 from urllib import parse
 from enum import Enum, unique
 
+_MAX_TAGS = 5    # Per the stack exchange API.
+_MAX_PAGE_SIZE = 100
 
 class StackExchangeQuery:
     _API_KEY = 'E3Ht0FN1L57M68Wk56e2RA(('    # API Key for Minerva, from StackExchange.com
@@ -98,9 +102,6 @@ class StackExchangeQuery:
         content = requests.get(self.build_full_url())
         self.response = StackExchangeResponse(content)
 
-
-_MAX_TAGS = 5    # Per the stack exchange API.
-_MAX_PAGE_SIZE = 100
 
 class StackExchangeQueryString:
 
@@ -274,13 +275,13 @@ class StackExchangeResponse:
     def __init__(self, content, json=None):
         self._content = content   # The response content returned by requests.get.
         self._json = json or content.json()
-        self._results = [] # A response's items.
+        self.results = [] # A response's items.
         for q in self._json['items']:
-            self._results.append(StackExchangeResult(q))
-        self.result_count = len(self._results)
+            self.results.append(QuestionResult(q))
+        self.result_count = len(self.results)
 
     def __iter__(self):
-        for result in self._results:
+        for result in self.results:
             yield result.__str__()
 
     def print_results(self):
@@ -289,27 +290,93 @@ class StackExchangeResponse:
             print(result.__str__())
         
     def print_result(self, result_index):
-        print(self._results[result_index].__str__())
+        print(self.results[result_index].__str__())
 
     def get_result(self, result_index):
-        return self._results[result_index]
+        return self.results[result_index]
 
 
-class StackExchangeResult:
+class BaseStackExchangeResult:
     
-    """A base class for defining common response item methods and attributes."""
+    """A base class for query result items."""
 
-    def __init__(self, dict_):
-        self._d = dict_   # Dictionary holding this item's contents.
-    
+    def __init__(self, json):
+        self._json = json
+
     def get(self):
-        return self._d
+        return self.json
         
-    def get_value(self, key):
-        return self._d[key]
+    def __getattr__(self, attr):
+        try:
+            return self._json[attr]
+        except KeyError:
+            return None
 
     def __str__(self):
-        return json.dumps(self._d, indent=4, sort_keys=True)
+        return json.dumps(self.json, indent=4, sort_keys=True)
+
+
+class QuestionResult(BaseStackExchangeResult):
+
+    """Represents a question type result."""
+
+    def __init__(self, json):
+        self._json = json
+
+        html_parser = HTMLParser()
+        self.title = html_parser.unescape(json['title'])
+        self.answer_count = json['answer_count']
+        self.is_answered = json['is_answered']
+        self.link = json['link']
+        self.question_id = json['question_id']
+        self.tags = json['tags']
+        if 'body' in json:
+            self.body =  html_parser.unescape(json['body'])
+        if 'combined_score' in json:
+            self.combined_score = json['combined_score']
+            
+    def score_on_query(self, query, filter_out):
+        """Scores this result based on string matching."""
+        def trim_non_alpha(word):
+            """Trims any surrounding punctuation."""
+            first = last = None
+            for i, letter in enumerate(word):
+                if letter.isalpha():
+                    if first is None:
+                        first = i
+                    else:
+                        last = i
+            if not first:
+                return ''
+            elif not last:
+                return word
+            return word[first:last + 1]
+        trimmed_query = set(map(trim_non_alpha, query.lower().split(" ")))
+        trimmed_title = set(map(trim_non_alpha, self.title.lower().split(" ")))
+        intersection = (trimmed_query & trimmed_title) - filter_out
+        self.query_score = len(intersection)
+        return self.query_score
+
+    def score_on_tags(self, query_tags):
+        """Scores this result based on tag matching."""
+        WEIGHT = 2
+        tags = set(self.tags)
+        q_tags = set(query_tags)
+        intersection = tags & q_tags
+        self.tag_score = len(intersection) * WEIGHT
+        return self.tag_score
+
+    def combine_scores(self, filter_out, raw_tags, query):
+        self.score_on_query(query, filter_out)
+        self.score_on_tags(raw_tags)
+        self.combined_score = self.tag_score + self.query_score
+        return self.combined_score
+
+    def serialize(self):
+        """Returns a serializable object."""
+        self._json['combined_score'] = self.combined_score
+        return self._json
+
 
 
 # STACK EXCHANGE QUERY PARAMETERS FOR ADVANCED SEARCH

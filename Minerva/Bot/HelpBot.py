@@ -238,6 +238,8 @@ class DataEncoder(json.JSONEncoder):
             return {"__StackExchangeResponse__": obj._json}
         elif isinstance(obj, Query.StackExchangeQuery):
             return {"__StackExchangeQuery__": repr(obj)}
+        elif isinstance(obj, Query.QuestionResult):
+            return {"__QuestionResult__": obj.serialize()}
         return json.JSONEncoder.default(self, obj)
 
     @classmethod

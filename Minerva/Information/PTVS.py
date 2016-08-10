@@ -51,7 +51,7 @@ LINKS = {
         "Debugging without a Project": "https://github.com/Microsoft/PTVS/wiki/Debugging#debugging-without-a-project",
         "The Debug Interactive Window": "https://github.com/Microsoft/PTVS/wiki/Debugging#the-debug-interactive-window",
         "Remote Debugging": {
-            "Windows, Linux, and OS X": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
+            "Cross Platform": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
             "Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging",
         },
         "Mixed-Mode/Native Debugging": {
@@ -172,7 +172,7 @@ KEY_MAP = {
     "Debugging": {
         'Triggers': {'debugging', 'debug', 'debugger', 'debuggor'},
         'Remote Debugging': {
-            'Triggers': {'remote debugging', 'remote debug', 'debug remotely', 'remote', 'attach', 'attached', 'nonlocal', 'ptvsd'}
+            'Triggers': {'remote debugging', 'remote debug', 'debug remotely', 'remote', 'attach', 'attached', 'nonlocal', 'attach', 'attach a process', 'ptvsd'}
         },
         'Basic Debugging': {
             'Triggers': {'basic debugging', 'debugging', 'debug', 'debugger', 'debuggor'}
