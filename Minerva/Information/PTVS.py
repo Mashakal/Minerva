@@ -13,7 +13,8 @@ LINKS = {
     "WIKI": "https://github.com/Microsoft/PTVS/wiki",
     "Installation": "https://github.com/Microsoft/PTVS/wiki/PTVS-Installation",
     "Packages": {
-        'Installing Packages': 'https://github.com/Microsoft/PTVS/wiki/PTVS-Installation#python-package-installation-options'
+        "Installing Packages": 'https://github.com/Microsoft/PTVS/wiki/PTVS-Installation#python-package-installation-options',
+        "Managing Required Packages": "https://github.com/Microsoft/PTVS/wiki/Python-Environments#managing-required-packages"
     },
     "Feature Matrix": "https://github.com/Microsoft/PTVS/wiki/Features-Matrix",
     "Overview Videos": "https://github.com/Microsoft/PTVS/wiki/Videos",
@@ -25,7 +26,15 @@ LINKS = {
         "Flask and Azure Table Storage": "https://github.com/Microsoft/PTVS/wiki/Flask-and-Azure-Table-Storage-on-Azure",
         "Flask and MongoDB": "https://github.com/Microsoft/PTVS/wiki/Flask-and-MongoDB-on-Azure",
         "Django and SQL Database": "https://github.com/Microsoft/PTVS/wiki/Django-and-SQL-Database-on-Azure",
-        "Django and MySQL": "https://github.com/Microsoft/PTVS/wiki/Django-and-MySQL-on-Azure"
+        "Django and MySQL": "https://github.com/Microsoft/PTVS/wiki/Django-and-MySQL-on-Azure",
+        "Python Interpreters": "https://www.youtube.com/watch?v=KY1GEOo3qy0&feature=youtu.be",
+    },
+    "Environments": {
+        "Environments Home": "https://github.com/Microsoft/PTVS/wiki/Python-Environments",
+        "The Python Environment": "https://github.com/Microsoft/PTVS/wiki/Python-Environments#the-python-environment",
+        "Global Environments": "https://github.com/Microsoft/PTVS/wiki/Python-Environments#global-environments",
+        "Project Environments": "https://github.com/Microsoft/PTVS/wiki/Python-Environments#project-environments",
+        "Virtual Environments": "https://github.com/Microsoft/PTVS/wiki/Python-Environments#virtual-environments",
     },
     "Editing": "https://github.com/Microsoft/PTVS/wiki/Editor-Features",
     "Intellisense": "https://github.com/Microsoft/PTVS/wiki/Editor-Features#intellisense",
@@ -79,7 +88,12 @@ LINKS = {
     "Azure SDK for Python": "https://github.com/Microsoft/PTVS/wiki/AzureSDK",
     "Kinect for Python": "https://github.com/Microsoft/PTVS/wiki/PyKinect",
     "wfastcgi (on PyPI)": "https://pypi.python.org/pypi/wfastcgi",
+    "Azure": {
+        "Deploy to Azure": "https://github.com/Microsoft/PTVS/wiki/Web-Project#publishing-to-microsoft-azure"
+    },
+    "The Zen of Python": "http://www.thezenofpython.com/"
 }
+
 
 KEY_MAP = {
     'Tutorials': {
@@ -101,12 +115,36 @@ KEY_MAP = {
         },
         'Django and MySql': {
             'Triggers': {'django and mysql', 'django with mysql'}
+        },
+        'Python Interpreters': {
+            'Triggers': {'interpreters tutorial', 'interpreter tutorial'}
+        }
+    },
+    'Environments': {
+        'Triggers': {'environments', 'env', 'venv', 'envs', 'venvs'},
+        'Environments Home': {
+            'Triggers': {''}
+        },
+        'The Python Environment': {
+            'Triggers': {'environment', 'env', 'envs', 'environments'}
+        },
+        'Global Environments': {
+            'Triggers': {'global environements', 'global environment'}
+        },
+        'Project Environments': {
+            'Triggers': {'project environments', 'project environment'}
+        },
+        'Virtual Environments': {
+            'Triggers': {'virtual environments', 'virtual environment', 'v env', 'venv', 'venvs'}
         }
     },
     'Packages': {
-        'Triggers': {'packages'},
+        'Triggers': {'packages', 'modules'},
         'Installing Packages': {
-            'Triggers': {'installing packages'}
+            'Triggers': {'installing packages', 'installing modules', 'how to install', 'how do i install', 'wheels'}
+        },
+        'Managing Required Packages': {
+            'Triggers': {'managing required packages', 'required packages', 'requirements', 'requirements file', 'requirements.txt'}
         }
     },
     'WIKI': {
@@ -152,7 +190,7 @@ KEY_MAP = {
         }
     },
     'Navigation': {
-        'Triggers': {'navigation', 'navigate'},
+        'Triggers': {'navigation', 'navigate'}
     },
     'Refactoring': {
         'Triggers': {'refactoring'},
@@ -244,4 +282,13 @@ KEY_MAP = {
     'wfastcgi (on PyPI)': {
         'Triggers': {'wfastcgi', 'wfastcgi on pypi', 'pypi wfastcgi'}
     },
+    'Azure': {
+        'Triggers': {'azure'},
+        'Deploy to Azure': {
+            'Triggers': {'deploy to azure', 'deployment on azure', 'deploy a website', 'deploy a flask website', 'deploy a django website', 'deploy a website'}
+        }
+    },
+    'The Zen of Python': {
+        'Triggers': {'the zen of python', 'zen of python', 'zen'}
+    }
 }
