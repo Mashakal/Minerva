@@ -66,7 +66,7 @@ LINKS = {
         "Django": "https://github.com/Microsoft/PTVS/wiki/Django",
         "Web Projects": "https://github.com/Microsoft/PTVS/wiki/Web-Project",
         "Cloud Service Project": "https://github.com/Microsoft/PTVS/wiki/Cloud-Project",
-        "Working without Projects": "https://github.com/Microsoft/PTVS/wiki/Projects#lightweight-usage-project-free",
+        "Working Without Projects": "https://github.com/Microsoft/PTVS/wiki/Projects#lightweight-usage-project-free",
         "New Project from Existing Code": "https://github.com/Microsoft/PTVS/wiki/Projects#create-project-from-existing-files",
         "Linked Files": "https://github.com/Microsoft/PTVS/wiki/Projects#linked-files",
         "Search Paths": "https://github.com/Microsoft/PTVS/wiki/Projects#search-paths",
@@ -121,7 +121,7 @@ KEY_MAP = {
             'Triggers': {'django', 'django web project', 'django project'}
         },
         'Web Projects': {
-            'Triggers': {'web projects', 'web'}
+            'Triggers': {'web projects', 'web', 'deploy', 'deploy a website'}
         },
         'Project Types': {
             'Triggers': {'project types', 'types', 'type'}
