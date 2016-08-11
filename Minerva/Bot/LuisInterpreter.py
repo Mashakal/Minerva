@@ -269,8 +269,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent = agent
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,
-                          'Debugging Help': SolveProblemHandler,
-                          'Help Bot Help': LearnAboutTopicHandler}
+                          'Debugging Help': SolveProblemHandler}
 
     def interpret(self, data):
         # NLTK package raises ResourceWarning.
