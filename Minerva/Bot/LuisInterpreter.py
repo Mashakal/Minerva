@@ -269,7 +269,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent = agent
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,
-                          'Debugging Help': SolveProblemHandler}
+                          'Debugging Help': SolveProblemHandler,
+                          'Get Opinion': GetOpinionHandler}
 
     def interpret(self, data):
         # NLTK package raises ResourceWarning.
@@ -419,6 +420,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return {'next': Next.Failure,
                 'post': self._agent.say("I'm sorry, but I don't think I can help you with that.")}
 
+    # Get Opinion
+    def opinion_message(self):
+        return {'next': Next.Complete,
+                'post': self._agent.say("Sorry, but my opinion isn't worth much ... _yet_.")}
+
     # Solve Problem.
     def send_solve_problem_acknowledgement(self):
         """Sends a acknowledgement to the user."""
@@ -481,13 +487,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     # Learn about topic.
     def get_score_data(self, interests, top_count, query):
         """Gets the first top_count topics from all matched topics."""
+        MIN_SCORE = 2
         topic_matches = self._get_all_topic_matches(interests, query)
         # Sort and filter the topics.
         sorted_scores = sorted(topic_matches, key=operator.attrgetter('score'), reverse=True)
-        top_matches = list(filter(lambda x: x.score > 0, sorted_scores))[:top_count - 1]
-        if top_matches and top_matches[0].score == 1:
-            # A top-score of 1 is not very good, just grab one of them.
-            top_matches = top_matches[:1]
+        top_matches = list(filter(lambda x: x.score >= MIN_SCORE, sorted_scores))[:top_count - 1]
+        #if top_matches and top_matches[0].score == 1:
+        #    # A top-score of 1 is not very good, just grab one of them.
+        #    top_matches = top_matches[:1]
         return {'next': Next.Continue,
                 'top_matches': top_matches}
 
@@ -537,10 +544,15 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             match = incomplete_matches[match_index]
             # A path might have had a key added since it was marked as incomplete.
             if not self._is_path_complete(match.path):
+                options = [t for t in self._info.traverse_keys(match.path)]
+                # We don't need any user input if there's only one option.
+                if len(options) == 1:
+                    match.path.append(options[0])
+                    self.complete_matches(incomplete_matches, match_index)
                 _ret['post'] = self._get_unfinished_path_message(match.path)
                 _ret['next'] = Next.WaitThenContinue
                 _ret['match_index'] = match_index
-                _ret['options'] = [t for t in self._info.traverse_keys(match.path)]
+                _ret['options'] = options
                 return _ret
             else:
                 match_index += 1
@@ -606,8 +618,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'urls': urls
         }
 
-    def make_suggestion(self, url_dict, topics):
-        reply = self._agent.suggest_urls(list(url_dict.values()), topics)
+    def make_suggestion(self, url_dict):
+        reply = self._agent.suggest_urls(url_dict)
         return {
             'post': reply,
             'next': Next.Complete
@@ -641,19 +653,16 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
 #region Intent Handlers
 
-class AbstractHandler(abc.ABC):
-
-    """An abstract class that acts as an interface for LUIS intent handlers."""
-
-    @abc.abstractmethod
-    def _load_from_data(self, data):
-        """Loads the needed information from the data passed in during instantiation."""
-        raise NotImplementedError
-
-
-class AbstractBaseHandler(AbstractHandler):
+class AbstractBaseHandler:
     
     """A base class to handle Luis determined intents."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('default_fail', [], False)
+        ]
+        self._load_from_data(data)
 
     def run_process(self):
         """Runs the current process."""
@@ -716,23 +725,18 @@ class AbstractBaseHandler(AbstractHandler):
         msgs.append(message)
         self.data['outgoing'] = msgs
 
+    def _load_from_data(self, data):
+        self.data = data
+        self.data['variables'] = {'proc_index': 0, 'interests': []}
+        self.data['status'] = InterpreterStatus.Working
+
 
 class DefaultHandler(AbstractBaseHandler):
 
     """Handles the default case."""
 
-    def __init__(self, obj, data):
-        self.obj = obj
-        self.procedures = [
-            ('default_fail', [], False)
-        ]
-        self._load_from_data(data)
+    pass
 
-    def _load_from_data(self, data):
-        self.data = data
-        self.data['variables'] = {'proc_index': 0, 'interests': []}
-        self.data['status'] = InterpreterStatus.Working
-        
 
 class LearnAboutTopicHandler(AbstractBaseHandler):
 
@@ -752,7 +756,7 @@ class LearnAboutTopicHandler(AbstractBaseHandler):
             ('combine_path_lists', ['incomplete_matches', 'complete_matches'], False),
             ('get_all_topics', ['complete_matches'], False),
             ('get_url_items', ['topics', 'complete_matches'], False), # urls:dict
-            ('make_suggestion', ['urls', 'topics'], False)]
+            ('make_suggestion', ['urls'], False)]
         self._load_from_data(data)
 
     def _load_from_data(self, data):
@@ -799,3 +803,15 @@ class SolveProblemHandler(AbstractBaseHandler):
         elif data['status'] is InterpreterStatus.WaitingToContinue:
             self.data['variables']['proc_index'] += 1
         self.data['status'] = InterpreterStatus.Working
+
+
+class GetOpinionHandler(AbstractBaseHandler):
+
+    """Handler for intent Get Opinion."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('opinion_message', [], False)
+        ]
+        self._load_from_data(data)

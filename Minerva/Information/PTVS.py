@@ -89,12 +89,16 @@ LINKS = {
     "Kinect for Python": "https://github.com/Microsoft/PTVS/wiki/PyKinect",
     "wfastcgi (on PyPI)": "https://pypi.python.org/pypi/wfastcgi",
     "Azure": {
-        "Deploy to Azure": "https://github.com/Microsoft/PTVS/wiki/Web-Project#publishing-to-microsoft-azure"
+        "Deploy to Azure": "https://github.com/Microsoft/PTVS/wiki/Web-Project#publishing-to-microsoft-azure",
+        "Azure Home": "https://azure.microsoft.com/en-us/free/"
     },
     "The Zen of Python": "http://www.thezenofpython.com/",
     "Porting to Python 3": "https://docs.python.org/3.3/howto/pyporting.html",
     "Python Versions": {
         "Which Python Version Should I Use?": "https://wiki.python.org/moin/Python2orPython3"
+    },
+    "AWS": {
+        "Deploy to AWS": "https://aws.amazon.com/python/"
     }
 }
 
@@ -148,7 +152,7 @@ KEY_MAP = {
             'Triggers': {'installing packages', 'installing modules', 'how to install', 'how do i install', 'wheels', 'wheel'}
         },
         'Managing Required Packages': {
-            'Triggers': {'managing required packages', 'required packages', 'requirements', 'requirements file', 'requirements.txt'}
+            'Triggers': {'managing required packages', 'required packages', 'requirements', 'requirements file', 'requirements.txt', 'how to use requirements'}
         }
     },
     'WIKI': {
@@ -158,18 +162,17 @@ KEY_MAP = {
         "Triggers": {'installation', 'install', 'instalation', 'installs'}
     },
     'Projects': {
-        'Triggers': {'projects', 'project'},
         "Django": {
             'Triggers': {'django', 'django web project', 'django project'}
         },
         'Web Projects': {
-            'Triggers': {'web projects', 'web', 'deploy', 'deploy a website'}
+            'Triggers': {'web projects', 'web', 'deploy', 'deploy a website', 'web project'}
         },
         'Project Types': {
             'Triggers': {'project types', 'types', 'type'}
         },
         'Cloud Service Project': {
-            'Triggers': {'cloud service project', 'cloud project', 'cloud'}
+            'Triggers': {'cloud service project', 'cloud project', 'cloud', 'cloud projects'}
         },
         'Working Without Projects': {
             'Triggers': {'working without projects', 'without projects', 'lightweight', 'lightweight-usage', 'project-free', 'project free'}
@@ -181,16 +184,10 @@ KEY_MAP = {
             'Triggers': {'linked files', 'linked', 'linked file', 'create a linked file', 'link a file', 'link'}
         },
         'Search Paths': {
-            'Triggers': {'search paths', 'user defined modules', 'user defined packages'}
+            'Triggers': {'search paths', 'user defined modules', 'user defined packages', 'custom packages'}
         },
         'References': {
             'Triggers': {'references', 'what are references'}
-        },
-        'Python Environments': {
-            'Triggers': {'environments', 'help with environments'}
-        },
-        'Managing Requirements': {
-            'Triggers': {'managing requirements', 'requirements', 'how to use requirements'}
         }
     },
     'Navigation': {
@@ -287,21 +284,28 @@ KEY_MAP = {
         'Triggers': {'wfastcgi', 'wfastcgi on pypi', 'pypi wfastcgi'}
     },
     'Azure': {
-        'Triggers': {'azure'},
         'Deploy to Azure': {
             'Triggers': {'deploy to azure', 'deployment on azure', 'deploy a website', 'deploy a flask website', 'deploy a django website', 'deploy a website'}
+        },
+        'Azure Home': {
+            'Triggers': {'azure', 'azure home'}
         }
     },
     'The Zen of Python': {
         'Triggers': {'the zen of python', 'zen of python', 'zen'}
     },
     'Porting to Python 3': {
-        'Triggers': {'porting to', 'porting code', 'python3', 'python 3'}
+        'Triggers': {'porting to', 'porting code', 'python3', 'python 3', 'port code', 'port', 'from python 2', 'from python2'}
     },
     'Python Versions': {
         'Triggers': {'python versions'},
         'Which Python Version Should I Use?': {
             'Triggers': {'which python version should I use', 'which version', 'which python', 'why python 3', 'why python 2'}
+        }
+    },
+    'AWS': {
+        'Deploy to AWS': {
+            'Triggers': {'deploy to aws', 'aws'}
         }
     }
 }
