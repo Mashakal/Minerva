@@ -91,7 +91,11 @@ LINKS = {
     "Azure": {
         "Deploy to Azure": "https://github.com/Microsoft/PTVS/wiki/Web-Project#publishing-to-microsoft-azure"
     },
-    "The Zen of Python": "http://www.thezenofpython.com/"
+    "The Zen of Python": "http://www.thezenofpython.com/",
+    "Porting to Python 3": "https://docs.python.org/3.3/howto/pyporting.html",
+    "Python Versions": {
+        "Which Python Version Should I Use?": "https://wiki.python.org/moin/Python2orPython3"
+    }
 }
 
 
@@ -121,7 +125,7 @@ KEY_MAP = {
         }
     },
     'Environments': {
-        'Triggers': {'environments', 'env', 'venv', 'envs', 'venvs'},
+        'Triggers': {'environments', 'env', 'envs'},
         'Environments Home': {
             'Triggers': {''}
         },
@@ -141,7 +145,7 @@ KEY_MAP = {
     'Packages': {
         'Triggers': {'packages', 'modules'},
         'Installing Packages': {
-            'Triggers': {'installing packages', 'installing modules', 'how to install', 'how do i install', 'wheels'}
+            'Triggers': {'installing packages', 'installing modules', 'how to install', 'how do i install', 'wheels', 'wheel'}
         },
         'Managing Required Packages': {
             'Triggers': {'managing required packages', 'required packages', 'requirements', 'requirements file', 'requirements.txt'}
@@ -290,5 +294,14 @@ KEY_MAP = {
     },
     'The Zen of Python': {
         'Triggers': {'the zen of python', 'zen of python', 'zen'}
+    },
+    'Porting to Python 3': {
+        'Triggers': {'porting to', 'porting code', 'python3', 'python 3'}
+    },
+    'Python Versions': {
+        'Triggers': {'python versions'},
+        'Which Python Version Should I Use?': {
+            'Triggers': {'which python version should I use', 'which version', 'which python', 'why python 3', 'why python 2'}
+        }
     }
 }
