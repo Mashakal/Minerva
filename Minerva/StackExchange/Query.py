@@ -124,6 +124,7 @@ class StackExchangeQuery:
         if not isinstance(query_path, QueryPaths):
             raise ValueError("Query path must be of type QueryPaths, not: {}".format(type(query_path)))
         
+        # Remove default params if a query path has already been set.
         if self._query_path:
             for default in self._query_path.value['query_params']:
                 self.query_string.remove_param(default[0])
