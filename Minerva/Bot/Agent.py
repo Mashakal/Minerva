@@ -237,12 +237,14 @@ class VSAgent(Agent):
         """Creates a link from a topic and an url."""
         return self.say(''.join(['[', topic, '](', url, ')']))
 
-    def suggest_urls(self, urls, topics):
-        # TODO: BUG, urls is a dict and order may differ from topics.
-        if len(urls) != len(topics):
-            raise ValueError("Each url must have a corresponding topic, and vice versa.")
+    def suggest_urls(self, urls_dict):
+        topics = []
+        urls = []
+        for k, v in urls_dict.items():
+            topics.append(k)
+            urls.append(v)
         
-        top = "## Here are a few links:" if len(urls) > 1 else "## Try this link:"
+        top = "## Here are a few links:" if len(urls_dict) > 1 else "## Try this link:"
         suggestions = [top]
         for i, url in enumerate(urls):
             suggestions.append(self.suggest_url(url, topics[i]))
