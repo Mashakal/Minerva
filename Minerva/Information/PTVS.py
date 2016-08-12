@@ -209,7 +209,7 @@ KEY_MAP = {
         }
     },
     "Debugging": {
-        'Triggers': {'debugging', 'debug', 'debugger', 'debuggor'},
+        #'Triggers': {'debugging', 'debug', 'debugger', 'debuggor'},
         'Remote Debugging': {
             'Triggers': {'remote debugging', 'remote debug', 'debug remotely', 'remote', 'attach', 'attached', 'nonlocal', 'attach', 'attach a process', 'ptvsd'}
         },

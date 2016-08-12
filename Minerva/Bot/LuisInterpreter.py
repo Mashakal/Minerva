@@ -485,36 +485,30 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     
 
     # Learn about topic.
-    def get_score_data(self, interests, top_count, query):
+    def get_top_matches(self, interests, top_count, query):
         """Gets the first top_count topics from all matched topics."""
         MIN_SCORE = 2
         topic_matches = self._get_all_topic_matches(interests, query)
-        # Sort and filter the topics.
+        # Sort and filter the topics by score.
         sorted_scores = sorted(topic_matches, key=operator.attrgetter('score'), reverse=True)
         top_matches = list(filter(lambda x: x.score >= MIN_SCORE, sorted_scores))[:top_count - 1]
-        #if top_matches and top_matches[0].score == 1:
-        #    # A top-score of 1 is not very good, just grab one of them.
-        #    top_matches = top_matches[:1]
+        # Add paths to each topic.
+        for match in top_matches:
+            match.path = self._info.get_path(match.topic)
+        # Filter by path.
+        top_matches = self._info.remove_subpaths(top_matches)
         return {'next': Next.Continue,
                 'top_matches': top_matches}
 
-    def add_paths_to_topics(self, top_matches):
-        """Finds all unique topics and their paths."""
-        for match in top_matches:
-            match.path = self._info.get_path(match.topic)
-        filtered_matches = self._info.remove_subpaths(top_matches)
-        return {'next': Next.Continue,
-                'filtered_matches': filtered_matches}
-
-    def verify_matches_found(self, filtered_matches):
+    def verify_matches_found(self, top_matches):
         """True if at least one path was found, otherwise False."""
-        if filtered_matches:
+        if top_matches:
             return {'next': 'continue'}
         else:
             return {'next': Next.Failure,
                     'post': "I'm sorry.  I can't seem to find anything to help with that."}
 
-    def evaluate_paths(self, filtered_matches):
+    def evaluate_paths(self, top_matches):
         """If the path doesn't point to a str, determine where to go next.
         
         When the path does not point to a str, then it points to a dict
@@ -524,7 +518,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         incompletes = []
         completes = []
 
-        for match in filtered_matches:
+        for match in top_matches:
             end = self._info.traverse_keys(match.path)
             if not isinstance(end, str):
                 incompletes.append(match)
@@ -746,10 +740,9 @@ class LearnAboutTopicHandler(AbstractBaseHandler):
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('get_score_data', ['interests', 'top_count'], True),   # top_matches
-            ('add_paths_to_topics', ['top_matches'], False),   # filtered_matches
-            ('verify_matches_found', ['filtered_matches'], False),
-            ('evaluate_paths', ['filtered_matches'], False),  # complete_matches, incomplete_matches
+            ('get_top_matches', ['interests', 'top_count'], True),   # top_matches
+            ('verify_matches_found', ['top_matches'], False),
+            ('evaluate_paths', ['top_matches'], False),  # complete_matches, incomplete_matches
             ('complete_matches', ['incomplete_matches', 'match_index'], False), # options, match_index - or - None
             ('check_input_on_unfinished_path', ['options'], True), # chosen_opt - or - None
             ('add_key_to_path', ['incomplete_matches', 'match_index', 'chosen_opt'], False),
@@ -780,7 +773,7 @@ class SolveProblemHandler(AbstractBaseHandler):
     def __init__(self, obj, data):
         self.obj = obj
         self.procedures = [
-            ('get_score_data', ['interests', 'top_count'], True), # top_matches, may be None.
+            ('get_top_matches', ['interests', 'top_count'], True), # top_matches, may be None.
             #('send_solve_problem_acknowledgement', [], False),
             ('get_stackexchange_query_params', [], True), # strict_params
             ('create_stackexchange_query', ['strict_params'], False), # query
