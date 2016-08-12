@@ -244,27 +244,9 @@ class DataEncoder(json.JSONEncoder):
             name, member = obj["__enum__"].split('.')
             return getattr(globals()[name], member)
         elif "__set__" in obj:
-            return eval(cls._create_set_string(obj["__set__"]))
+            return eval(obj["__set__"])
         elif "__TopicMatch__" in obj:
             return InfoManager.TopicMatch._init_from_decode(obj)
         elif "__StackExchangeResponse__" in obj:
             return Query.StackExchangeResponse(None, json=obj["__StackExchangeResponse__"])
         return obj
-    
-    @staticmethod
-    def _create_set_string(set_string):
-        """Returns a string formatted for use with eval, to create a set.
-        
-        Examples of set_string when passed into the function are
-            "{'Remote Debugging', 'Mixed-Mode Debugging'}"
-            "{'PyLint'}"
-
-        And being returned:
-            "set(('Remote Deubbing', Mixed-Mode Debugging'))"
-            "{'PyLint'}"
-
-        """
-        trimmed_string = set_string[1:-1]
-        if trimmed_string.count(' ') > 1:
-            return ''.join(['set((', trimmed_string, '))'])
-        return set_string
