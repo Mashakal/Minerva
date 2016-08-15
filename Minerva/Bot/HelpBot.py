@@ -229,10 +229,8 @@ class LuisData:
         for attr_name, entity_label in LuisClient.MODEL_ENTITY_SCHEMA.items():
             self._set_entity_attr(attr_name, entity_label)
 
-        # Hybrid attributes.
-        self.all_jargon = (self.jargon_single or []) + \
-                          (self.jargon_phrase or []) + \
-                          (self.jargon_debugging or [])
+        # Composite attributes.
+        self.all_jargon = self.jargon_single + self.jargon_phrase + self.jargon_debugging
         self.learn_about_triggers = self.learn_about_phrases + self.learn_about_singles
 
         # Additional setup.
@@ -258,7 +256,7 @@ class LuisData:
         print("Set {} to {}".format(attr_name, getattr(self, attr_name)))
         
     def _initialize_attrs(self):
-        """Handle any special formatting for any given attribute."""
+        """Handle any special formatting for any attribute that needs it."""
         # LUIS adds whitespace between nonalpha characters.
         if self.languages:
             self.languages = list(map(lambda e: e.replace(' ', ''), self.languages))

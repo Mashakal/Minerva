@@ -69,6 +69,12 @@ class DebugTopic(Enum):
     SolveProblem = 7
     LearnAbout = 8
 
+@unique
+class Intent(Enum):
+    SolveProblem = 1
+    LearnAboutTopic = 2
+    Other = 3
+
 
 #region Interpreters
 
@@ -298,7 +304,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,
                           'Debugging Help': DebuggingHelpHandler,
-                          'Get Opinion': GetOpinionHandler}
+                          'Get Opinion': GetOpinionHandler,
+                          'Install Something': InstallSomethingHandler}
 
     def interpret(self, data):
         self.data = data
@@ -463,6 +470,8 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         if 'tagged' in params:
             query.raw_tags = params['tagged']
             print("Saved raw_tags.")
+        else:
+            query.raw_tags = []
         query.set_query_path(Query.QueryPaths.AdvancedSearch)
         return {'next': Next.Continue, 'query': query}
 
@@ -752,7 +761,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                     'reroute': {'f_attr': 'suggest_wiki_page'},
                     'urls_dict': urls_dict}
 
-
     def _search_for_substrings(self, substrings):
         """Searches the words of interest for any substring in stubstrings."""
         print("Substrings are: {}, and type is: {}".format(substrings, type(substrings)))
@@ -760,7 +768,47 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         for sub in substrings:
             if any(sub in e for e in data_words):
                 return True
-   
+
+
+    # Install Something
+    def suggest_install_urls(self):
+        if self.luis_data.installables:
+            if any('ptvs' in i for i in self.luis_data.installables[0]):
+                urls = {'Installing Python Tools for Visual Studio (PTVS)': "https://github.com/Microsoft/PTVS/wiki/PTVS-Installation",
+                       'Setting Up Visual Studio for Python Videos': 'https://youtu.be/_okUV47eM5c?list=PLReL099Y5nRdLgGAdrb_YeTdEnd23s6Ff'}
+            else:
+                urls = {'Installing Packages/Modules': 'https://github.com/Microsoft/PTVS/wiki/PTVS-Installation#python-package-installation-options',
+                        'Installing Python Interpreters': "https://github.com/Microsoft/PTVS/wiki/Selecting-and-Installing-Python-Interpreters",
+                        'Installing PyLint': "https://github.com/Microsoft/PTVS/wiki/Pylint",
+                        'Installing WebFrameworks and Dependencies': 'https://github.com/Microsoft/PTVS/wiki/Development-WebFrameworks'}
+        reply = self._agent.suggest_urls(urls)
+        return {'next': Next.Complete,
+                'post': reply}
+            
+    def get_secondary_intent(self):
+        try:
+            intent = self.luis_data.intents[1]
+        except IndexError:
+            return Intent.Other
+        else:
+            if intent['intent'] == "Solve Problem":
+                return Intent.SolveProblem
+            elif intent['intent'] == 'Learn About Topic':
+                return Intent.LearnAboutTopic
+
+    def reroute_on_secondary_intent(self):
+        secondary_intent = self.get_secondary_intent()
+        if secondary_intent is Intent.SolveProblem:
+            required_tags = ['ptvs', 'install']
+            query = self.create_stackexchange_query(params={'tagged':required_tags})['query']
+            query.query_string.tagged.required_values = required_tags
+            query.query_string.tagged.add_value(self.luis_data.words_of_interest)
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'get_query_responses'},
+                    'query': query}
+        else:
+            return {'next': Next.Continue}
+
 
     # BELOW ARE DEPRECATED (or at least, not currently used).
 
@@ -974,7 +1022,7 @@ class SolveProblemHandler(DefaultHandler):
                               'other_subjects',
                               'metas',
                               'services',
-                              'frameworks',],
+                              'frameworks'],
                 'top_count': 1,
                 'proc_index': 0}
         elif data['status'] is InterpreterStatus.WaitingToContinue:
@@ -992,3 +1040,37 @@ class GetOpinionHandler(DefaultHandler):
             ('opinion_message', [], False)
         ]
         self._load_from_data(data)
+
+
+class InstallSomethingHandler(DefaultHandler):
+
+    """A handler for the intent Install Something."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('reroute_on_secondary_intent', [], False),
+        # continue from reroute...                              # --
+            ('suggest_install_urls', [], False),                # -- Complete.
+        # reroute to get_query_responses.....                   # query
+            ('get_query_responses', ['query'], False),          # query_response, query
+            ('print_responses', ['query_response'], False),     # --
+            ('score_responses', ['query'], True),               # sorted_results
+            ('suggest_results', ['sorted_results'], False)      # --
+        ]
+        self._load_from_data(data)
+
+    def _load_from_data(self, data):
+        self.data = data
+        if data['status'] is InterpreterStatus.Pending:
+            # Initialize...
+            self.data['variables'] = {
+                'interests': ['installables',
+                              'other_subjects',
+                              'frameworks',
+                              'services',
+                              'metas'],
+                'proc_index': 0}
+        elif data['status'] is InterpreterStatus.WaitingToContinue:
+            self.data['variables']['proc_index'] += 1
+        data['status'] = InterpreterStatus.Working

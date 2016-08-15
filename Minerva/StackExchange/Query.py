@@ -290,13 +290,15 @@ class QueryParameter:
         self.values = []
 
     def pop(self):
-        print("About to pop from values: {}".format(self.values))
-        print("Required are: {}".format(self.required_values))
+        self._ensure_requirements_included()
         if self.values:
             popped = self.values.pop()
             if popped in self.required_values:
                 self.values.insert(0, popped)
-                return self.pop()
+                if len(self.values == self.required_values):
+                    return False
+                else:
+                    return self.pop()
             return popped
         return False
 
