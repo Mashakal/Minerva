@@ -60,11 +60,11 @@ LINKS = {
         "Debugging without a Project": "https://github.com/Microsoft/PTVS/wiki/Debugging#debugging-without-a-project",
         "The Debug Interactive Window": "https://github.com/Microsoft/PTVS/wiki/Debugging#the-debug-interactive-window",
         "Remote Debugging": {
-            "Cross Platform": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
-            "Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging",
+            "Cross Platform Remote Debugging": "https://github.com/Microsoft/PTVS/wiki/Cross-Platform-Remote-Debugging",
+            "Remote Debugging Microsoft Azure Web Sites": "https://github.com/Microsoft/PTVS/wiki/Azure-Remote-Debugging",
         },
         "Mixed-Mode/Native Debugging": {
-            'General Info': "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging",
+            'Mixed-Mode Debugging in PTVS': "https://github.com/Microsoft/PTVS/wiki/Mixed-Mode-Debugging",
             'Symbols for Mixed-Mode Debugging': 'https://github.com/Microsoft/PTVS/wiki/Symbols-for-Python-mixed-mode-debugging'
         }
     },

@@ -79,7 +79,7 @@ class StackExchangeQuery:
         # Universal (in terms of paths) default query parameters.
         self.query_string.add_param('site', site)
         self.query_string.add_param('key', StackExchangeQuery._API_KEY)
-        self.query_string.add_param('tagged', 'ptvs')
+        self.query_string.add_param('tagged', 'ptvs', required_vals=['ptvs'])
         self.query_string.add_param('nottagged', 'pycharm')
         self.query_string.add_param('filter', 'withbody')
 
@@ -162,6 +162,7 @@ class StackExchangeQueryString:
         for k in kwargs:
             self.add_param(k, kwargs[k])
 
+
     def __str__(self, indent_=4, sort_keys_=True):
         params = map(lambda p: '  ' + str(p), self.parameters)
         head = self.__repr__()
@@ -186,15 +187,15 @@ class StackExchangeQueryString:
         s = map(lambda t: "&{}={}".format(*t), self)
         return ''.join(s)[1:]
 
-    def add_param(self, key, value, override=False):
+    def add_param(self, key, value, required_vals=None, override=False):
         """Creates a query parameter given key and value."""
         param = self._get_query_param(key)
         if not param:
-            param = QueryParameter(key, value)
+            param = QueryParameter(key, value, required_vals=required_vals)
             self.parameters.append(param)
         elif override:
             index = self.parameters.index(param)
-            param = QueryParameter(key, value)
+            param = QueryParameter(key, value, required_vals=required_vals)
             self.parameters[index] = param
         else:
             param.add_value(value)
@@ -229,7 +230,7 @@ class QueryParameter:
 
     """A query parameter that can hold more than one value."""
 
-    def __init__(self, key, values, delim=';'):
+    def __init__(self, key, values, required_vals=None, delim=';'):
         """Creates a query paramter.
 
         Values can be a list or a string.
@@ -241,6 +242,7 @@ class QueryParameter:
         self.key = key
         self.delim = delim
         self._validate_values()
+        self.required_values = required_vals or []
 
     def __str__(self):
         """Returns a string formatted for an url.
@@ -248,21 +250,34 @@ class QueryParameter:
         If values is empty, returns the empty string.
 
         """
+        self._ensure_requirements_included()
         values = self.delim.join(self.values)
         if values:
             return '='.join([self.key, values])
         else:
             return ''
 
+    def _ensure_requirements_included(self):
+        print("Param: {} has required: {}".format(self.key, self.required_values))
+        for value in self.required_values:
+            if value not in self.values:
+                self.values.append(value)
+
     def __iter__(self):
         for v in self.values:
             yield (self.key, self.values)
 
+    @functools.singledispatch
     def add_value(self, value):
         """Adds the given value to self.values."""
-        if value not in self.values:
+        if isinstance(value, str) and value not in self.values:
             self.values.append(value)
         self._validate_values()
+
+    @add_value.register(list)
+    def add_value_list(self, value):
+        for v in value:
+            self.add_value(v)
         
     def remove_value(self, value):
         try:
@@ -275,8 +290,14 @@ class QueryParameter:
         self.values = []
 
     def pop(self):
+        print("About to pop from values: {}".format(self.values))
+        print("Required are: {}".format(self.required_values))
         if self.values:
-            return self.values.pop()
+            popped = self.values.pop()
+            if popped in self.required_values:
+                self.values.insert(0, popped)
+                return self.pop()
+            return popped
         return False
 
     def _validate_values(self):

@@ -46,6 +46,9 @@ MODEL_ENTITY_SCHEMA = {
     'services': 'Subjects::Services',
     'settings': 'Subjects::Settings',
 
+    'learn_about_phrases': 'Learn About Triggers::Phrase',
+    'learn_about_singles': 'Learn About Triggers::Single',
+
     'gerunds': 'Action::Gerund',
     'verbs': 'Action::Conjugated Verb',
     'install_something': 'Action::Install Something',

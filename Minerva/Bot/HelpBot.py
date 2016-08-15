@@ -232,9 +232,9 @@ class LuisData:
         # Hybrid attributes.
         self.all_jargon = (self.jargon_single or []) + \
                           (self.jargon_phrase or []) + \
-                          (self.jargon_debugging or []) 
+                          (self.jargon_debugging or [])
+        self.learn_about_triggers = self.learn_about_phrases + self.learn_about_singles
 
-        
         # Additional setup.
         self._initialize_attrs()
         
@@ -254,7 +254,7 @@ class LuisData:
     def _set_entity_attr(self, attr_name, entity_type):
         matching_entities = filter(lambda e: e['type'] == entity_type, self.json_['entities'])
         entity_literals = list(map(lambda e: e['entity'], matching_entities))
-        self.__setattr__(attr_name, entity_literals or None)
+        self.__setattr__(attr_name, entity_literals or [])
         print("Set {} to {}".format(attr_name, getattr(self, attr_name)))
         
     def _initialize_attrs(self):

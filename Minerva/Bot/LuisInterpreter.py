@@ -47,6 +47,27 @@ class InterpreterStatus(Enum):
     WaitingToContinue = 4
     # A new query needs started.
     Pending = 5
+    
+
+@unique
+class SubstringLibrary(Enum):
+    Cloud = ['web',
+             'azure',
+             'cloud',
+             'deployed',
+             'aws']
+
+
+@unique
+class DebugTopic(Enum):
+    General = 1
+    Remote = 2
+    MixedMode = 3
+    RemoteAzure = 4
+    RemoteCrossPlatform = 5
+    Unidentified = 6
+    SolveProblem = 7
+    LearnAbout = 8
 
 
 #region Interpreters
@@ -268,6 +289,12 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Construct an interpreter for the given project_system module."""
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
         self._agent = agent
+
+        # NLTK package (stopwords) raises ResourceWarning.
+        warnings.simplefilter("ignore", ResourceWarning)
+        # Get all query words that are not also nltk.corpus.stopwords
+        self.filter_out = set(stopwords.words('english'))
+
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,
                           'Debugging Help': DebuggingHelpHandler,
@@ -276,12 +303,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def interpret(self, data):
         self.data = data
         self.luis_data = data['luis_data']
-
-        assert isinstance(self.luis_data, HelpBot.LuisData)
-
-        #if data['status'] is InterpreterStatus.Pending:
-        #    # This is a new query.
-        #    self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
 
         _Handler = self._handlers.get(self.luis_data.top_intent(), DefaultHandler)
         intent_handler = _Handler(self, self.data)
@@ -337,11 +358,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def _get_all_topic_matches(self, query):
         """Returns a dictionary of topic/score pairs."""
-        # NLTK package (stopwords) raises ResourceWarning.
-        warnings.simplefilter("ignore", ResourceWarning)
-
-        # Get all query words that are not also nltk.corpus.stopwords
-        self.filter_out = set(stopwords.words('english'))
+        
         query_words = set(self._quick_parse(query))
         filtered_words = query_words - self.filter_out
         print("Filtered Words: {}".format(filtered_words))
@@ -435,14 +452,17 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                       (self.luis_data.frameworks or []),
             'intitle': self.luis_data.intent_descripters
         }
-        self.raw_tags = strict_params['tagged']
+        #self.raw_tags = strict_params['tagged']
         return {'next': Next.Continue, 
                 'strict_params': strict_params}
 
-    def create_stackexchange_query(self, params):
+    def create_stackexchange_query(self, params={}):
         """Creates an sends a stackexchange query."""
         query_responses = []
         query = Query.StackExchangeQuery('stackoverflow', query_params=params)
+        if 'tagged' in params:
+            query.raw_tags = params['tagged']
+            print("Saved raw_tags.")
         query.set_query_path(Query.QueryPaths.AdvancedSearch)
         return {'next': Next.Continue, 'query': query}
 
@@ -454,7 +474,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             popped = query.query_string.tagged.pop()
             print("POPPED IS: {}".format(popped))
         else:
-            return {'next': Next.Continue, 'query_response': query.response}
+            return {'next': Next.Continue, 'query_response': query.response, 'query': query}
         # If not, try a more linient query if possible, otherwise fail.
         if not popped:
             return {'next': Next.Failure, 'post': "Couldn't find anything."}
@@ -469,10 +489,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         response.print_results()
         return {'next': Next.Continue}
 
-    def score_responses(self, query_response, query_text):
-        for r in query_response.results:
-            r.combine_scores(self.filter_out, self.raw_tags, query_text)
-        sorted_results = sorted(query_response.results, key=operator.attrgetter('combined_score'), reverse=True)[:5]
+    def score_responses(self, query, query_text):
+        for r in query.response.results:
+            r.combine_scores(self.filter_out, query.raw_tags, query_text)
+        sorted_results = sorted(query.response.results, key=operator.attrgetter('combined_score'), reverse=True)[:5]
         return {'next': Next.Continue,
                 'sorted_results': sorted_results}
 
@@ -640,9 +660,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         except LookupError:
             intent = 'Learn About Topic'
         finally:
-            if intent == 'Solve Problem':
+            if self.luis_data.learn_about_triggers:
+                secondary_intent = DebugTopic.LearnAbout
+            elif intent['intent'] == 'Solve Problem':
                 secondary_intent = DebugTopic.SolveProblem
-            elif intent == 'Learn About Topic':
+            elif intent['intent'] == 'Learn About Topic':
                 secondary_intent = DebugTopic.LearnAbout
             else:
                 # Do what? Default to LearnAbout...?
@@ -650,19 +672,28 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return {'next': Next.Continue,
                 'secondary_intent': secondary_intent}
 
+    def suggest_wiki_page(self, urls_dict):
+        reply = self._agent.suggest_urls(urls_dict)
+        return {'next': Next.Complete,
+                'post': reply}
+
     def filter_from_primary_topic(self, primary_topic, secondary_intent):
         ret_ = {}
         # Handle Remote.
         if primary_topic is DebugTopic.Remote:
-            if self._search_for_substrings(SubstringLibrary.Cloud):
+            if self._search_for_substrings(SubstringLibrary.Cloud.value):
                 primary_topic = DebugTopic.RemoteAzure
             else:
                 primary_topic = DebugTopic.RemoteCrossPlatform
+            return self._handle_remote_debugging(primary_topic, secondary_intent)
 
         # Handle Mixed-Mode.
         elif primary_topic is DebugTopic.MixedMode:
-            self._handle_mixed_mode(secondary_intent)
-                
+            return self._handle_mixed_mode(secondary_intent)
+
+        # Handle General.
+        elif primary_topic is DebugTopic.General:
+            return self._handle_general_debugging(secondary_intent)
 
         ret_ = {'debug_topic': primary_topic}
         return
@@ -673,17 +704,58 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                             self.luis_data.languages)
             param_tags = ['debugging', 'mixed-mode']
             if not_python:
-                # Query tags for SE query, each matched language.
                 param_tags += list(not_python)
-            query = self.create_stackexchange_query({'tagged': param_tags})
+            query = self.create_stackexchange_query({'tagged': param_tags})['query']
+            query.query_string.tagged.required_values = ['ptvs']
+            query.query_string.add_param('body', ['mixed'] + list(not_python))
             return {'next': Next.Reroute,
                     'reroute': {'f_attr': 'get_query_responses'},
                     'query': query}
         else:
-            s = "It looks like you want to debug in a multi-language environment."
+            urls_dict = self._info.traverse_keys(['Debugging', 'Mixed-Mode/Native Debugging'])
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'suggest_wiki_page'},
+                    'urls_dict': urls_dict}
+
+    def _handle_general_debugging(self, secondary_intent):
+        if secondary_intent is DebugTopic.SolveProblem:
+            query = self.create_stackexchange_query({'tagged': ['ptvs', 'debugging']})['query']
+            query.query_string.tagged.required_values = ['ptvs', 'debugging']
+            query.query_string.tagged.add_value(list(self.luis_data.words_of_interest))
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'get_query_responses'},
+                    'query': query}
+
+        elif secondary_intent is DebugTopic.LearnAbout:
+            urls_dict = {'PTVS Debugging': "https://github.com/Microsoft/PTVS/wiki/Debugging"}
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'suggest_wiki_page'},
+                    'urls_dict': urls_dict}
+        else:
+            # Currently unreachable due to determine_secondary_intent results.
+            pass
+        
+    def _handle_remote_debugging(self, primary_topic, secondary_intent):
+        if secondary_intent is DebugTopic.SolveProblem:
+            tags = ['remote-debugging']
+            query = self.create_stackexchange_query(params={'tagged': tags})['query']
+            query.query_string.tagged.required_values = ['python', 'remote-debugging']
+            query.query_string.tagged.add_value(self.luis_data.services + \
+                                                self.luis_data.frameworks)
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'get_query_responses'},
+                    'query': query}
+        
+        elif secondary_intent is DebugTopic.LearnAbout:
+            urls_dict = self._info.traverse_keys(['Debugging', 'Remote Debugging'])
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'suggest_wiki_page'},
+                    'urls_dict': urls_dict}
+
 
     def _search_for_substrings(self, substrings):
         """Searches the words of interest for any substring in stubstrings."""
+        print("Substrings are: {}, and type is: {}".format(substrings, type(substrings)))
         data_words = list(self.luis_data.words_of_interest)
         for sub in substrings:
             if any(sub in e for e in data_words):
@@ -712,29 +784,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         }
 
 
-@unique
-class SubstringLibrary(Enum):
-    Cloud = ['web',
-             'azure',
-             'cloud',
-             'deployed',
-             'aws']
-
-@unique
-class DebugTopic(Enum):
-    General = 1
-    Remote = 2
-    MixedMode = 3
-    RemoteAzure = 4
-    RemoteCrossPlatform = 5
-    Unidentified = 6
-    SolveProblem = 7
-    LearnAbout = 8
-
 
 #region Intent Handlers
 
-class AbstractBaseHandler:
+class DefaultHandler:
     
     """A base class to handle Luis determined intents."""
 
@@ -812,14 +865,7 @@ class AbstractBaseHandler:
         self.data['status'] = InterpreterStatus.Working
 
 
-class DefaultHandler(AbstractBaseHandler):
-
-    """Handles the default case."""
-
-    pass
-
-
-class LearnAboutTopicHandler(AbstractBaseHandler):
+class LearnAboutTopicHandler(DefaultHandler):
 
     """Handler for intent Learn About Topic."""
 
@@ -859,7 +905,7 @@ class LearnAboutTopicHandler(AbstractBaseHandler):
         self.data['status'] = InterpreterStatus.Working
 
 
-class DebuggingHelpHandler(AbstractBaseHandler):
+class DebuggingHelpHandler(DefaultHandler):
 
     """Handler for intent Debugging Help."""
 
@@ -867,14 +913,17 @@ class DebuggingHelpHandler(AbstractBaseHandler):
         self.obj = obj
         self.procedures = [                                       # RETURNS.........
             ('get_top_matches', ['top_count'], True),               # top_matches
-            ('determine_debug_topic', ['top_count'], False),        # primary_topic
+            ('determine_debug_topic', ['top_matches'], False),      # primary_topic
             ('determine_secondary_intent', [], False),              # secondary_intent
             # Route to another function handler from filter_from_primary_topic.
             ('filter_from_primary_topic', ['primary_topic', 'secondary_intent'], False),
-            # Mixed-Mode Debugging & SolveProblem:                  # query
-            ('get_query_responses', ['query'], False),              # query_response
-            ('print_responses', ['query_response'], False),
-            ('fail_for_delete', [], False)
+       # route to stackexchange query...                            # query, reroute: get_query_responses
+            ('get_query_responses', ['query'], False),              # query_response, query
+            ('print_responses', ['query_response'], False),         # --
+            ('score_responses', ['query'], True),                   # sorted_results
+            ('suggest_results', ['sorted_results'], False),         # -- Complete.
+       # route to wiki suggestion...                                # urls_dict, rereoute: suggest_wiki_page
+            ('suggest_wiki_page', ['urls_dict'], False),            # -- Complete.
         ]
         self._load_from_data(data)
 
@@ -897,21 +946,21 @@ class DebuggingHelpHandler(AbstractBaseHandler):
         self.data['status'] = InterpreterStatus.Working
 
 
-class SolveProblemHandler(AbstractBaseHandler):
+class SolveProblemHandler(DefaultHandler):
 
     """Handler for intent Solve Problem."""
 
     def __init__(self, obj, data):
         self.obj = obj
         self.procedures = [
-            ('get_top_matches', ['interests', 'top_count'], True), # top_matches, may be None.
+            ('get_top_matches', ['top_count'], True),                   # top_matches
             #('send_solve_problem_acknowledgement', [], False),
-            ('get_stackexchange_query_params', [], True), # strict_params
-            ('create_stackexchange_query', ['strict_params'], False), # query
-            ('get_query_responses', ['query'], False),  # query_response
+            ('get_stackexchange_query_params', [], True),               # strict_params
+            ('create_stackexchange_query', ['strict_params'], False),   # query
+            ('get_query_responses', ['query'], False),                  # query_response, query
             #('print_responses', ['query_response'], False),
-            ('score_responses', ['query_response'], True), # sorted_results
-            ('suggest_results', ['sorted_results'], False), # None
+            ('score_responses', ['query'], True),                       # sorted_results
+            ('suggest_results', ['sorted_results'], False),             # None
             ('fail_for_delete', [], False)
         ]
         self._load_from_data(data)
@@ -921,7 +970,11 @@ class SolveProblemHandler(AbstractBaseHandler):
         if data['status'] is InterpreterStatus.Pending:
             # Initialize... variables for all process/entry function.
             self.data['variables'] = {
-                'interests': ['subjects', 'auxiliaries', 'negators', 'all_action', 'all_jargon'],
+                'interests': ['all_jargon',
+                              'other_subjects',
+                              'metas',
+                              'services',
+                              'frameworks',],
                 'top_count': 1,
                 'proc_index': 0}
         elif data['status'] is InterpreterStatus.WaitingToContinue:
@@ -929,7 +982,7 @@ class SolveProblemHandler(AbstractBaseHandler):
         self.data['status'] = InterpreterStatus.Working
 
 
-class GetOpinionHandler(AbstractBaseHandler):
+class GetOpinionHandler(DefaultHandler):
 
     """Handler for intent Get Opinion."""
 
