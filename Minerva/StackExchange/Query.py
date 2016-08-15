@@ -92,8 +92,7 @@ class StackExchangeQuery:
     def __iter__(self):
         if not self.response:
             return self
-        else:
-            return self.response.__iter__()
+        return self.response.__iter__()
 
     def build_full_url(self):
         """Calls urlunparse to get an url string of segments."""

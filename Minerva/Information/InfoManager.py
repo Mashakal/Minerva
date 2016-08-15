@@ -1,3 +1,4 @@
+import collections
 import operator
 import sys
 import importlib
@@ -23,25 +24,40 @@ class InfoManager:
 
     def liniently_get_scores(self, words):
         """Returns a dict of count of the number of times a trigger was liniently triggered by words."""
-        scores = {}
-        for k in self._trigger_map:
-            scores[k] = 0
+        paths = []
+        words = list(words)
+        for k, p in self._trigger_map.items():
             for word in words:
                 if word in k.lower().split(' '):
-                    scores[k] += 1
-        return {k:v for k,v in scores.items() if v > 0}
+                    paths.append(p)
+        
+        seen = []
+        counts = []
+        for p in paths:
+            if not p in seen:
+                seen.append(p)
+                counts.append((p, paths.count(p)))
+
+        return {t[len(t) - 1]: (c, t) for t, c in counts}
 
     def strictly_get_scores(self, entities):
         """Returns a dict of the number of times a trigger was strictly triggered by words."""
         MATCH_VALUE = 3
-        scores = {}
-        for entity in itertools.chain.from_iterable(entities):
-            for k in self._trigger_map:
+        paths = []
+        for entity in entities:
+            for k, v in self._trigger_map.items():
                 if entity == k:
-                    # More matched words are worth more.
-                    scores[k] = entity.count(' ') + MATCH_VALUE
+                    paths.append(v)
                     break
-        return {k:v for k,v in scores.items() if v > 0}
+
+        # Count how many times this path was found.
+        seen = []
+        counts = []
+        for p in paths:
+            if p not in seen:
+                seen.append(p)
+                counts.append((p, paths.count(p) * MATCH_VALUE))
+        return {path[len(path) - 1]: (c, path) for path, c in counts}
 
     def find_path_to_trigger_key(self, literal, path_=None, dict_=None):
         """Returns a list of keys that will lead to information on literal.
@@ -152,6 +168,7 @@ class InfoManager:
 
     def get_path(self, topic):
         """Returns the path to a given topic."""
+        print(topic in self._trigger_map)
         try:
             return self._trigger_map[topic]
         except KeyError:

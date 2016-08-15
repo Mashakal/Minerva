@@ -33,3 +33,29 @@ class BotLuisClient(LuisClient):
             '&q='
         ]
         return ''.join(items)
+
+
+MODEL_ENTITY_SCHEMA = {
+    'negators': 'Negator',
+
+    'languages': 'Subjects::Programming Language',
+    'installables': 'Subjects::Installable',
+    'other_subjects': 'Subjects::Other',
+    'metas': 'Subjects::Meta',
+    'frameworks': 'Subjects::Framework',
+    'services': 'Subjects::Services',
+    'settings': 'Subjects::Settings',
+
+    'gerunds': 'Action::Gerund',
+    'verbs': 'Action::Conjugated Verb',
+    'install_something': 'Action::Install Something',
+
+    'jargon_single': 'Jargon::Single Word',
+    'jargon_phrase': 'Jargon::Phrase',
+    'jargon_debugging': 'Jargon::Debugging',
+
+    'subject_adjectives': 'Auxiliary::Subject Adjective',
+    'jargon_adjectives': 'Auxiliary::Jargon Adjective',
+    'intent_descripters': 'Auxiliary::Intent Descripter',
+    'versions': 'Auxiliary::Version'
+}

@@ -95,7 +95,7 @@ LINKS = {
     "The Zen of Python": "http://www.thezenofpython.com/",
     "Porting to Python 3": "https://docs.python.org/3.3/howto/pyporting.html",
     "Python Versions": {
-        "Which Python Version Should I Use?": "https://wiki.python.org/moin/Python2orPython3"
+        "Using Multiple Python Interpreters": "https://github.com/Microsoft/PTVS/wiki/Python-Environments#project-environments",
     },
     "AWS": {
         "Deploy to AWS": "https://aws.amazon.com/python/"
@@ -299,9 +299,9 @@ KEY_MAP = {
     },
     'Python Versions': {
         'Triggers': {'python versions'},
-        'Which Python Version Should I Use?': {
-            'Triggers': {'which python version should I use', 'which version', 'which python', 'why python 3', 'why python 2'}
-        }
+        'Using Multiple Python Interpreters': {
+            'Triggers': {'using multiple python interpreters', 'same project', 'same time', 'multiple python interpreters', 'python2', 'python3'}
+        },
     },
     'AWS': {
         'Deploy to AWS': {

@@ -13,6 +13,7 @@ import InfoManager
 import DialogueStrings
 import HelpBot
 import Query
+import LuisClient
 
 
 #region Enumerations
@@ -94,8 +95,8 @@ class BaseLuisInterpreter(AbstractLuisInterpreter):
         for your application.
         
         """
-        for key in ['query', 'intent', 'phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects']:
-            print ("  {0}:\t{1}".format(key.upper(), self.data[key]))
+        for attr_name in sorted(LuisClient.MODEL_ENTITY_SCHEMA):
+            print("{}: {}".format(attr_name, getattr(self.luis_data, attr_name)))
         print()
 
     def _quick_parse(self, text):
@@ -269,22 +270,23 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent = agent
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,
-                          'Debugging Help': SolveProblemHandler,
+                          'Debugging Help': DebuggingHelpHandler,
                           'Get Opinion': GetOpinionHandler}
 
     def interpret(self, data):
-        # NLTK package raises ResourceWarning.
-        warnings.simplefilter("ignore", ResourceWarning)
-
         self.data = data
-        if data['status'] is InterpreterStatus.Pending:
-            # This is a new query.
-            self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
+        self.luis_data = data['luis_data']
 
-        # Instantiate a handler object.
-        _Handler = self._handlers.get(self.data['luis_data']['formatted']['intent'], DefaultHandler)
+        assert isinstance(self.luis_data, HelpBot.LuisData)
+
+        #if data['status'] is InterpreterStatus.Pending:
+        #    # This is a new query.
+        #    self.data['luis_data']['formatted'] = self._format_data(data['luis_data']['json'])
+
+        _Handler = self._handlers.get(self.luis_data.top_intent(), DefaultHandler)
         intent_handler = _Handler(self, self.data)
-        self._print_from_data(intent_handler.data['variables']['interests'])
+        self.luis_data.load_words_of_interest(self.data['variables']['interests'])
+        self._print_from_data()
         print(json.dumps(self.data['luis_data'], indent=3, sort_keys=True, cls=HelpBot.DataEncoder))
 
         # Work the query.
@@ -331,28 +333,33 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         """Removes stopwords from to_filter."""
         filter_out = set(stopwords.words('english'))
         word_set = set(to_filter)
+        return word_set - filter_out
 
-    def _get_all_topic_matches(self, interests, query):
+    def _get_all_topic_matches(self, query):
         """Returns a dictionary of topic/score pairs."""
+        # NLTK package (stopwords) raises ResourceWarning.
+        warnings.simplefilter("ignore", ResourceWarning)
+
         # Get all query words that are not also nltk.corpus.stopwords
         self.filter_out = set(stopwords.words('english'))
         query_words = set(self._quick_parse(query))
         filtered_words = query_words - self.filter_out
-
+        print("Filtered Words: {}".format(filtered_words))
         # Use filtered words to get linient scores.
         linient_scores = self._info.liniently_get_scores(filtered_words)
+        print("Linient scores: {}".format(linient_scores))
 
-        # Use interested entities to get strict scores.
-        entities = [self.data['luis_data']['formatted'][interest] for interest in interests]
-        entities = list(filter(None, entities))
-        strict_scores = self._info.strictly_get_scores(entities)
-
+        print("Words of interest: {}".format(self.luis_data.words_of_interest))
+        strict_scores = self._info.strictly_get_scores(self.luis_data.words_of_interest)
+        print("Strict scores: {}".format(strict_scores))
         # Combine the scores.
         matches = []
         for k,v in linient_scores.items():
-            match = InfoManager.TopicMatch(k, v)
+            score, path = v
+            match = InfoManager.TopicMatch(k, score)
             if k in strict_scores:
-                match.score += strict_scores[k]
+                match.score += strict_scores[k][0] # score
+            match.path = path
             matches.append(match)
         return matches
 
@@ -396,19 +403,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         if not isinstance(end, str):
             return False
         return True
-
-    def _print_from_data(self, interests):
-        """Prints a predefined set of information from self.data.
-        
-        This method can easily be overriden to print out whatever is pertinent
-        for your application.
-        
-        """
-        items = ['query', 'intent', 'subjects', 'auxiliaries', 'negators', 'all_action', 'gerunds', 'conjugated_verbs', 'all_jargon', 'phrase_jargon', 'single_jargon']
-        for key in items:
-            print("  {0}:\t{1}".format(key.upper(), self.data['luis_data']['formatted'][key]))
-        print()
-        
+       
     def _outgoing_message(self, message):
         """Construct and send a message to the user."""
         return {'next': Next.Continue, 
@@ -433,11 +428,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def get_stackexchange_query_params(self, query_text):
         """Returns a dict of stackexchange query parameters."""
-        formatted_data  = self.data['luis_data']['formatted']
         strict_params = {
-            'tagged': ['ptvs'] + list(formatted_data['subjects'] | formatted_data['all_jargon']),
+            'tagged': self.luis_data.all_jargon + \
+                      (self.luis_data.services or []) + \
+                      (self.luis_data.metas or []) + \
+                      (self.luis_data.frameworks or []),
+            'intitle': self.luis_data.intent_descripters
         }
-        self.raw_tags = list(map(lambda x: x if not x=="C #" else "C#", strict_params['tagged']))
+        self.raw_tags = strict_params['tagged']
         return {'next': Next.Continue, 
                 'strict_params': strict_params}
 
@@ -485,16 +483,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     
 
     # Learn about topic.
-    def get_top_matches(self, interests, top_count, query):
+    def get_top_matches(self, top_count, query):
         """Gets the first top_count topics from all matched topics."""
         MIN_SCORE = 2
-        topic_matches = self._get_all_topic_matches(interests, query)
+        topic_matches = self._get_all_topic_matches(query)
         # Sort and filter the topics by score.
         sorted_scores = sorted(topic_matches, key=operator.attrgetter('score'), reverse=True)
-        top_matches = list(filter(lambda x: x.score >= MIN_SCORE, sorted_scores))[:top_count - 1]
-        # Add paths to each topic.
-        for match in top_matches:
-            match.path = self._info.get_path(match.topic)
+        top_matches = list(filter(lambda x: x.score >= MIN_SCORE, sorted_scores))[:top_count]
+        print("The top matches are: {}".format(top_matches))
         # Filter by path.
         top_matches = self._info.remove_subpaths(top_matches)
         return {'next': Next.Continue,
@@ -622,7 +618,78 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     def fail_for_delete(self):
         """Terminates the query with a failure."""
         return {'next': Next.Failure, 'post': 'Quitting as expected.'}
+
+
+    # Debugging Help
+    def determine_debug_topic(self, top_matches):
+        top_match = top_matches[0]
+        if top_match.topic in ['Remote Debugging']:
+            ret_ = {'primary_topic': DebugTopic.Remote}
+        elif top_match.topic in ['Mixed-Mode/Native Debugging']:
+            ret_ = {'primary_topic': DebugTopic.MixedMode}
+        elif top_match.topic in ['Basic Debugging']:
+            ret_ = {'primary_topic': DebugTopic.General}
+        else:
+            ret_ = {'primary_topic':  DebugTopic.Unidentified}
+        ret_.update(next=Next.Continue)
+        return ret_
+
+    def determine_secondary_intent(self):
+        try:
+            intent = self.luis_data.intents[1]
+        except LookupError:
+            intent = 'Learn About Topic'
+        finally:
+            if intent == 'Solve Problem':
+                secondary_intent = DebugTopic.SolveProblem
+            elif intent == 'Learn About Topic':
+                secondary_intent = DebugTopic.LearnAbout
+            else:
+                # Do what? Default to LearnAbout...?
+                secondary_intent = DebugTopic.LearnAbout
+        return {'next': Next.Continue,
+                'secondary_intent': secondary_intent}
+
+    def filter_from_primary_topic(self, primary_topic, secondary_intent):
+        ret_ = {}
+        # Handle Remote.
+        if primary_topic is DebugTopic.Remote:
+            if self._search_for_substrings(SubstringLibrary.Cloud):
+                primary_topic = DebugTopic.RemoteAzure
+            else:
+                primary_topic = DebugTopic.RemoteCrossPlatform
+
+        # Handle Mixed-Mode.
+        elif primary_topic is DebugTopic.MixedMode:
+            self._handle_mixed_mode(secondary_intent)
+                
+
+        ret_ = {'debug_topic': primary_topic}
+        return
+
+    def _handle_mixed_mode(self, secondary_intent):
+        if secondary_intent is DebugTopic.SolveProblem:
+            not_python = filter(lambda lang: not 'pyth' in lang,
+                            self.luis_data.languages)
+            param_tags = ['debugging', 'mixed-mode']
+            if not_python:
+                # Query tags for SE query, each matched language.
+                param_tags += list(not_python)
+            query = self.create_stackexchange_query({'tagged': param_tags})
+            return {'next': Next.Reroute,
+                    'reroute': {'f_attr': 'get_query_responses'},
+                    'query': query}
+        else:
+            s = "It looks like you want to debug in a multi-language environment."
+
+    def _search_for_substrings(self, substrings):
+        """Searches the words of interest for any substring in stubstrings."""
+        data_words = list(self.luis_data.words_of_interest)
+        for sub in substrings:
+            if any(sub in e for e in data_words):
+                return True
    
+
     # BELOW ARE DEPRECATED (or at least, not currently used).
 
     def give_acknowledgement(self, items):
@@ -643,6 +710,26 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
             'longest_paths': self._longest_paths(filtered_paths),
             'next': Next.Continue
         }
+
+
+@unique
+class SubstringLibrary(Enum):
+    Cloud = ['web',
+             'azure',
+             'cloud',
+             'deployed',
+             'aws']
+
+@unique
+class DebugTopic(Enum):
+    General = 1
+    Remote = 2
+    MixedMode = 3
+    RemoteAzure = 4
+    RemoteCrossPlatform = 5
+    Unidentified = 6
+    SolveProblem = 7
+    LearnAbout = 8
 
 
 #region Intent Handlers
@@ -740,7 +827,7 @@ class LearnAboutTopicHandler(AbstractBaseHandler):
         self.obj = obj
         self.procedures = [
             # (Function_Attribute, [data_variable_names], is_msg_needed)
-            ('get_top_matches', ['interests', 'top_count'], True),   # top_matches
+            ('get_top_matches', ['top_count'], True),   # top_matches
             ('verify_matches_found', ['top_matches'], False),
             ('evaluate_paths', ['top_matches'], False),  # complete_matches, incomplete_matches
             ('complete_matches', ['incomplete_matches', 'match_index'], False), # options, match_index - or - None
@@ -757,11 +844,55 @@ class LearnAboutTopicHandler(AbstractBaseHandler):
         if data['status'] is InterpreterStatus.Pending:
             # Initialize.
             self.data['variables'] = {
-                'interests': ['phrase_jargon', 'single_jargon', 'auxiliaries', 'subjects'],
-                'top_count': 3,
+                'interests': ['all_jargon', 
+                              'metas', 
+                              'services', 
+                              'frameworks', 
+                              'languages',
+                              'other_subjects'
+                              ],
+                'top_count': 1,
                 'match_index': 0,
                 'proc_index': 0}
         elif data['status'] is InterpreterStatus.WaitingToContinue:
+            self.data['variables']['proc_index'] += 1
+        self.data['status'] = InterpreterStatus.Working
+
+
+class DebuggingHelpHandler(AbstractBaseHandler):
+
+    """Handler for intent Debugging Help."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [                                       # RETURNS.........
+            ('get_top_matches', ['top_count'], True),               # top_matches
+            ('determine_debug_topic', ['top_count'], False),        # primary_topic
+            ('determine_secondary_intent', [], False),              # secondary_intent
+            # Route to another function handler from filter_from_primary_topic.
+            ('filter_from_primary_topic', ['primary_topic', 'secondary_intent'], False),
+            # Mixed-Mode Debugging & SolveProblem:                  # query
+            ('get_query_responses', ['query'], False),              # query_response
+            ('print_responses', ['query_response'], False),
+            ('fail_for_delete', [], False)
+        ]
+        self._load_from_data(data)
+
+    def _load_from_data(self, data):
+        self.data = data
+        if data['status'] is InterpreterStatus.Pending:
+            # Initialize
+            self.data['variables'] = {
+                'interests': ['metas',
+                              'services',
+                              'frameworks',
+                              'languages',
+                              'other_subjects',
+                              'jargon_debugging'],
+                'top_count': 1,
+                'match_index': 0,
+                'proc_index': 0}
+        elif data['status'] is InterpreterStatus.WatingToContinue:
             self.data['variables']['proc_index'] += 1
         self.data['status'] = InterpreterStatus.Working
 

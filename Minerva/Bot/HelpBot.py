@@ -1,3 +1,6 @@
+import types
+import functools
+import itertools
 import sys
 import json
 from enum import Enum, unique
@@ -7,7 +10,6 @@ import InfoManager
 import LuisInterpreter
 import LuisClient
 import Query
-from LuisInterpreter import InterpreterStatus
 
 
 def on_message(msg, system):
@@ -60,8 +62,8 @@ class Conversation:
         """Returns json from a raw_query to the LUIS app."""
         luis_client = LuisClient.BotLuisClient('Petricca')
         json_results = luis_client.query_raw(query_text)
-        return {'json': json_results,
-                'query': query_text}
+        luis_data = LuisData(json_results)
+        return luis_data
 
     def choose_action(self):
        
@@ -85,7 +87,7 @@ class Conversation:
         self._send_outgoing()
 
         # Cleanup.
-        if self.interp_data['status'] in [InterpreterStatus.Complete, InterpreterStatus.Failed]:
+        if self.interp_data['status'] in [LuisInterpreter.InterpreterStatus.Complete, LuisInterpreter.InterpreterStatus.Failed]:
             # Delete the state information.
             self._delete_state_information()
         else:
@@ -122,7 +124,7 @@ class Conversation:
         try:
             return self.msg.data['conversation']['data']
         except LookupError:
-           return {'status': InterpreterStatus.Pending,
+           return {'status': LuisInterpreter.InterpreterStatus.Pending,
                    'isActive': True}
 
     def _load_interpreter_data(self):
@@ -130,7 +132,7 @@ class Conversation:
         try:
             interp_data = self.msg.data['interpreter']
         except KeyError:
-            interp_data = {'status': InterpreterStatus.Pending}
+            interp_data = {'status': LuisInterpreter.InterpreterStatus.Pending}
         finally:
             interp_data.update({'msg_text': self.msg.text})
             return interp_data
@@ -157,7 +159,6 @@ class Conversation:
                 self.msg.post(m)
             # Cleanup.
             del self.interp_data['outgoing']
-
 
     def _delete_state_information(self):
         """Clears out any state information for msg's conversation."""
@@ -216,6 +217,70 @@ class Conversation:
             msg.save_data()
 
 
+class LuisData:
+
+    def __init__(self, json_, attrs=None):
+        self.json_ = json_
+        self.entities = json_['entities']
+        self.intents = json_['intents']
+        self.query = json_['query']
+
+        # Set an attr for each entity in the model's entity schema.
+        for attr_name, entity_label in LuisClient.MODEL_ENTITY_SCHEMA.items():
+            self._set_entity_attr(attr_name, entity_label)
+
+        # Hybrid attributes.
+        self.all_jargon = (self.jargon_single or []) + \
+                          (self.jargon_phrase or []) + \
+                          (self.jargon_debugging or []) 
+
+        
+        # Additional setup.
+        self._initialize_attrs()
+        
+        # Handle optional params.
+        self.words_of_interest = self.set_from_attrs(attrs) if attrs else None
+        self._attrs_of_interest = attrs
+
+    def _add_lists(self, first, second):
+        if not first and second:
+            return first or second
+        if not isinstance(first[0], str):
+            first = itertools.chain.from_iterable(first)
+        if not isinstance(second[0], str):
+            second = itertools.chain.from_iterable(second)
+        return first + second
+
+    def _set_entity_attr(self, attr_name, entity_type):
+        matching_entities = filter(lambda e: e['type'] == entity_type, self.json_['entities'])
+        entity_literals = list(map(lambda e: e['entity'], matching_entities))
+        self.__setattr__(attr_name, entity_literals or None)
+        print("Set {} to {}".format(attr_name, getattr(self, attr_name)))
+        
+    def _initialize_attrs(self):
+        """Handle any special formatting for any given attribute."""
+        # LUIS adds whitespace between nonalpha characters.
+        if self.languages:
+            self.languages = list(map(lambda e: e.replace(' ', ''), self.languages))
+
+    def set_from_attrs(self, attrs):
+        """Returns a set of all values for each attr in attrs."""
+        elements = [getattr(self, attr) or [] for attr in attrs]
+        print("Elements are: {}".format(elements))
+        elements = filter(None, elements)
+        return set(functools.reduce(self._add_lists, elements, []))
+
+    def load_words_of_interest(self, attrs):
+        """Updates words_of_interest based on attrs."""
+        self.words_of_interest = self.set_from_attrs(attrs)
+        self._attrs_of_interest = attrs
+
+    def top_intent(self):
+        try:
+            return self.intents[0]['intent']
+        except LookupError:
+            return "None"
+
 
 #region JSON Encoding/Decoding
 
@@ -236,17 +301,36 @@ class DataEncoder(json.JSONEncoder):
             return {"__StackExchangeQuery__": repr(obj)}
         elif isinstance(obj, Query.QuestionResult):
             return {"__QuestionResult__": obj.serialize()}
+        elif isinstance(obj, LuisData):
+            return {"__LuisData__": obj.json_}
         return json.JSONEncoder.default(self, obj)
 
     @classmethod
     def decode_hook(cls, obj):
         if "__enum__" in obj:
             name, member = obj["__enum__"].split('.')
-            return getattr(globals()[name], member)
+            mod = globals()['LuisInterpreter']
+            return getattr(mod.InterpreterStatus, member)
         elif "__set__" in obj:
             return eval(obj["__set__"])
         elif "__TopicMatch__" in obj:
             return InfoManager.TopicMatch._init_from_decode(obj)
         elif "__StackExchangeResponse__" in obj:
             return Query.StackExchangeResponse(None, json=obj["__StackExchangeResponse__"])
+        elif "__LuisData__" in obj:
+            return LuisData(obj["__LuisData__"])
         return obj
+
+
+def main():
+    learn_interests = ['all_jargon', 'metas', 'services', 'frameworks']
+    lc = LuisClient.BotLuisClient('Petricca')
+    query_json = lc.query_raw("Tell me about python environments?")
+    print(json.dumps(query_json, sort_keys=True, indent=4))
+    luis_data = LuisData(query_json, learn_interests)
+    for attr in sorted(LuisClient.MODEL_ENTITY_SCHEMA.keys()):
+        print("{}: {}".format(attr, getattr(luis_data, attr)))
+    print("Words of interest: {}".format(luis_data.words_of_interest))
+
+if __name__ == "__main__":
+    main()

@@ -7,7 +7,7 @@
     <ProjectHome>
     </ProjectHome>
     <StartupFile>BotConnector\Root.py</StartupFile>
-    <SearchPath>Debugging\;Information\;Bot\;StackExchange\</SearchPath>
+    <SearchPath>Debugging\;Information\;StackExchange\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
