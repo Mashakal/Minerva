@@ -6,8 +6,8 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>BotConnector\Root.py</StartupFile>
-    <SearchPath>Debugging\;Information\;StackExchange\;Bot\</SearchPath>
+    <StartupFile>BotConnector\_deploy\playground.py</StartupFile>
+    <SearchPath>Information\;StackExchange\;Bot\;BotConnector\_deploy\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -46,11 +46,7 @@
     </Compile>
     <Compile Include="Bot\LuisClient.py" />
     <Compile Include="Bot\LuisInterpreter.py" />
-    <Compile Include="Bot\LuisPlayground.py" />
     <Compile Include="Bot\HelpBot.py" />
-    <Compile Include="Debugging\Essentials.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Information\InfoManager.py">
       <SubType>Code</SubType>
     </Compile>
@@ -60,35 +56,14 @@
     <Compile Include="Information\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Luis\LuisClient.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Luis\LuisInterpreter.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Luis\LuisPlayground.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AlmostTrash\Minerva.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AlmostTrash\AskLuis.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\Playground.py">
+    <Compile Include="StackExchange\_playground.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StackExchange\Query.py" />
-    <Compile Include="StackExchange\test_query.py">
+    <Compile Include="StackExchange\_test_query.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="StackExchange\test_querystring.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\webrequest.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AlmostTrash\SEWrapperTests.py">
+    <Compile Include="StackExchange\_test_querystring.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -98,35 +73,15 @@
     <Content Include="BotConnector\_deploy\__pycache__\deploy_helpers.cpython-35.pyc" />
     <Content Include="BotConnector\_deploy\__pycache__\__init__.cpython-35.pyc" />
     <Content Include="BotConnector\_deploy\__pycache__\__main__.cpython-35.pyc" />
-    <Content Include="Data\Notes.txt" />
-    <Content Include="Files\debugfile.json" />
-    <Content Include="Files\errorwhiletryingtoattachdebuger.json" />
-    <Content Include="Files\petricca_multiple_single_jargon.json" />
-    <Content Include="Files\petricca_remote_debugging_cloud_project.json" />
-    <Content Include="Files\petricca_test_file.json" />
-    <Content Include="Files\sampleQueryResults.json" />
-    <Content Include="Files\test_LuisInterpreter_get_paths.json" />
-    <Content Include="Files\test_multiple_wiki_paths.json" />
-    <Content Include="Files\test_no_paths_found.json" />
-    <Content Include="Files\triggers_we_hope.txt" />
-    <Content Include="Information\Readme.txt" />
-    <Content Include="Luis\SchemaNotes.txt" />
-    <Content Include="NotCode\BlogNotes.txt" />
-    <Content Include="NotCode\Ideas.txt" />
-    <Content Include="NotCode\SchemaNotes.txt" />
+    <Content Include="requirements.txt" />
+    <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="BotConnector\" />
     <Folder Include="BotConnector\_deploy\" />
     <Folder Include="BotConnector\_deploy\__pycache__\" />
-    <Folder Include="Files\" />
-    <Folder Include="Luis\" />
-    <Folder Include="Debugging\" />
     <Folder Include="Information\" />
-    <Folder Include="AlmostTrash\" />
     <Folder Include="Bot\" />
-    <Folder Include="Data\" />
-    <Folder Include="NotCode\" />
     <Folder Include="StackExchange\" />
   </ItemGroup>
   <PropertyGroup>

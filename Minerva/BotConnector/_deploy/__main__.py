@@ -71,21 +71,34 @@ from _deploy.deploy_helpers import get_package, print_operation_results, Site
 # Some names include random UUIDs to avoid collisions.
 # These are not necessary in controlled environments.
 
-RESOURCE_GROUP = "pybot" + uuid.uuid4().hex
+#RESOURCE_GROUP = "pybot" + uuid.uuid4().hex
+RESOURCE_GROUP = "pybotminerva2301"
 LOCATION = "West US"
 
 COMPANY_NAME = "Contoso"
 DEPLOYMENT = "ContosoInternalApps"
-WEBSITE = "pybot" + uuid.uuid4().hex
+WEBSITE = "pybotminerva2301"
 
 DEPLOY_ROOT = pathlib.Path(__file__).absolute().parent.parent
 
+PROJECT_ROOT = DEPLOY_ROOT.parent
+
 def get_deploy_files():
     return [(s, d) for s, d in [
-        (DEPLOY_ROOT / 'app.py', 'app.py'),
-        (DEPLOY_ROOT / 'bot.py', 'bot.py'),
-        (DEPLOY_ROOT / 'requirements.txt', 'requirements.txt'),
-        (DEPLOY_ROOT / 'web.config', 'web.config'),
+        (PROJECT_ROOT / 'Bot' / 'Agent.py', 'Agent.py'),
+        (PROJECT_ROOT / 'Bot' / 'DialogueStrings.py', 'DialogueStrings.py'),
+        (PROJECT_ROOT / 'Bot' / 'HelpBot.py', 'HelpBot.py'),
+        (PROJECT_ROOT / 'Bot' / 'LuisClient.py', 'LuisClient.py'),
+        (PROJECT_ROOT / 'Bot' / 'LuisInterpreter.py', 'LuisInterpreter.py'),
+        (PROJECT_ROOT / 'Information' / 'InfoManager.py', 'InfoManager.py'),
+        (PROJECT_ROOT / 'Information' / 'PTVS.py', 'PTVS.py'),
+        (PROJECT_ROOT / 'StackExchange' / 'Query.py', 'Query.py'),
+        (DEPLOY_ROOT / 'bot_models.py', 'bot_models.py'),
+        (DEPLOY_ROOT / 'bot_requests.py', 'bot_requests.py'),
+        (DEPLOY_ROOT / 'message.py', 'message.py'),
+        (DEPLOY_ROOT / 'Root.py', 'Root.py'),
+        (PROJECT_ROOT / 'requirements.txt', 'requirements.txt'),
+        (PROJECT_ROOT / 'web.config', 'web.config')
     ] if '__pycache__' not in s.parts]
 
 #################################################

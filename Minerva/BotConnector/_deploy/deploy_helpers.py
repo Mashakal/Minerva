@@ -4,6 +4,7 @@ from importlib.util import find_spec
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, splitpasswd, splituser, urljoin
 
+import os
 import io
 import requests
 import traceback
