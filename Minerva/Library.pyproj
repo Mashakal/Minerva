@@ -33,6 +33,10 @@
     <Compile Include="BotConnector\bot_requests.py" />
     <Compile Include="BotConnector\message.py" />
     <Compile Include="BotConnector\Root.py" />
+    <Compile Include="BotConnector\_deploy\deploy_credentials.py" />
+    <Compile Include="BotConnector\_deploy\deploy_helpers.py" />
+    <Compile Include="BotConnector\_deploy\__init__.py" />
+    <Compile Include="BotConnector\_deploy\__main__.py" />
     <Compile Include="Bot\Agent.py" />
     <Compile Include="Bot\DialogueStrings.py">
       <SubType>Code</SubType>
@@ -86,6 +90,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BotConnector\_deploy\deploy.json" />
+    <Content Include="BotConnector\_deploy\__pycache__\deploy_credentials.cpython-35.pyc" />
+    <Content Include="BotConnector\_deploy\__pycache__\deploy_helpers.cpython-35.pyc" />
+    <Content Include="BotConnector\_deploy\__pycache__\__init__.cpython-35.pyc" />
+    <Content Include="BotConnector\_deploy\__pycache__\__main__.cpython-35.pyc" />
     <Content Include="Data\Notes.txt" />
     <Content Include="Files\debugfile.json" />
     <Content Include="Files\errorwhiletryingtoattachdebuger.json" />
@@ -105,6 +114,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="BotConnector\" />
+    <Folder Include="BotConnector\_deploy\" />
+    <Folder Include="BotConnector\_deploy\__pycache__\" />
     <Folder Include="Files\" />
     <Folder Include="Luis\" />
     <Folder Include="Debugging\" />
