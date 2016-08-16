@@ -25,8 +25,8 @@ def trim_non_alpha(word):
         return word
     return word[first:last + 1]
 
-def parse_by_alpha(text):
-    """Returns a list of all segments of text based on the type of each char."""
+def chartype_chunks(text):
+    """Returns a list of each grouping of chars by type."""
     current_type = None
     start = 0
     elements = []
@@ -37,7 +37,7 @@ def parse_by_alpha(text):
             start = i
             current_type = chartype
         elif i == len(text) - 1:
-            elements.append(text[start:len(text)])
+            elements.append(text[start:i + 1])
     return elements
 
 def get_char_type(c):
@@ -48,7 +48,7 @@ def get_char_type(c):
     return CharType.other
 
 def parse_and_filter(text, filter_out):
-    elements = parse_by_alpha(text)
+    elements = chartype_chunks(text)
     filtered_set = set(filter(lambda s: s.isalnum() and len(s) > 1, elements))
     return filtered_set - filter_out
 
@@ -162,7 +162,6 @@ class StackExchangeQueryString:
         for k in kwargs:
             self.add_param(k, kwargs[k])
 
-
     def __str__(self, indent_=4, sort_keys_=True):
         params = map(lambda p: '  ' + str(p), self.parameters)
         head = self.__repr__()
@@ -207,7 +206,7 @@ class StackExchangeQueryString:
             self.parameters.remove(param)
 
     def retrieve(self, key):
-        """Get's the passed in key's associated value.  None if the key is not found."""
+        """Get's the passed in key's associated value."""
         param = self._get_query_param(key)
         if param:
             return ';'.join(map(parse.quote, param.values))
@@ -258,7 +257,6 @@ class QueryParameter:
             return ''
 
     def _ensure_requirements_included(self):
-        print("Param: {} has required: {}".format(self.key, self.required_values))
         for value in self.required_values:
             if value not in self.values:
                 self.values.append(value)
@@ -296,6 +294,7 @@ class QueryParameter:
             if popped in self.required_values:
                 self.values.insert(0, popped)
                 if len(self.values == self.required_values):
+                    # Break recursion.
                     return False
                 else:
                     return self.pop()
@@ -395,7 +394,6 @@ class QuestionResult(BaseStackExchangeResult):
 
     def __init__(self, json):
         self._json = json
-
 
         self.title = html.unescape(json['title'])
         self.answer_count = json['answer_count']

@@ -305,7 +305,7 @@ KEY_MAP = {
     },
     'AWS': {
         'Deploy to AWS': {
-            'Triggers': {'deploy to aws', 'aws'}
+            'Triggers': {'deploy to aws', 'aws', 'deployment on azure', 'deploy a website'}
         }
     }
 }
