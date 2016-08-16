@@ -6,7 +6,7 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>BotConnector\Root.py</StartupFile>
+    <StartupFile>BotConnector\_deploy\playground.py</StartupFile>
     <SearchPath>Debugging\;Information\;StackExchange\;Bot\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -35,6 +35,9 @@
     <Compile Include="BotConnector\Root.py" />
     <Compile Include="BotConnector\_deploy\deploy_credentials.py" />
     <Compile Include="BotConnector\_deploy\deploy_helpers.py" />
+    <Compile Include="BotConnector\_deploy\playground.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="BotConnector\_deploy\__init__.py" />
     <Compile Include="BotConnector\_deploy\__main__.py" />
     <Compile Include="Bot\Agent.py" />
