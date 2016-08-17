@@ -96,7 +96,7 @@ def get_deploy_files():
         (DEPLOY_ROOT / 'bot_models.py', 'bot_models.py'),
         (DEPLOY_ROOT / 'bot_requests.py', 'bot_requests.py'),
         (DEPLOY_ROOT / 'message.py', 'message.py'),
-        (DEPLOY_ROOT / 'Root.py', 'Root.py'),
+        (DEPLOY_ROOT / 'app.py', 'Root.py'),
         (PROJECT_ROOT / 'requirements.txt', 'requirements.txt'),
         (PROJECT_ROOT / 'web.config', 'web.config')
     ] if '__pycache__' not in s.parts]

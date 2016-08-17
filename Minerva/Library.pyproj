@@ -6,8 +6,8 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>BotConnector\_deploy\playground.py</StartupFile>
-    <SearchPath>Information\;StackExchange\;Bot\;BotConnector\_deploy\</SearchPath>
+    <StartupFile>BotConnector\app.py</StartupFile>
+    <SearchPath>Information\;Bot\;BotConnector\;StackExchange\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -32,7 +32,7 @@
     <Compile Include="BotConnector\bot_models.py" />
     <Compile Include="BotConnector\bot_requests.py" />
     <Compile Include="BotConnector\message.py" />
-    <Compile Include="BotConnector\Root.py" />
+    <Compile Include="BotConnector\app.py" />
     <Compile Include="BotConnector\_deploy\deploy_credentials.py" />
     <Compile Include="BotConnector\_deploy\deploy_helpers.py" />
     <Compile Include="BotConnector\_deploy\playground.py">
@@ -40,6 +40,9 @@
     </Compile>
     <Compile Include="BotConnector\_deploy\__init__.py" />
     <Compile Include="BotConnector\_deploy\__main__.py" />
+    <Compile Include="BotConnector\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Bot\Agent.py" />
     <Compile Include="Bot\DialogueStrings.py">
       <SubType>Code</SubType>
@@ -47,6 +50,9 @@
     <Compile Include="Bot\LuisClient.py" />
     <Compile Include="Bot\LuisInterpreter.py" />
     <Compile Include="Bot\HelpBot.py" />
+    <Compile Include="Bot\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Information\InfoManager.py">
       <SubType>Code</SubType>
     </Compile>
@@ -66,6 +72,9 @@
     <Compile Include="StackExchange\_test_querystring.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="StackExchange\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="BotConnector\_deploy\deploy.json" />
@@ -80,6 +89,7 @@
     <Folder Include="BotConnector\" />
     <Folder Include="BotConnector\_deploy\" />
     <Folder Include="BotConnector\_deploy\__pycache__\" />
+    <Folder Include="Bot\__pycache__\" />
     <Folder Include="Information\" />
     <Folder Include="Bot\" />
     <Folder Include="StackExchange\" />

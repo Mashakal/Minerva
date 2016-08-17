@@ -69,6 +69,7 @@ class DebugTopic(Enum):
     SolveProblem = 7
     LearnAbout = 8
 
+
 @unique
 class Intent(Enum):
     SolveProblem = 1
