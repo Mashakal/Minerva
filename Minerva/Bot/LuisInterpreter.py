@@ -7,7 +7,7 @@ import abc
 import itertools
 import collections
 from enum import Enum, unique
-from nltk.corpus import stopwords
+#from nltk.corpus import stopwords
 
 import InfoManager
 import DialogueStrings
@@ -298,9 +298,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._agent = agent
 
         # NLTK package (stopwords) raises ResourceWarning.
-        warnings.simplefilter("ignore", ResourceWarning)
+        #warnings.simplefilter("ignore", ResourceWarning)
         # Get all query words that are not also nltk.corpus.stopwords
-        self.filter_out = set(stopwords.words('english'))
+        #self.filter_out = set(stopwords.words('english'))
+        self.filter_out = set()
 
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,

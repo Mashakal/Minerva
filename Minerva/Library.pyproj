@@ -6,8 +6,9 @@
     <ProjectGuid>944d26aa-0b74-4b17-9392-16cef30e32dc</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>BotConnector\app.py</StartupFile>
-    <SearchPath>Information\;Bot\;BotConnector\;StackExchange\</SearchPath>
+    <StartupFile>Bot\app.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Library</Name>
@@ -28,19 +29,19 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BotConnector\bot.py" />
-    <Compile Include="BotConnector\bot_models.py" />
-    <Compile Include="BotConnector\bot_requests.py" />
-    <Compile Include="BotConnector\message.py" />
-    <Compile Include="BotConnector\app.py" />
-    <Compile Include="BotConnector\_deploy\deploy_credentials.py" />
-    <Compile Include="BotConnector\_deploy\deploy_helpers.py" />
-    <Compile Include="BotConnector\_deploy\playground.py">
+    <Compile Include="Bot\bot.py" />
+    <Compile Include="Bot\bot_models.py" />
+    <Compile Include="Bot\bot_requests.py" />
+    <Compile Include="Bot\message.py" />
+    <Compile Include="Bot\app.py" />
+    <Compile Include="Bot\_deploy\deploy_credentials.py" />
+    <Compile Include="Bot\_deploy\deploy_helpers.py" />
+    <Compile Include="Bot\_deploy\playground.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="BotConnector\_deploy\__init__.py" />
-    <Compile Include="BotConnector\_deploy\__main__.py" />
-    <Compile Include="BotConnector\__init__.py">
+    <Compile Include="Bot\_deploy\__init__.py" />
+    <Compile Include="Bot\_deploy\__main__.py" />
+    <Compile Include="Bot\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bot\Agent.py" />
@@ -50,49 +51,27 @@
     <Compile Include="Bot\LuisClient.py" />
     <Compile Include="Bot\LuisInterpreter.py" />
     <Compile Include="Bot\HelpBot.py" />
-    <Compile Include="Bot\__init__.py">
+    <Compile Include="Bot\InfoManager.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Information\InfoManager.py">
+    <Compile Include="Bot\PTVS.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Information\PTVS.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Information\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\_playground.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\Query.py" />
-    <Compile Include="StackExchange\_test_query.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\_test_querystring.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StackExchange\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Bot\Query.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BotConnector\_deploy\deploy.json" />
-    <Content Include="BotConnector\_deploy\__pycache__\deploy_credentials.cpython-35.pyc" />
-    <Content Include="BotConnector\_deploy\__pycache__\deploy_helpers.cpython-35.pyc" />
-    <Content Include="BotConnector\_deploy\__pycache__\__init__.cpython-35.pyc" />
-    <Content Include="BotConnector\_deploy\__pycache__\__main__.cpython-35.pyc" />
-    <Content Include="requirements.txt" />
-    <Content Include="web.config" />
+    <Content Include="Bot\_deploy\deploy.json" />
+    <Content Include="Bot\_deploy\__pycache__\deploy_credentials.cpython-35.pyc" />
+    <Content Include="Bot\_deploy\__pycache__\deploy_helpers.cpython-35.pyc" />
+    <Content Include="Bot\_deploy\__pycache__\__init__.cpython-35.pyc" />
+    <Content Include="Bot\_deploy\__pycache__\__main__.cpython-35.pyc" />
+    <Content Include="Bot\requirements.txt" />
+    <Content Include="Bot\web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="BotConnector\" />
-    <Folder Include="BotConnector\_deploy\" />
-    <Folder Include="BotConnector\_deploy\__pycache__\" />
-    <Folder Include="Bot\__pycache__\" />
-    <Folder Include="Information\" />
     <Folder Include="Bot\" />
-    <Folder Include="StackExchange\" />
+    <Folder Include="Bot\_deploy\" />
+    <Folder Include="Bot\_deploy\__pycache__\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
