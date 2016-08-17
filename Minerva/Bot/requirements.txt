@@ -1,6 +1,6 @@
 adal==0.3.0
 alabaster==0.7.7
-anaconda-client==1.4.0
+anaconda-client==1.2.2
 anaconda-navigator==1.1.0
 argcomplete==1.4.1
 astropy==1.1.2

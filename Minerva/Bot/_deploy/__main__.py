@@ -81,24 +81,22 @@ WEBSITE = "pybotminerva2301"
 
 DEPLOY_ROOT = pathlib.Path(__file__).absolute().parent.parent
 
-PROJECT_ROOT = DEPLOY_ROOT.parent
-
 def get_deploy_files():
     return [(s, d) for s, d in [
-        (PROJECT_ROOT / 'Bot' / 'Agent.py', 'Agent.py'),
-        (PROJECT_ROOT / 'Bot' / 'DialogueStrings.py', 'DialogueStrings.py'),
-        (PROJECT_ROOT / 'Bot' / 'HelpBot.py', 'HelpBot.py'),
-        (PROJECT_ROOT / 'Bot' / 'LuisClient.py', 'LuisClient.py'),
-        (PROJECT_ROOT / 'Bot' / 'LuisInterpreter.py', 'LuisInterpreter.py'),
-        (PROJECT_ROOT / 'Information' / 'InfoManager.py', 'InfoManager.py'),
-        (PROJECT_ROOT / 'Information' / 'PTVS.py', 'PTVS.py'),
-        (PROJECT_ROOT / 'StackExchange' / 'Query.py', 'Query.py'),
+        (DEPLOY_ROOT / 'Agent.py', 'Agent.py'),
+        (DEPLOY_ROOT / 'DialogueStrings.py', 'DialogueStrings.py'),
+        (DEPLOY_ROOT / 'HelpBot.py', 'HelpBot.py'),
+        (DEPLOY_ROOT / 'LuisClient.py', 'LuisClient.py'),
+        (DEPLOY_ROOT / 'LuisInterpreter.py', 'LuisInterpreter.py'),
+        (DEPLOY_ROOT / 'InfoManager.py', 'InfoManager.py'),
+        (DEPLOY_ROOT / 'PTVS.py', 'PTVS.py'),
+        (DEPLOY_ROOT / 'Query.py', 'Query.py'),
         (DEPLOY_ROOT / 'bot_models.py', 'bot_models.py'),
         (DEPLOY_ROOT / 'bot_requests.py', 'bot_requests.py'),
         (DEPLOY_ROOT / 'message.py', 'message.py'),
-        (DEPLOY_ROOT / 'app.py', 'Root.py'),
-        (PROJECT_ROOT / 'requirements.txt', 'requirements.txt'),
-        (PROJECT_ROOT / 'web.config', 'web.config')
+        (DEPLOY_ROOT / 'app.py', 'app.py'),
+        (DEPLOY_ROOT / 'requirements.txt', 'requirements.txt'),
+        (DEPLOY_ROOT / 'web.config', 'web.config')
     ] if '__pycache__' not in s.parts]
 
 #################################################
