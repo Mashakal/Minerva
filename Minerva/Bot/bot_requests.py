@@ -7,8 +7,10 @@ from datetime import datetime, timedelta
 
 _AUTH_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
 _AUTH_SCOPE = 'https://graph.microsoft.com/.default'
-APP_ID = os.getenv('APP_ID')
-APP_PASSWORD = os.getenv('APP_PASSWORD')
+#APP_ID = os.getenv('APP_ID')
+#APP_PASSWORD = os.getenv('APP_PASSWORD')
+APP_ID = "a1f7fe27-a8d2-47dc-a347-aecf0c499994"
+APP_PASSWORD = "6xPPhstQkQBSLQsSGe6RNaj"
 
 class _BotSession:
     def __init__(self, auth_url, auth_scope, app_id, app_password):

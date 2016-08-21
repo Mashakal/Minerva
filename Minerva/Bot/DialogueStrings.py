@@ -46,6 +46,19 @@ CLARIFY = [
     "Which is your main point of interest"
 ]
 
+GREETINGS = [
+    "Salutations",
+    "Hello",
+    "Hi there",
+    "Greetings"
+]
+
+EXPLAIN = [
+    "You can ask me anything about PTVS features.  I'll do my best to find the most useful resource for that feature.",
+    "Ask me a question you have about using PTVS.  I'll do what I can to get you the best source of information for that use case.",
+    "I can help you find resources for using PTVS.  Just ask me about a PTVS feature you're interested in learning more about."
+]
+
 ALL_STRINGS = {
     'positive_acks': POSITIVE_ACKS,
     'suggest_url': SUGGEST_URL,
@@ -56,5 +69,7 @@ ALL_STRINGS = {
     'end': END,
     'suggest_urls': SUGGEST_URLS,
     'yes': YES_WORDS,
-    'no': NO_WORDS
+    'no': NO_WORDS,
+    'greetings': GREETINGS,
+    'explain': EXPLAIN
 }

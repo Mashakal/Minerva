@@ -105,10 +105,12 @@ class Agent(AbstractBaseAgent):
 
     """A base agent whose interactions return strings."""
 
-    def say(self, s, trailing_newline=False):
+    def say(self, s, genre=None, trailing_newline=False):
         """Print a message from the bot to the standard output."""
         if trailing_newline:
             return ''.join([s, '  \n'])
+        if not s and genre:
+            return self._get_random_string_constant(genre)
         return s
 
     def ask(self, s):
@@ -244,14 +246,14 @@ class VSAgent(Agent):
             topics.append(k)
             urls.append(v)
         
-        top = "### Here are some links from our wiki:" if len(urls_dict) > 1 else "### Here's a wiki link:"
+        top = "#### Here are some links from our wiki:" if len(urls_dict) > 1 else "#### Here's a wiki link:"
         suggestions = [top]
         for i, url in enumerate(urls):
             suggestions.append(self.suggest_url(url, topics[i]))
         return '  \n * '.join(suggestions)
 
     def suggest_stackexchange_results(self, results):
-        msg = "### These StackOverflow questions may help:"
+        msg = "**These StackOverflow questions may help:**"
         formatted_links = map(lambda r: ''.join(['[', r.title, '](', r.link, ')']), results)
         enumerated_links = map(lambda t: '. '.join([str(t[0] + 1), t[1]]), enumerate(formatted_links))
         return self.say('  \n'.join([msg] + list(enumerated_links)))

@@ -7,6 +7,7 @@ import abc
 import itertools
 import collections
 from enum import Enum, unique
+from urllib import parse
 #from nltk.corpus import stopwords
 
 import InfoManager
@@ -16,8 +17,7 @@ import Query
 import LuisClient
 
 
-#region Enumerations
-
+####region Enumerations
 @unique
 class Next(Enum):
     # Go to the next procedure.
@@ -77,7 +77,15 @@ class Intent(Enum):
     Other = 3
 
 
-#region Interpreters
+@unique
+class MarkdownDelimeter(Enum):
+    Bullet = "  \n * "
+    NewLine = "  \n"
+    DoubleNewLine = "  \n  \n"
+
+####end Enumerations
+
+####region Interpreters
 
 class AbstractLuisInterpreter(abc.ABC):
 
@@ -297,17 +305,16 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         self._info = InfoManager.ProjectSystemInfoManager(project_system)
         self._agent = agent
 
-        # NLTK package (stopwords) raises ResourceWarning.
-        #warnings.simplefilter("ignore", ResourceWarning)
-        # Get all query words that are not also nltk.corpus.stopwords
-        #self.filter_out = set(stopwords.words('english'))
-        self.filter_out = set()
+        with open('./nltk_stopwords.txt', 'r') as fp:
+            self.filter_out = {line.rstrip() for line in fp.readlines()}
 
         self._handlers = {'Learn About Topic': LearnAboutTopicHandler,
                           'Solve Problem': SolveProblemHandler,
                           'Debugging Help': DebuggingHelpHandler,
                           'Get Opinion': GetOpinionHandler,
-                          'Install Something': InstallSomethingHandler}
+                          'Install Something': InstallSomethingHandler,
+                          'Converse': ConverseHandler,
+                          'Help Bot Help': HelpBotHelpHandler}
 
     def interpret(self, data):
         self.data = data
@@ -325,30 +332,6 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         
         # Return updated data.
         return intent_handler.data
-
-    def _format_data(self, json):
-        """Formats the raw json into a more easily accessible dictionary."""
-        data = {
-            # Meta keys - these point to dictionaries.
-            'intents': json['intents'],
-            'entities': json['entities'],
-            # Leaf keys - these point to a value or some container of values.
-            'query': json['query'],
-            'intent': self._get_top_scoring_intent(json),
-            'other_intents': json['intents'][1:],
-            'subjects': self._literals_given_type('Subject', json),
-            'auxiliaries': self._literals_given_type('Auxiliary', json),
-            'negators': set(map(lambda x: x.replace(" ", ""), 
-                                 self._literals_given_type('Negator', json))),
-            'gerunds': self._literals_given_type('Action::Gerund', json),
-            'conjugated_verbs': self._literals_given_type('Action::Conjugated Verb', json),
-            'all_action': self._literals_given_parent_type('Action::', json),
-            'all_jargon': self._literals_given_parent_type('Jargon::', json),
-            'phrase_jargon': self._literals_given_type('Jargon::Phrase', json),
-            'single_jargon': self._literals_given_type('Jargon::Single Word', json),
-            'solve_problem_triggers': self._literals_given_parent_type('Solve Problem Triggers::', json)
-        }
-        return data
 
     def _longest_paths(self, paths):
         """Returns a list of all paths whose size is equal to the longest."""
@@ -370,14 +353,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         
         query_words = set(self._quick_parse(query))
         filtered_words = query_words - self.filter_out
-        print("Filtered Words: {}".format(filtered_words))
+        #print("Filtered Words: {}".format(filtered_words))
         # Use filtered words to get linient scores.
         linient_scores = self._info.liniently_get_scores(filtered_words)
-        print("Linient scores: {}".format(linient_scores))
+        #print("Linient scores: {}".format(linient_scores))
 
-        print("Words of interest: {}".format(self.luis_data.words_of_interest))
+        #print("Words of interest: {}".format(self.luis_data.words_of_interest))
         strict_scores = self._info.strictly_get_scores(self.luis_data.words_of_interest)
-        print("Strict scores: {}".format(strict_scores))
+        #print("Strict scores: {}".format(strict_scores))
         # Combine the scores.
         matches = []
         for k,v in linient_scores.items():
@@ -435,16 +418,45 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         return {'next': Next.Continue, 
                 'post': self._agent.say(message)}
 
+    def _add_google_query(self, reply_str, delim=MarkdownDelimeter.DoubleNewLine):
+        """Adds a query string for google with the user's original query to a str."""
+        google_query_str = self._get_search_engine_query_string()
+        formatted = self._agent.suggest_url(google_query_str, "**What does Google say?**")
+        return delim.value.join([reply_str, formatted])
+
+    def _get_search_engine_query_string(self, site='google'):
+        """Returns an url str formatted with the user's query, for searching google."""
+        raw_query = self.luis_data.query
+        words = [parse.quote(word) for word in raw_query.lower().split(" ")]
+        start = ''.join(['https://www.', site, '.com', '/search?q='])
+        return '+'.join([start] + words)
+
+
     # Intent processes.
     # Default.
     def default_fail(self):
+        reply = self._agent.say("I'm sorry, I can't figure out how to help.")
+        reply = self._add_google_query(reply)
         return {'next': Next.Failure,
-                'post': self._agent.say("I'm sorry, but I don't think I can help you with that.")}
+                'post': reply}
+
+    def explain(self):
+        reply = self._agent.say(None, genre='explain')
+        return {'next': Next.Complete,
+                'post': reply}
+        
+    # Converse.
+    def say_hello(self):
+        reply = self._agent.say(None, genre='greetings')
+        return {'next': Next.Complete,
+                'post': reply}
 
     # Get Opinion
     def opinion_message(self):
+        reply = self._agent.say("Sorry, but my opinion isn't worth much... _yet_.")
+        reply = self._add_google_query(reply)
         return {'next': Next.Complete,
-                'post': self._agent.say("Sorry, but my opinion isn't worth much ... _yet_.")}
+                'post': reply}
 
     # Solve Problem.
     def send_solve_problem_acknowledgement(self):
@@ -509,8 +521,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def suggest_results(self, sorted_results):
         """Output a message suggesting the top results."""
+        reply = self._agent.suggest_stackexchange_results(sorted_results)
+        reply = self._add_google_query(reply)
         return {'next': Next.Complete,
-                'post': self._agent.suggest_stackexchange_results(sorted_results)}
+                'post': reply}
     
 
     # Learn about topic.
@@ -532,8 +546,11 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         if top_matches:
             return {'next': 'continue'}
         else:
+            bing = self._get_search_engine_query_string('bing')
+            bing = self._agent.suggest_url(bing, "Search on Bing")
+            reply = '  \n'.join(["I'm sorry.  I can't seem to find anything to help with that.", bing])
             return {'next': Next.Failure,
-                    'post': "I'm sorry.  I can't seem to find anything to help with that."}
+                    'post': reply}
 
     def evaluate_paths(self, top_matches):
         """If the path doesn't point to a str, determine where to go next.
@@ -569,7 +586,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                 # We don't need any user input if there's only one option.
                 if len(options) == 1:
                     match.path.append(options[0])
-                    self.complete_matches(incomplete_matches, match_index)
+                    return self.complete_matches(incomplete_matches, match_index)
                 _ret['post'] = self._get_unfinished_path_message(match.path)
                 _ret['next'] = Next.WaitThenContinue
                 _ret['match_index'] = match_index
@@ -641,10 +658,9 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def make_suggestion(self, url_dict):
         reply = self._agent.suggest_urls(url_dict)
-        return {
-            'post': reply,
-            'next': Next.Complete
-        }
+        reply = self._add_google_query(reply)
+        return {'next': Next.Complete,
+                'post': reply}
 
     def fail_for_delete(self):
         """Terminates the query with a failure."""
@@ -654,6 +670,14 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
     # Debugging Help
     def determine_debug_topic(self, top_matches):
         top_match = top_matches[0]
+
+        print(self.luis_data.languages)
+
+        # Unique considerations.
+        if len(self.luis_data.languages) > 1:
+            ret_ = {'primary_topic': DebugTopic.MixedMode}
+
+        # General considerations.
         if top_match.topic in ['Remote Debugging']:
             ret_ = {'primary_topic': DebugTopic.Remote}
         elif top_match.topic in ['Mixed-Mode/Native Debugging']:
@@ -685,6 +709,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
 
     def suggest_wiki_page(self, urls_dict):
         reply = self._agent.suggest_urls(urls_dict)
+        reply = self._add_google_query(reply)
         return {'next': Next.Complete,
                 'post': reply}
 
@@ -706,7 +731,10 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
         elif primary_topic is DebugTopic.General:
             return self._handle_general_debugging(secondary_intent)
 
-        ret_ = {'debug_topic': primary_topic}
+        # Handle Unidentified
+        elif primary_topic is DebugTopic.Unidentified:
+            return self._handle_general_debugging(secondary_intent)
+
         return
 
     def _handle_mixed_mode(self, secondary_intent):
@@ -784,6 +812,7 @@ class ApiProjectSystemLuisInterpreter(BaseLuisInterpreter):
                         'Installing PyLint': "https://github.com/Microsoft/PTVS/wiki/Pylint",
                         'Installing WebFrameworks and Dependencies': 'https://github.com/Microsoft/PTVS/wiki/Development-WebFrameworks'}
         reply = self._agent.suggest_urls(urls)
+        reply = self._add_google_query(reply)
         return {'next': Next.Complete,
                 'post': reply}
             
@@ -1076,3 +1105,27 @@ class InstallSomethingHandler(DefaultHandler):
         elif data['status'] is InterpreterStatus.WaitingToContinue:
             self.data['variables']['proc_index'] += 1
         data['status'] = InterpreterStatus.Working
+
+
+class ConverseHandler(DefaultHandler):
+
+    """A Handler for the intent Converse."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('say_hello', [], False)
+        ]
+        self._load_from_data(data)
+
+
+class HelpBotHelpHandler(DefaultHandler):
+    
+    """A handler for the intent HelpBot Help."""
+
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.procedures = [
+            ('explain', [], False)
+        ]
+        self._load_from_data(data)

@@ -11,7 +11,7 @@ _MAX_PAGE_SIZE = 100
 
 
 def trim_non_alpha(word):
-    """Trims any surrounding punctuation."""
+    """Trims any surrounding non-alpha characters."""
     first = last = None
     for i, letter in enumerate(word):
         if letter.isalpha():

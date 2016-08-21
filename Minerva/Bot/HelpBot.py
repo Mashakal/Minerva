@@ -1,7 +1,5 @@
-import types
 import functools
 import itertools
-import sys
 import json
 from enum import Enum, unique
 
@@ -13,37 +11,13 @@ import Query
 
 
 def on_message(msg, system):
-    #if msg_has_queue(msg):
-    #    queue_message(msg)
-    #    return
     bot_convo = Conversation(system, msg)
     bot_convo.choose_action()
 
-def load_next_message(msg):
-    """Returns the next message in queue."""
-    queue = msg.data['queue']
-    return queue.pop(0)
-
-def queue_message(msg):
-    """Adds the message to its conversation's queue."""
-    try:
-        queue = msg.data['queue']
-    except LookupError:
-        queue = []
-    finally:
-        queue.append(msg)
-        msg.data['queue'] = queue
-        msg.save_data()
-
-def msg_has_queue(msg):
-    """True when the msg.data as a 'queue' key."""
-    try:
-        msg.data['queue']
-    except KeyError:
-        return False
-    else:
-        return True
-
+def home():
+    """Returns an HTML that contains an embedded Chat."""
+    return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>PTVS Feature Bot</title></head><body><iframe src='https://webchat.botframework.com/embed/pythontoolsfeaturebot?s=FZyF_pOmjcM.cwA.PJg.HZCQ39qn1m0o5eVbGlMlWjc8E1rFdAbxucvLslvHGAg' width=502, height=750></iframe></body></html>"
+    
 
 class Conversation:
 
@@ -54,10 +28,6 @@ class Conversation:
         self.agent = Agent.VSAgent()
         self.msg = msg
 
-    def initiate_conversation(self):
-        """Starts a conversation between the agent and the user."""
-        return self.agent.start_query()
-
     def query_luis(self, query_text):
         """Returns json from a raw_query to the LUIS app."""
         luis_client = LuisClient.BotLuisClient('Petricca')
@@ -66,23 +36,19 @@ class Conversation:
         return luis_data
 
     def choose_action(self):
-       
+        """Reviews the conversation's message data and reacts appropriately."""
         # Deserialize to create instances of custom types.
         self._deserialize_data()
 
-        # For debugging.
-        #self._delete_state_information()
-
         # Load data.
-        #self.convo_data = self._load_conversation_data()
         self.luis_data = self._load_luis_data()
         self.interp_data = self._load_interpreter_data()
         self.interp_data['luis_data'] = self.luis_data
-
+        
         # Interpret.
         self.interpreter = LuisInterpreter.ApiProjectSystemLuisInterpreter(self.agent, self.project_system)
         self.interp_data = self.interpreter.interpret(self.interp_data)
-        
+
         # Post-interpretation administrative tasks.
         self._send_outgoing()
 
@@ -92,24 +58,9 @@ class Conversation:
             self._delete_state_information()
         else:
             self._save_all_data()
-        return
-      
-    def _save_interpreter_data(self):
-        """Saves the conversation's interpreter data."""
-        self.msg.data['interpreter'] = self.interp_data
-        self.msg.save_data()
-
-    def _save_conversation_data(self):
-        """Saves the conversation's data."""
-        self.msg.data['conversation']['data'] = self.convo_data
-        self.msg.save_data()
 
     def _save_all_data(self):
         """Saves and encodes all data items."""
-        #self.msg.data['conversation'] = self.convo_data
-        print("VARIABLES when being saved:")
-        print(json.dumps(self.interp_data['variables'], cls=DataEncoder, indent=4, sort_keys=True))
-        print("STATUS on save: {}".format(self.interp_data['status']))
         self.msg.data['interpreter'] = self.interp_data
         self.msg.data['luis_data'] = self.luis_data
         self.msg.data = json.dumps(self.msg.data, cls=DataEncoder)
@@ -119,13 +70,6 @@ class Conversation:
         """Deserializes a help bot data encoded json."""
         if self.msg.data:
             self.msg.data = json.loads(self.msg.data, object_hook=DataEncoder.decode_hook)
-
-    def _load_conversation_data(self):
-        try:
-            return self.msg.data['conversation']['data']
-        except LookupError:
-           return {'status': LuisInterpreter.InterpreterStatus.Pending,
-                   'isActive': True}
 
     def _load_interpreter_data(self):
         """Returns a conversation's interpreter data."""
@@ -137,11 +81,8 @@ class Conversation:
             interp_data.update({'msg_text': self.msg.text})
             return interp_data
 
-    def _save_luis_data(self):
-        self.msg.data['luis_data'] = self.luis_data
-        self.msg.save_data()
-
     def _load_luis_data(self):
+        """Either loads or queries luis, returning a LuisData instance."""
         try:
             luis_data = self.msg.data['luis_data']
         except KeyError:
@@ -156,7 +97,7 @@ class Conversation:
             pass
         else:
             for m in outbox:
-                self.msg.post(m)
+                self.msg.reply(m)
             # Cleanup.
             del self.interp_data['outgoing']
 
@@ -165,59 +106,10 @@ class Conversation:
         self.msg.data = {}
         self.msg.save_data()
 
-    # Methods to handle message's conversation's state.
-    def _has_active_query(self, msg):
-        """True if we have already made a call to the LUIS app."""
-        try:
-            is_active = msg.data['has_active_query']
-        except (AttributeError, KeyError):
-            return False
-        else:
-            return is_active
-
-    def _is_locked(self, msg):
-        """True if a helpbot is currently working the conversation."""
-        try:
-            locked = msg.data['is_locked']
-        except LookupError:
-            return False
-        else:
-            return locked
-
-    def _lock(self, msg):
-        """Marks the conversation as locked by the helpbot.
-
-        When a conversation is locked it should not be worked by other 
-        bots.
-        
-        """
-        self._add_to_data(msg, 'is_locked', True)
-
-    def _unlock(self, msg):
-        """Marks a conversation as unlocked.
-
-        When a conversation is unlocked, it can be worked by a 
-        bot.
-
-        """
-        self._del_from_data(msg, 'is_locked')
-
-    def _mark_active(self, msg):
-        """Marks a conversation as being processed."""
-        msg.data['has_active_query'] = True
-        msg.save_data()
-
-    def _mark_inactive(self, msg):
-        """Marks a conversation as no longer being finished."""
-        try:
-            del msg.data['has_active_query']
-        except (AttributeError, KeyError):
-            pass
-        finally:
-            msg.save_data()
-
 
 class LuisData:
+    
+    """A class that makes accessing LUIS Response JSON more manageable."""
 
     def __init__(self, json_, attrs=None):
         self.json_ = json_
@@ -235,12 +127,13 @@ class LuisData:
 
         # Additional setup.
         self._initialize_attrs()
-        
+
         # Handle optional params.
         self.words_of_interest = self.set_from_attrs(attrs) if attrs else None
         self._attrs_of_interest = attrs
 
     def _add_lists(self, first, second):
+        """Adds a list of strs or a list of lists of strs together."""
         if not first and second:
             return first or second
         if not isinstance(first[0], str):
@@ -257,14 +150,13 @@ class LuisData:
         
     def _initialize_attrs(self):
         """Handle any special formatting for any attribute that needs it."""
-        # LUIS adds whitespace between nonalpha characters.
         if self.languages:
+            # LUIS adds whitespace between nonalpha characters.
             self.languages = list(map(lambda e: e.replace(' ', ''), self.languages))
 
     def set_from_attrs(self, attrs):
         """Returns a set of all values for each attr in attrs."""
         elements = [getattr(self, attr) or [] for attr in attrs]
-        print("Elements are: {}".format(elements))
         elements = filter(None, elements)
         return set(functools.reduce(self._add_lists, elements, []))
 
@@ -279,8 +171,6 @@ class LuisData:
         except LookupError:
             return "None"
 
-
-#region JSON Encoding/Decoding
 
 class DataEncoder(json.JSONEncoder):
 
@@ -318,17 +208,3 @@ class DataEncoder(json.JSONEncoder):
         elif "__LuisData__" in obj:
             return LuisData(obj["__LuisData__"])
         return obj
-
-
-def main():
-    learn_interests = ['all_jargon', 'metas', 'services', 'frameworks']
-    lc = LuisClient.BotLuisClient('Petricca')
-    query_json = lc.query_raw("Tell me about python environments?")
-    print(json.dumps(query_json, sort_keys=True, indent=4))
-    luis_data = LuisData(query_json, learn_interests)
-    for attr in sorted(LuisClient.MODEL_ENTITY_SCHEMA.keys()):
-        print("{}: {}".format(attr, getattr(luis_data, attr)))
-    print("Words of interest: {}".format(luis_data.words_of_interest))
-
-if __name__ == "__main__":
-    main()
